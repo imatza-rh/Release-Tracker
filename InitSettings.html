@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    :root {
+      --primary-color: #1976d2;
+      --hover-color: #1565c0;
+      --text-color: #444;
+      --light-bg: #f9f9f9;
+      --border-color: #e0e0e0;
+      --danger-color: #dc3545;
+      --success-color: #28a745;
+      --warning-color: #ffc107;
+      --info-color: #17a2b8;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      margin: 10px;
+      font-size: 14px;
+      color: var(--text-color);
+      background-color: #fff;
+    }
+
+    h3, h4 {
+      margin-top: 0;
+      margin-bottom: 12px;
+      color: var(--primary-color);
+      font-size: 16px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--primary-color);
+    }
+    
+    h4 {
+      margin-top: 20px;
+      font-size: 15px;
+      border-bottom-width: 1px;
+    }
+
+    /* Tab Control Styles */
+    .tab-container {
+      margin-top: 20px;
+    }
+    
+    .tab-buttons {
+      display: flex;
+      gap: 4px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 1px;
+    }
+    
+    .tab-button {
+      padding: 8px 12px;
+      border: 1px solid var(--border-color);
+      border-bottom: none;
+      border-radius: 4px 4px 0 0;
+      cursor: pointer;
+      background: #f1f1f1;
+    }
+    
+    .tab-button.active {
+      background: white;
+      font-weight: bold;
+      color: var(--primary-color);
+      position: relative;
+      border-bottom: 2px solid white;
+      margin-bottom: -1px;
+    }
+    
+    .tab-content {
+      display: none;
+      padding: 12px;
+      border: 1px solid var(--border-color);
+      border-top: none;
+      border-radius: 0 0 4px 4px;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Property item styling */
+    .property-item {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 12px;
+      padding: 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      background: var(--light-bg);
+    }
+
+    .property-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .value-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .value-box {
+      display: flex;
+      align-items: center;
+      background: white;
+      padding: 6px 10px;
+      border-radius: 4px;
+      border: 1px solid var(--border-color);
+    }
+
+    .color-picker {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 1px solid #ccc;
+    }
+
+    .remove-btn, .remove-value-btn {
+      background: var(--danger-color);
+      color: white;
+      border: none;
+      padding: 4px 8px;
+      cursor: pointer;
+      border-radius: 4px;
+      margin-left: 6px;
+    }
+
+    .remove-btn:hover, .remove-value-btn:hover {
+      background: #c82333; /* Darker shade on hover */
+    }
+
+    /* Form controls */
+    label {
+      display: block;
+      margin-top: 10px;
+      margin-bottom: 4px;
+      font-weight: bold;
+      font-size: 13px;
+    }
+    
+    select, input, textarea {
+      width: 100%;
+      box-sizing: border-box;
+      margin-bottom: 12px;
+      font-size: 13px;
+      padding: 8px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    
+    select:focus, input:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
+    }
+
+    /* Integration section */
+    .integration-settings {
+      background-color: #f8f9fa;
+      padding: 12px;
+      border-radius: 4px;
+      margin-bottom: 16px;
+      border: 1px solid #e9ecef;
+    }
+
+    /* Buttons */
+    .buttons-container {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+    }
+
+    button {
+      padding: 6px 12px;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    
+    .btn-primary {
+      background-color: var(--primary-color);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background-color: var(--hover-color);
+    }
+    
+    .btn-success {
+      background-color: var(--success-color);
+      color: white;
+    }
+    
+    .btn-success:hover {
+      background-color: #218838;
+    }
+
+    .btn-secondary {
+      background-color: #6c757d;
+      color: white;
+    }
+    
+    .btn-secondary:hover {
+      background-color: #5a6268;
+    }
+    
+    /* Notifications */
+    #error-message, #success-message, #warning-message {
+      margin-top: 10px;
+      padding: 8px;
+      border-radius: 4px;
+      display: none;
+    }
+
+    #error-message {
+      background-color: #fdecea;
+      border: 1px solid #e74c3c;
+      color: #e74c3c;
+    }
+
+    #success-message {
+      background-color: #e8f5e9;
+      border: 1px solid #2ecc71;
+      color: #2ecc71;
+    }
+    
+    #warning-message {
+      background-color: #fff9e6;
+      border: 1px solid #ffc107;
+      color: #856404;
+    }
+
+    /* Metadata display */
+    .meta-info {
+      background: #f5f5f5;
+      padding: 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      margin-bottom: 15px;
+    }
+    
+    .meta-info span {
+      margin-right: 15px;
+      display: inline-block;
+    }
+
+    .helper-text {
+      font-size: 12px;
+      color: #757575;
+      margin-top: -8px;
+      margin-bottom: 12px;
+      font-style: italic;
+    }
+
+    .backup-list {
+      max-height: 150px;
+      overflow-y: auto;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+  <h3>Tracker Settings & Initialization</h3>
+  
+  <div id="error-message"></div>
+  <div id="success-message"></div>
+  <div id="warning-message"></div>
+  
+  <div class="meta-info" id="config-metadata">
+    <span>Version: Loading...</span>
+    <span>Last Modified: Loading...</span>
+  </div>
+  
+  <div class="tab-container">
+    <div class="tab-buttons">
+      <div id="tab-btn-properties" class="tab-button active" onclick="showTab('properties')">Properties</div>
+      <div id="tab-btn-initialize" class="tab-button" onclick="showTab('initialize')">Initialize Jobs</div>
+      <div id="tab-btn-integrations" class="tab-button" onclick="showTab('integrations')">Integrations</div>
+      <div id="tab-btn-advanced" class="tab-button" onclick="showTab('advanced')">Advanced</div>
+    </div>
+    
+    <!-- Properties Tab -->
+    <div id="tab-properties" class="tab-content active">
+      <p>Modify existing properties or add new ones.</p>
+      <div id="propertiesList"></div>
+      <button id="addPropertyBtn" class="btn-primary">+ Add Property</button>
+    </div>
+    
+    <!-- Initialize Jobs Tab -->
+    <div id="tab-initialize" class="tab-content">
+      <p>Initialize a new jobs sheet from template, or add jobs to an existing sheet.</p>
+      
+      <label for="jobSheetName">Sheet Name:</label>
+      <input type="text" id="jobSheetName" value="Jobs" placeholder="Enter sheet name">
+      <div class="helper-text">Default is "Jobs". Change this to create a new tracking sheet.</div>
+      
+      <label for="defaultJobsSource">Source for Default Jobs:</label>
+      <select id="defaultJobsSource">
+        <option value="DefaultJobs">DefaultJobs sheet</option>
+        <option value="empty">Empty sheet (headers only)</option>
+      </select>
+      
+      <div id="jobSourceOptions">
+        <p>Jobs will be read from the "DefaultJobs" sheet. Make sure it contains at least these columns:</p>
+        <ul>
+          <li>Job Name (required)</li>
+          <li>Job Link (optional)</li>
+          <li>Jira Ticket (optional)</li>
+        </ul>
+      </div>
+      
+      <div class="buttons-container">
+        <button id="initJobsBtn" class="btn-success">Initialize Jobs Sheet</button>
+      </div>
+    </div>
+    
+    <!-- Integrations Tab -->
+    <div id="tab-integrations" class="tab-content">
+      <p>Configure integrations with external systems.</p>
+      
+      <div class="integration-settings">
+        <h4>Jenkins Integration</h4>
+        <label for="jenkinsUrl">Jenkins Base URL:</label>
+        <input type="text" id="jenkinsUrl" placeholder="https://jenkins.example.com/">
+        <div class="helper-text">Used for "Job Link" hyperlinks. Include trailing slash.</div>
+      </div>
+      
+      <div class="integration-settings">
+        <h4>Jira Integration</h4>
+        <label for="jiraUrl">Jira Base URL:</label>
+        <input type="text" id="jiraUrl" placeholder="https://jira.example.com/browse/">
+        <div class="helper-text">Used for "Jira Ticket" hyperlinks. Include trailing slash and "browse/" if needed.</div>
+      </div>
+    </div>
+    
+    <!-- Advanced Tab (Backup/Restore) -->
+    <div id="tab-advanced" class="tab-content">
+      <h4>Backup & Restore</h4>
+      <p>Manage configuration backups or import/export settings.</p>
+      
+      <h4>Available Backups</h4>
+      <div class="backup-list" id="backups-list">
+        <div style="padding: 10px;">Loading backups...</div>
+      </div>
+      <button onclick="loadBackupsList()" class="btn-secondary">Refresh List</button>
+      
+      <h4>Export Configuration</h4>
+      <textarea id="export-json" style="height: 100px;" readonly></textarea>
+      <div style="margin-top: 8px;">
+        <button onclick="exportConfigToJson()" class="btn-primary">Export</button>
+        <button onclick="copyToClipboard()" class="btn-secondary">Copy</button>
+      </div>
+      
+      <h4>Import Configuration</h4>
+      <textarea id="import-json" style="height: 100px;" placeholder="Paste configuration JSON here..."></textarea>
+      <div style="margin-top: 8px;">
+        <button onclick="importConfigFromJson()" class="btn-primary">Import</button>
+        <button onclick="clearImportText()" class="btn-secondary">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="buttons-container">
+    <button id="saveBtn" class="btn-success">Save Settings</button>
+    <button id="cancelBtn" class="btn-secondary">Close</button>
+  </div>
+
+  <script>
+    // Global property storage
+    let properties = [];
+    let configMetadata = {};
+    let availableBackups = [];
+    
+    document.addEventListener("DOMContentLoaded", function() {
+      // Show the default tab
+      showTab('properties');
+      
+      // Load settings
+      loadSettings();
+      
+      // Set up event listeners
+      document.getElementById("addPropertyBtn").addEventListener("click", () => {
+        properties.push({ 
+          name: "", 
+          type: "text", 
+          values: [], 
+          colors: [] 
+        });
+        renderProperties(properties);
+      });
+
+      document.getElementById("saveBtn").addEventListener("click", saveSettings);
+      document.getElementById("cancelBtn").addEventListener("click", () => {
+        google.script.host.close();
+      });
+      document.getElementById("initJobsBtn").addEventListener("click", initializeJobsSheet);
+      document.getElementById("defaultJobsSource").addEventListener("change", updateJobSourceOptions);
+    });
+    
+    function loadSettings() {
+      // Show loading message
+      showMessage('success', 'Loading settings...');
+      
+      // Load the configuration
+      google.script.run
+          .withSuccessHandler(onLoadConfigSuccess)
+          .withFailureHandler(onLoadConfigFailure)
+          .loadConfig();
+      
+      // Load metadata
+      google.script.run
+          .withSuccessHandler(onLoadMetadataSuccess)
+          .withFailureHandler(error => console.error("Metadata error:", error))
+          .getConfigMetadata();
+      
+      // Load available backups
+      loadBackupsList();
+      
+      // Load integration settings
+      google.script.run
+          .withSuccessHandler(loadIntegrationSettings)
+          .withFailureHandler(error => console.error("Integration settings error:", error))
+          .getIntegrationSettings();
+    }
+    
+    function loadIntegrationSettings(settings) {
+      if (settings) {
+        document.getElementById("jenkinsUrl").value = settings.jenkinsUrl || "";
+        document.getElementById("jiraUrl").value = settings.jiraUrl || "";
+      }
+    }
+    
+    function onLoadConfigSuccess(data) {
+      renderProperties(data);
+      hideMessages();
+    }
+
+    function onLoadConfigFailure(error) {
+      console.error("Error loading settings:", error);
+      showMessage('error', "Failed to load settings. Please try again later.");
+    }
+    
+    function onLoadMetadataSuccess(metadata) {
+      configMetadata = metadata;
+      updateMetadataDisplay();
+    }
+    
+    function updateMetadataDisplay() {
+      const metaInfoDiv = document.getElementById("config-metadata");
+      if (metaInfoDiv && configMetadata) {
+        metaInfoDiv.innerHTML = `
+          <span>Version: ${configMetadata.version || 'Unknown'}</span>
+          <span>Last Modified: ${formatDate(configMetadata.lastModified)}</span>
+          <span>Statuses: ${configMetadata.statusCount || 0}</span>
+          <span>Types: ${configMetadata.typeCount || 0}</span>
+          <span>Priorities: ${configMetadata.priorityCount || 0}</span>
+        `;
+      }
+    }
+    
+    function formatDate(dateString) {
+      if (!dateString || dateString === 'Unknown') return 'Unknown';
+      try {
+        const date = new Date(dateString);
+        return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+      } catch (e) {
+        return dateString;
+      }
+    }
+    
+    function loadBackupsList() {
+      google.script.run
+          .withSuccessHandler(onLoadBackupsSuccess)
+          .withFailureHandler(error => console.error("Backups error:", error))
+          .getBackupsList();
+    }
+    
+    function onLoadBackupsSuccess(backups) {
+      availableBackups = backups;
+      renderBackupsList();
+    }
+    
+    function renderBackupsList() {
+      const backupsList = document.getElementById("backups-list");
+      if (!backupsList || !availableBackups) return;
+      
+      if (availableBackups.length === 0) {
+        backupsList.innerHTML = '<div style="padding: 10px;">No backups available</div>';
+        return;
+      }
+      
+      backupsList.innerHTML = availableBackups.map(backup => `
+        <div style="padding: 8px; border-bottom: 1px solid #eee;">
+          <div>${backup.readableDate}</div>
+          <button onclick="confirmRestore('${backup.key}')" class="btn-secondary" style="margin-top: 4px;">Restore</button>
+        </div>
+      `).join('');
+    }
+    
+    function updateJobSourceOptions() {
+      const source = document.getElementById("defaultJobsSource").value;
+      const optionsDiv = document.getElementById("jobSourceOptions");
+      
+      if (source === "DefaultJobs") {
+        optionsDiv.innerHTML = `
+          <p>Jobs will be read from the "DefaultJobs" sheet. Make sure it contains at least these columns:</p>
+          <ul>
+            <li>Job Name (required)</li>
+            <li>Job Link (optional)</li>
+            <li>Jira Ticket (optional)</li>
+          </ul>
+        `;
+      } else {
+        optionsDiv.innerHTML = `
+          <p>An empty sheet will be created with the proper headers and validation.</p>
+        `;
+      }
+    }
+    
+    function initializeJobsSheet() {
+      const sheetName = document.getElementById("jobSheetName").value.trim();
+      if (!sheetName) {
+        showMessage('error', 'Please enter a sheet name');
+        return;
+      }
+      
+      const source = document.getElementById("defaultJobsSource").value;
+      
+      showMessage('warning', 'Initializing jobs sheet...');
+      
+      // Save integration settings first
+      saveIntegrationSettings()
+        .then(() => {
+          google.script.run
+            .withSuccessHandler(onInitializeSuccess)
+            .withFailureHandler(onInitializeFailure)
+            .initializeJobsSheet(sheetName, source);
+        })
+        .catch(error => {
+          showMessage('error', 'Failed to save integration settings: ' + error);
+        });
+    }
+    
+    function saveIntegrationSettings() {
+      return new Promise((resolve, reject) => {
+        const settings = {
+          jenkinsUrl: document.getElementById("jenkinsUrl").value.trim(),
+          jiraUrl: document.getElementById("jiraUrl").value.trim()
+        };
+        
+        google.script.run
+          .withSuccessHandler(result => resolve(result))
+          .withFailureHandler(error => reject(error))
+          .saveIntegrationSettings(settings);
+      });
+    }
+    
+    function onInitializeSuccess(result) {
+      showMessage('success', result.message || 'Jobs sheet initialized successfully');
+    }
+    
+    function onInitializeFailure(error) {
+      showMessage('error', 'Failed to initialize jobs sheet: ' + error);
+    }
+    
+    function confirmRestore(backupKey) {
+      if (confirm("Are you sure you want to restore this configuration backup? Current settings will be replaced.")) {
+        restoreBackup(backupKey);
+      }
+    }
+    
+    function restoreBackup(backupKey) {
+      showMessage('warning', 'Restoring backup...');
+      google.script.run
+          .withSuccessHandler(onRestoreSuccess)
+          .withFailureHandler(onRestoreFailure)
+          .restoreBackup(backupKey);
+    }
+    
+    function onRestoreSuccess(result) {
+      showMessage('success', 'Backup restored successfully!');
+      // Reload settings to reflect restored config
+      loadSettings();
+    }
+    
+    function onRestoreFailure(error) {
+      showMessage('error', 'Failed to restore backup: ' + error);
+    }
+    
+    function exportConfigToJson() {
+      google.script.run
+          .withSuccessHandler(onExportSuccess)
+          .withFailureHandler(onExportFailure)
+          .exportConfig();
+    }
+    
+    function onExportSuccess(result) {
+      const exportTextarea = document.getElementById('export-json');
+      if (exportTextarea && result.data) {
+        exportTextarea.value = result.data;
+        showMessage('success', 'Configuration exported successfully!');
+      } else {
+        showMessage('error', 'Failed to export configuration');
+      }
+    }
+    
+    function onExportFailure(error) {
+      showMessage('error', 'Failed to export configuration: ' + error);
+    }
+    
+    function importConfigFromJson() {
+      const importTextarea = document.getElementById('import-json');
+      if (!importTextarea || !importTextarea.value.trim()) {
+        showMessage('error', 'Please enter configuration JSON to import');
+        return;
+      }
+      
+      if (confirm("Are you sure you want to import this configuration? Current settings will be replaced.")) {
+        showMessage('warning', 'Importing configuration...');
+        google.script.run
+            .withSuccessHandler(onImportSuccess)
+            .withFailureHandler(onImportFailure)
+            .importConfig(importTextarea.value);
+      }
+    }
+    
+    function onImportSuccess(result) {
+      showMessage('success', 'Configuration imported successfully!');
+      // Reload settings to reflect imported config
+      loadSettings();
+    }
+    
+    function onImportFailure(error) {
+      showMessage('error', 'Failed to import configuration: ' + error);
+    }
+    
+    function copyToClipboard() {
+      const exportTextarea = document.getElementById('export-json');
+      if (exportTextarea) {
+        exportTextarea.select();
+        document.execCommand('copy');
+        showMessage('success', 'Copied to clipboard!');
+      }
+    }
+    
+    function clearImportText() {
+      const importTextarea = document.getElementById('import-json');
+      if (importTextarea) {
+        importTextarea.value = '';
+      }
+    }
+
+    function showTab(tabName) {
+      // Hide all tabs
+      const tabs = document.getElementsByClassName('tab-content');
+      for (let i = 0; i < tabs.length; i++) {
+        tabs[i].classList.remove('active');
+      }
+      
+      // Deactivate all tab buttons
+      const tabButtons = document.getElementsByClassName('tab-button');
+      for (let i = 0; i < tabButtons.length; i++) {
+        tabButtons[i].classList.remove('active');
+      }
+      
+      // Show selected tab
+      document.getElementById(`tab-${tabName}`).classList.add('active');
+      document.getElementById(`tab-btn-${tabName}`).classList.add('active');
+    }
+    
+    function renderProperties(data) {
+      // Ensure data is an array with at least some default values
+      properties = Array.isArray(data) && data.length > 0 ? data : [
+        { 
+          name: "Status", 
+          type: "dropdown", 
+          values: ["Pending", "In-Progress", "Done"], 
+          colors: ["#1976d2", "#1976d2", "#1976d2"] 
+        },
+        { 
+          name: "Job Type", 
+          type: "dropdown", 
+          values: ["Build", "Test", "Deploy"], 
+          colors: ["#ff9800", "#ff9800", "#ff9800"] 
+        },
+        { 
+          name: "Priority", 
+          type: "dropdown", 
+          values: ["High", "Medium", "Low"], 
+          colors: ["#f44336", "#f44336", "#f44336"] 
+        }
+      ];
+
+      const container = document.getElementById("propertiesList");
+      if (!container) return;
+      
+      container.innerHTML = "";
+      
+      properties.forEach((prop, index) => {
+        // Make sure values and colors are arrays
+        if (!Array.isArray(prop.values)) prop.values = [];
+        if (!Array.isArray(prop.colors)) prop.colors = [];
+        
+        const div = document.createElement("div");
+        div.classList.add("property-item");
+
+        const valuesHTML = prop.values.map((val, i) => `
+          <div class="value-box">
+            <input type="text" value="${val || ''}" onchange="updateValue(${index}, ${i}, this.value)">
+            <input type="color" class="color-picker" value="${prop.colors[i] || '#cccccc'}" onchange="updateColor(${index}, ${i}, this.value)">
+            <button class="remove-value-btn" onclick="removeValue(${index}, ${i})">X</button>
+          </div>
+        `).join("");
+
+        div.innerHTML = `
+          <div class="property-header">
+            <input type="text" value="${prop.name || ''}" placeholder="Property Name" data-index="${index}" onchange="updatePropertyName(${index}, this.value)">
+            <select class="type-select" data-index="${index}" onchange="changeType(this, ${index})">
+              <option value="text" ${prop.type === "text" ? "selected" : ""}>Text</option>
+              <option value="dropdown" ${prop.type === "dropdown" ? "selected" : ""}>Dropdown</option>
+            </select>
+            <button class="remove-btn" onclick="removeProperty(${index})">Delete</button>
+          </div>
+          <div class="value-container" id="values-${index}" style="display: ${prop.type === 'dropdown' ? 'flex' : 'none'};">
+            ${valuesHTML}
+            <button onclick="addDropdownValue(${index})">+ Add Value</button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+    
+    function updatePropertyName(index, newName) {
+      properties[index].name = newName;
+    }
+
+    function changeType(selectElement, index) {
+      const value = selectElement.value;
+      properties[index].type = value;
+
+      const valuesContainer = document.getElementById(`values-${index}`);
+      if (valuesContainer) {
+        valuesContainer.style.display = value === 'dropdown' ? 'flex' : 'none';
+      }
+
+      if (value === 'text') {
+        properties[index].values = [];
+        properties[index].colors = [];
+        renderProperties(properties); // Re-render to update the display
+      }
+    }
+
+    function updateValue(propertyIndex, valueIndex, newValue) {
+      if (!properties[propertyIndex].values) {
+        properties[propertyIndex].values = [];
+      }
+      properties[propertyIndex].values[valueIndex] = newValue;
+    }
+
+    function updateColor(propertyIndex, valueIndex, newColor) {
+      if (!properties[propertyIndex].colors) {
+        properties[propertyIndex].colors = [];
+      }
+      properties[propertyIndex].colors[valueIndex] = newColor;
+    }
+
+    function removeValue(propertyIndex, valueIndex) {
+      if (Array.isArray(properties[propertyIndex].values)) {
+        properties[propertyIndex].values.splice(valueIndex, 1);
+      }
+      if (Array.isArray(properties[propertyIndex].colors)) {
+        properties[propertyIndex].colors.splice(valueIndex, 1);
+      }
+      renderProperties(properties);
+    }
+
+    function addDropdownValue(propertyIndex) {
+      if (!properties[propertyIndex].values) {
+        properties[propertyIndex].values = [];
+      }
+      if (!properties[propertyIndex].colors) {
+        properties[propertyIndex].colors = [];
+      }
+      properties[propertyIndex].values.push("");
+      properties[propertyIndex].colors.push("#ffffff");
+      renderProperties(properties);
+    }
+
+    function removeProperty(index) {
+      properties.splice(index, 1);
+      renderProperties(properties);
+    }
+    
+    function showMessage(type, message) {
+      hideMessages();
+      const messageDiv = document.getElementById(`${type}-message`);
+      if (messageDiv) {
+        messageDiv.textContent = message;
+        messageDiv.style.display = 'block';
+        
+        if (type !== 'error' && type !== 'warning') {
+          setTimeout(() => {
+            messageDiv.style.display = 'none';
+          }, 5000);
+        }
+      }
+    }
+    
+    function hideMessages() {
+      ['success', 'error', 'warning'].forEach(type => {
+        const msgDiv = document.getElementById(`${type}-message`);
+        if (msgDiv) msgDiv.style.display = 'none';
+      });
+    }
+    
+    function saveSettings() {
+      hideMessages();
+      showMessage('warning', 'Saving settings...');
+      
+      // First save integration settings
+      saveIntegrationSettings()
+        .then(() => {
+          // Then save main configuration settings
+          // Make sure properties is properly formed before saving
+          const cleanProperties = properties.map(prop => ({
+            name: prop.name || "",
+            type: prop.type || "text",
+            values: Array.isArray(prop.values) ? prop.values : [],
+            colors: Array.isArray(prop.colors) ? prop.colors : []
+          }));
+          
+          google.script.run
+              .withSuccessHandler(onSaveConfigSuccess)
+              .withFailureHandler(onSaveConfigFailure)
+              .saveConfig(cleanProperties);
+        })
+        .catch(error => {
+          showMessage('error', 'Failed to save integration settings: ' + error);
+        });
+    }
+    
+    function onSaveConfigSuccess(result) {
+      showMessage('success', result.message || 'Settings saved successfully!');
+      
+      // Refresh metadata and backups
+      google.script.run
+          .withSuccessHandler(onLoadMetadataSuccess)
+          .getConfigMetadata();
+      
+      loadBackupsList();
+    }
+
+    function onSaveConfigFailure(error) {
+      showMessage('error', 'Failed to save settings: ' + error);
+    }
+  </script>
+</body>
+</html>

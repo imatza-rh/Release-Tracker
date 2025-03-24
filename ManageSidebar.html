@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    :root {
+      --primary-color: #1976d2;
+      --hover-color: #1565c0;
+      --text-color: #444;
+      --light-bg: #f9f9f9;
+      --border-color: #e0e0e0;
+      --success-color: #4caf50;
+      --warning-color: #ff9800;
+      --danger-color: #f44336;
+      --heading-color: #333;
+      --section-bg: #fafafa;
+    }
+    
+    body {
+      font-family: Arial, sans-serif;
+      padding: 10px;
+      font-size: 14px;
+      color: var(--text-color);
+      margin: 0;
+      contain: paint;
+    }
+    
+    h3 {
+      margin-top: 0;
+      margin-bottom: 16px;
+      color: var(--primary-color);
+      font-size: 16px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--primary-color);
+    }
+    
+    h4 {
+      margin-top: 0;
+      margin-bottom: 12px;
+      color: var(--heading-color);
+      font-size: 15px;
+    }
+    
+    label {
+      display: block;
+      margin-top: 10px;
+      margin-bottom: 4px;
+      font-weight: bold;
+      font-size: 13px;
+    }
+    
+    .required::after {
+      content: "*";
+      color: var(--danger-color);
+      margin-left: 4px;
+    }
+    
+    select, input, textarea {
+      width: 100%;
+      box-sizing: border-box;
+      margin-bottom: 12px;
+      font-size: 13px;
+      padding: 8px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    
+    select:focus, input:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
+    }
+    
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+    
+    /* Section styling - simplified for reliability */
+    .section {
+      display: none;
+      border: 1px solid var(--border-color);
+      border-radius: 5px;
+      background: var(--section-bg);
+      padding: 16px;
+      margin-top: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    
+    .section.visible {
+      display: block;
+    }
+    
+    /* Debug outline for troubleshooting */
+    .debug-outline {
+      border: 2px dashed red !important;
+    }
+    
+    /* Loading spinner */
+    #spinner-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 150px;
+      text-align: center;
+    }
+    
+    .spinner {
+      display: inline-block;
+      width: 30px;
+      height: 30px;
+      border: 3px solid rgba(25, 118, 210, 0.3);
+      border-radius: 50%;
+      border-top-color: var(--primary-color);
+      animation: spin 1s linear infinite;
+      margin-bottom: 12px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    /* Main content */
+    #mainContent.hidden {
+      display: none !important;
+    }
+    
+    /* Toast notification */
+    #toast {
+      display: none;
+      position: fixed;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.8);
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-size: 13px;
+      z-index: 9999;
+      max-width: 90%;
+      text-align: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    
+    /* Button styling */
+    button {
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-size: 14px;
+      width: 100%;
+      margin-top: 8px;
+      transition: background 0.2s;
+      position: relative;
+    }
+    
+    button:hover {
+      background: var(--hover-color);
+    }
+    
+    button:active {
+      transform: translateY(1px);
+    }
+    
+    button:disabled {
+      background: #b0bec5;
+      cursor: not-allowed;
+    }
+    
+    .button-processing {
+      position: relative;
+      color: transparent !important;
+    }
+    
+    .button-processing::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 16px;
+      height: 16px;
+      margin-top: -8px;
+      margin-left: -8px;
+      border: 2px solid rgba(255, 255, 255, 0.5);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 1s linear infinite;
+    }
+    
+    .helper-text {
+      font-size: 12px;
+      color: #757575;
+      margin-top: -8px;
+      margin-bottom: 12px;
+    }
+    
+    .success-text {
+      color: var(--success-color);
+    }
+    
+    .error-text {
+      color: var(--danger-color);
+    }
+    
+    /* Debug info panel */
+    #debugPanel {
+      display: none;
+      margin-top: 20px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      background: #f5f5f5;
+      font-family: monospace;
+      font-size: 12px;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <!-- Loading spinner shown first -->
+  <div id="spinner-container">
+    <div class="spinner"></div>
+    <div>Loading data, please wait...</div>
+  </div>
+
+  <!-- Main content, hidden until data is loaded -->
+  <div id="mainContent" class="hidden">
+    <h3>Manage Jobs</h3>
+
+    <!-- Action Selection -->
+    <label for="actionSelect">Action:</label>
+    <select id="actionSelect">
+      <option value="add">➕ Add Job</option>
+      <option value="update">✏️ Update Job</option>
+      <option value="remove">🗑️ Remove Job</option>
+    </select>
+
+    <!-- ADD Section -->
+    <div id="addSection" class="section">
+      <h4>➕ Add Job</h4>
+      <label for="addName" class="required">Job Name</label>
+      <input type="text" id="addName" placeholder="Enter job name..." />
+      <div id="addNameHelper" class="helper-text"></div>
+
+      <label for="addType">Type</label>
+      <select id="addType"></select>
+
+      <label for="addStatus">Status</label>
+      <select id="addStatus"></select>
+
+      <label for="addPriority">Priority</label>
+      <select id="addPriority"></select>
+
+      <label for="addNotes">Notes</label>
+      <textarea id="addNotes" placeholder="Optional notes about this job"></textarea>
+
+      <button id="addBtn">Add Job</button>
+    </div>
+
+    <!-- UPDATE Section -->
+    <div id="updateSection" class="section">
+      <h4>✏️ Update Job</h4>
+      <label for="updateSelect" class="required">Select a Job</label>
+      <select id="updateSelect"></select>
+      <div id="updateHelper" class="helper-text"></div>
+
+      <label for="updateType">New Type (optional)</label>
+      <select id="updateType"></select>
+
+      <label for="updateStatus">New Status (optional)</label>
+      <select id="updateStatus"></select>
+
+      <label for="updatePriority">New Priority (optional)</label>
+      <select id="updatePriority"></select>
+
+      <label for="updateNotes">New Notes (optional)</label>
+      <textarea id="updateNotes" placeholder="Leave blank to keep current notes"></textarea>
+
+      <button id="updateBtn" disabled>Update Job</button>
+    </div>
+
+    <!-- REMOVE Section -->
+    <div id="removeSection" class="section">
+      <h4>🗑️ Remove Job</h4>
+      <label for="removeSelect" class="required">Select a Job</label>
+      <select id="removeSelect"></select>
+      <div id="removeHelper" class="helper-text"></div>
+
+      <div class="helper-text error-text">Warning: This action cannot be undone!</div>
+      <button id="removeBtn" disabled>Remove Job</button>
+    </div>
+    
+    <!-- Debug panel for troubleshooting -->
+    <div id="debugPanel"></div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast"></div>
+
+  <script>
+    // Use strict mode for better performance and error catching
+    'use strict';
+    
+    // Cache DOM elements to avoid repeated query selection
+    const els = {};
+    let jobNames = [];
+    let isProcessing = false;
+    let debugMode = false; // Set to true to enable debug mode
+    
+    document.addEventListener('DOMContentLoaded', function() {
+      // Cache DOM elements
+      cacheElements();
+      
+      // Set up event listeners
+      setupEventListeners();
+      
+      // Show spinner, hide main content
+      showSpinner();
+      
+      // Load data from server
+      loadInitialData();
+      
+      // Enable debug mode if needed
+      if (debugMode) {
+        enableDebugMode();
+      }
+    });
+    
+    function cacheElements() {
+      try {
+        // Cache main containers
+        ['spinner-container', 'mainContent', 'toast', 'debugPanel'].forEach(id => {
+          els[id] = document.getElementById(id);
+        });
+        
+        // Cache action selector
+        els.actionSelect = document.getElementById('actionSelect');
+        
+        // Cache add form elements
+        ['addSection', 'addName', 'addNameHelper', 'addType', 'addStatus', 
+         'addPriority', 'addNotes', 'addBtn'].forEach(id => {
+          els[id] = document.getElementById(id);
+        });
+        
+        // Cache update form elements
+        ['updateSection', 'updateSelect', 'updateHelper', 'updateType', 'updateStatus', 
+         'updatePriority', 'updateNotes', 'updateBtn'].forEach(id => {
+          els[id] = document.getElementById(id);
+        });
+        
+        // Cache remove form elements
+        ['removeSection', 'removeSelect', 'removeHelper', 'removeBtn'].forEach(id => {
+          els[id] = document.getElementById(id);
+        });
+        
+        // Log any missing elements
+        for (const [key, value] of Object.entries(els)) {
+          if (!value) {
+            console.warn(`Element not found: ${key}`);
+          }
+        }
+      } catch (err) {
+        console.error('Error in cacheElements:', err);
+      }
+    }
+    
+    function setupEventListeners() {
+      try {
+        // Action selection change
+        if (els.actionSelect) {
+          els.actionSelect.addEventListener('change', function() {
+            showSection(this.value);
+          });
+        }
+        
+        // Add job form
+        if (els.addBtn) {
+          els.addBtn.addEventListener('click', handleAdd);
+        }
+        
+        if (els.addName) {
+          els.addName.addEventListener('input', validateAddForm);
+        }
+        
+        // Update job form
+        if (els.updateSelect) {
+          els.updateSelect.addEventListener('change', function() {
+            validateUpdateForm();
+          });
+        }
+        
+        if (els.updateBtn) {
+          els.updateBtn.addEventListener('click', handleUpdate);
+        }
+        
+        // Fields that might change validation state
+        ['updateType', 'updateStatus', 'updatePriority', 'updateNotes'].forEach(id => {
+          if (els[id]) {
+            els[id].addEventListener('change', validateUpdateForm);
+            els[id].addEventListener('input', validateUpdateForm);
+          }
+        });
+        
+        // Remove job form
+        if (els.removeSelect) {
+          els.removeSelect.addEventListener('change', function() {
+            validateRemoveForm();
+          });
+        }
+        
+        if (els.removeBtn) {
+          els.removeBtn.addEventListener('click', handleRemove);
+        }
+      } catch (err) {
+        console.error('Error in setupEventListeners:', err);
+        showToast("Error setting up the app. Please refresh the page.");
+      }
+    }
+    
+    function loadInitialData() {
+      try {
+        google.script.run
+          .withSuccessHandler(setupUI)
+          .withFailureHandler(function(err) {
+            onError(err);
+            hideSpinner();
+            showMainContent();
+            logDebug("Failed to load initial data: " + (err.message || err));
+          })
+          .getInitData();
+      } catch (err) {
+        console.error('Error in loadInitialData:', err);
+        hideSpinner();
+        showMainContent();
+        showToast("❌ Failed to connect to the server. Please refresh the page.");
+      }
+    }
+    
+    function setupUI(data) {
+      try {
+        // Log the received data in debug mode
+        logDebug("Received data:", data);
+        
+        // Hide spinner, show main content
+        hideSpinner();
+        showMainContent();
+        
+        // Check if data is valid
+        if (!data) {
+          showToast("❌ Error: Received invalid data from server");
+          return;
+        }
+        
+        // data = { statuses, jobTypes, priorities, jobNames }
+        populateSelect(els.addType, data.jobTypes);
+        populateSelect(els.addStatus, data.statuses);
+        populateSelect(els.addPriority, data.priorities);
+        
+        populateSelect(els.updateType, data.jobTypes, true);
+        populateSelect(els.updateStatus, data.statuses, true);
+        populateSelect(els.updatePriority, data.priorities, true);
+        
+        // Store job names and rebuild lists
+        jobNames = Array.isArray(data.jobNames) ? data.jobNames : [];
+        logDebug("Job names:", jobNames);
+        rebuildJobLists();
+        
+        // Show initial section (add by default)
+        showSection('add');
+        
+        // If we were previously on update or remove, re-validate forms
+        if (els.actionSelect.value === 'update') validateUpdateForm();
+        if (els.actionSelect.value === 'remove') validateRemoveForm();
+      } catch (err) {
+        console.error('Error in setupUI:', err);
+        showToast("❌ Error setting up the interface. See console for details.");
+      }
+    }
+    
+    function showSection(action) {
+      try {
+        logDebug("Showing section:", action);
+        
+        // Simple direct approach - hide all sections
+        if (els.addSection) els.addSection.classList.remove('visible');
+        if (els.updateSection) els.updateSection.classList.remove('visible');
+        if (els.removeSection) els.removeSection.classList.remove('visible');
+        
+        // Show the selected section immediately
+        let sectionToShow = null;
+        
+        switch (action) {
+          case 'add':
+            sectionToShow = els.addSection;
+            break;
+          case 'update':
+            sectionToShow = els.updateSection;
+            break;
+          case 'remove':
+            sectionToShow = els.removeSection;
+            break;
+        }
+        
+        if (sectionToShow) {
+          sectionToShow.classList.add('visible');
+          logDebug("Section element visible:", sectionToShow.id);
+        } else {
+          logDebug("Section element not found for action:", action);
+        }
+      } catch (err) {
+        console.error('Error in showSection:', err);
+      }
+    }
+    
+    function populateSelect(select, items, allowBlank) {
+      if (!select) return;
+      
+      try {
+        select.innerHTML = "";
+        
+        if (allowBlank) {
+          select.appendChild(new Option("(no change)", ""));
+        }
+        
+        if (!Array.isArray(items)) {
+          console.warn("populateSelect: items is not an array", items);
+          items = [];
+        }
+        
+        items.forEach(item => {
+          select.appendChild(new Option(item, item));
+        });
+      } catch (err) {
+        console.error('Error in populateSelect:', err);
+      }
+    }
+    
+    function rebuildJobLists() {
+      try {
+        // Ensure jobNames is an array
+        if (!Array.isArray(jobNames)) {
+          console.warn("jobNames is not an array", jobNames);
+          jobNames = [];
+        }
+        
+        // Update job selector for update section
+        if (els.updateSelect) {
+          els.updateSelect.innerHTML = '<option value="">-- Select a job --</option>';
+          jobNames.forEach(name => {
+            els.updateSelect.appendChild(new Option(name, name));
+          });
+          logDebug("Rebuilt update job list with", jobNames.length, "jobs");
+        }
+        
+        // Update job selector for remove section
+        if (els.removeSelect) {
+          els.removeSelect.innerHTML = '<option value="">-- Select a job --</option>';
+          jobNames.forEach(name => {
+            els.removeSelect.appendChild(new Option(name, name));
+          });
+        }
+        
+        // Update validation state
+        validateUpdateForm();
+        validateRemoveForm();
+      } catch (err) {
+        console.error('Error in rebuildJobLists:', err);
+      }
+    }
+    
+    function validateAddForm() {
+      if (!els.addBtn || !els.addName || !els.addNameHelper) return false;
+      
+      try {
+        const jobName = els.addName.value.trim();
+        
+        if (!jobName) {
+          els.addNameHelper.textContent = "Job name is required";
+          els.addNameHelper.className = "helper-text error-text";
+          els.addBtn.disabled = true;
+          return false;
+        }
+        
+        if (jobNames.includes(jobName)) {
+          els.addNameHelper.textContent = "This job name already exists";
+          els.addNameHelper.className = "helper-text error-text";
+          els.addBtn.disabled = true;
+          return false;
+        }
+        
+        els.addNameHelper.textContent = "Job name is valid";
+        els.addNameHelper.className = "helper-text success-text";
+        els.addBtn.disabled = false;
+        return true;
+      } catch (err) {
+        console.error('Error in validateAddForm:', err);
+        return false;
+      }
+    }
+    
+    function validateUpdateForm() {
+      if (!els.updateBtn || !els.updateSelect || !els.updateHelper) return false;
+      
+      try {
+        const selectedJob = els.updateSelect.value;
+        logDebug("validateUpdateForm - selectedJob:", selectedJob);
+        
+        if (!selectedJob) {
+          els.updateHelper.textContent = "Please select a job to update";
+          els.updateHelper.className = "helper-text error-text";
+          els.updateBtn.disabled = true;
+          return false;
+        }
+        
+        // Check if any fields to update are filled
+        const hasChanges = (
+          (els.updateType && els.updateType.value) ||
+          (els.updateStatus && els.updateStatus.value) ||
+          (els.updatePriority && els.updatePriority.value) ||
+          (els.updateNotes && els.updateNotes.value.trim())
+        );
+        
+        if (!hasChanges) {
+          els.updateHelper.textContent = "Make at least one change";
+          els.updateHelper.className = "helper-text error-text";
+          els.updateBtn.disabled = true;
+          return false;
+        }
+        
+        els.updateHelper.textContent = "Ready to update";
+        els.updateHelper.className = "helper-text success-text";
+        els.updateBtn.disabled = false;
+        return true;
+      } catch (err) {
+        console.error('Error in validateUpdateForm:', err);
+        return false;
+      }
+    }
+    
+    function validateRemoveForm() {
+      if (!els.removeBtn || !els.removeSelect || !els.removeHelper) return false;
+      
+      try {
+        const selectedJob = els.removeSelect.value;
+        
+        if (!selectedJob) {
+          els.removeHelper.textContent = "Please select a job to remove";
+          els.removeHelper.className = "helper-text error-text";
+          els.removeBtn.disabled = true;
+          return false;
+        }
+        
+        els.removeHelper.textContent = "Job selected for removal";
+        els.removeHelper.className = "helper-text success-text";
+        els.removeBtn.disabled = false;
+        return true;
+      } catch (err) {
+        console.error('Error in validateRemoveForm:', err);
+        return false;
+      }
+    }
+    
+    function handleAdd() {
+      if (isProcessing || !validateAddForm()) return;
+      
+      try {
+        isProcessing = true;
+        showButtonProcessing(els.addBtn);
+        
+        const jobName = els.addName.value.trim();
+        
+        const jobObj = {
+          "Job Name": jobName,
+          "Type": els.addType ? els.addType.value : "",
+          "Status": els.addStatus ? els.addStatus.value : "",
+          "Priority": els.addPriority ? els.addPriority.value : "",
+          "Notes": els.addNotes ? (els.addNotes.value || "") : ""
+        };
+        
+        logDebug("Adding job:", jobObj);
+        
+        google.script.run
+          .withSuccessHandler(function(result) {
+            isProcessing = false;
+            hideButtonProcessing(els.addBtn);
+            
+            // Check result format
+            const success = result && result.status === 'success';
+            const message = success ? "Job added successfully" : (result && result.message ? result.message : "Unknown error");
+            
+            if (success) {
+              // Clear form
+              if (els.addName) els.addName.value = "";
+              if (els.addNotes) els.addNotes.value = "";
+              
+              // Show success message
+              showToast("✅ " + message);
+              
+              // Refresh job list
+              refreshJobList();
+            } else {
+              // Show error message
+              showToast("❌ " + message);
+              validateAddForm();
+            }
+          })
+          .withFailureHandler(function(err) {
+            isProcessing = false;
+            hideButtonProcessing(els.addBtn);
+            onError(err);
+            validateAddForm();
+          })
+          .addJob(jobObj);
+      } catch (err) {
+        isProcessing = false;
+        hideButtonProcessing(els.addBtn);
+        console.error('Error in handleAdd:', err);
+        showToast("❌ Error adding job. See console for details.");
+      }
+    }
+    
+    function handleUpdate() {
+      if (isProcessing || !validateUpdateForm()) return;
+      
+      try {
+        isProcessing = true;
+        showButtonProcessing(els.updateBtn);
+        
+        const jobName = els.updateSelect.value;
+        const updates = {};
+        
+        // Only include fields with changes
+        if (els.updateType && els.updateType.value) {
+          updates["Type"] = els.updateType.value;
+        }
+        
+        if (els.updateStatus && els.updateStatus.value) {
+          updates["Status"] = els.updateStatus.value;
+        }
+        
+        if (els.updatePriority && els.updatePriority.value) {
+          updates["Priority"] = els.updatePriority.value;
+        }
+        
+        if (els.updateNotes && els.updateNotes.value.trim()) {
+          updates["Notes"] = els.updateNotes.value.trim();
+        }
+        
+        logDebug("Updating job:", jobName, "with updates:", updates);
+        
+        google.script.run
+          .withSuccessHandler(function(result) {
+            isProcessing = false;
+            hideButtonProcessing(els.updateBtn);
+            
+            // Check result format
+            const success = result && result.status === 'success';
+            const message = success ? (result.message || "Job updated successfully") : (result && result.message ? result.message : "Unknown error");
+            
+            if (success) {
+              // Clear form
+              if (els.updateSelect) els.updateSelect.value = "";
+              if (els.updateType) els.updateType.value = "";
+              if (els.updateStatus) els.updateStatus.value = "";
+              if (els.updatePriority) els.updatePriority.value = "";
+              if (els.updateNotes) els.updateNotes.value = "";
+              
+              // Show success message
+              showToast("✅ " + message);
+              
+              // Refresh job list
+              refreshJobList();
+            } else {
+              // Show error message
+              showToast("❌ " + message);
+              validateUpdateForm();
+            }
+          })
+          .withFailureHandler(function(err) {
+            isProcessing = false;
+            hideButtonProcessing(els.updateBtn);
+            onError(err);
+            validateUpdateForm();
+          })
+          .updateJob(jobName, updates);
+      } catch (err) {
+        isProcessing = false;
+        hideButtonProcessing(els.updateBtn);
+        console.error('Error in handleUpdate:', err);
+        showToast("❌ Error updating job. See console for details.");
+      }
+    }
+    
+    function handleRemove() {
+      if (isProcessing || !validateRemoveForm()) return;
+      
+      try {
+        const jobName = els.removeSelect.value;
+        
+        // Confirm removal
+        if (!confirm(`Are you sure you want to remove job "${jobName}"?`)) {
+          return;
+        }
+        
+        isProcessing = true;
+        showButtonProcessing(els.removeBtn);
+        
+        logDebug("Removing job:", jobName);
+        
+        google.script.run
+          .withSuccessHandler(function(result) {
+            isProcessing = false;
+            hideButtonProcessing(els.removeBtn);
+            
+            // Check result format
+            const success = result && result.status === 'success';
+            const message = success ? (result.message || "Job removed successfully") : (result && result.message ? result.message : "Unknown error");
+            
+            if (success) {
+              // Clear selection
+              if (els.removeSelect) els.removeSelect.value = "";
+              
+              // Show success message
+              showToast("✅ " + message);
+              
+              // Refresh job list
+              refreshJobList();
+            } else {
+              // Show error message
+              showToast("❌ " + message);
+              validateRemoveForm();
+            }
+          })
+          .withFailureHandler(function(err) {
+            isProcessing = false;
+            hideButtonProcessing(els.removeBtn);
+            onError(err);
+            validateRemoveForm();
+          })
+          .deleteJobByName(jobName);
+      } catch (err) {
+        isProcessing = false;
+        hideButtonProcessing(els.removeBtn);
+        console.error('Error in handleRemove:', err);
+        showToast("❌ Error removing job. See console for details.");
+      }
+    }
+    
+    function refreshJobList() {
+      try {
+        google.script.run
+          .withSuccessHandler(setupUI)
+          .withFailureHandler(onError)
+          .getInitData();
+      } catch (err) {
+        console.error('Error in refreshJobList:', err);
+        showToast("❌ Failed to refresh job list. Please try again.");
+      }
+    }
+    
+    function onError(err) {
+      console.error("Operation error:", err);
+      showToast("❌ Error: " + (err.message || err));
+      logDebug("Error details:", err);
+    }
+    
+    function showToast(msg, autoHide = true) {
+      if (!els.toast) return;
+      
+      try {
+        els.toast.textContent = msg;
+        els.toast.style.display = 'block';
+        
+        if (autoHide) {
+          setTimeout(() => {
+            if (els.toast) els.toast.style.display = 'none';
+          }, 3000);
+        }
+      } catch (err) {
+        console.error('Error in showToast:', err);
+      }
+    }
+    
+    function showSpinner() {
+      try {
+        if (els['spinner-container']) {
+          els['spinner-container'].style.display = 'flex';
+        }
+        
+        if (els.mainContent) {
+          els.mainContent.classList.add('hidden');
+        }
+      } catch (err) {
+        console.error('Error in showSpinner:', err);
+      }
+    }
+    
+    function hideSpinner() {
+      try {
+        if (els['spinner-container']) {
+          els['spinner-container'].style.display = 'none';
+        }
+      } catch (err) {
+        console.error('Error in hideSpinner:', err);
+      }
+    }
+    
+    function showMainContent() {
+      try {
+        if (els.mainContent) {
+          els.mainContent.classList.remove('hidden');
+        }
+      } catch (err) {
+        console.error('Error in showMainContent:', err);
+      }
+    }
+    
+    function showButtonProcessing(button) {
+      if (!button) return;
+      
+      try {
+        button.classList.add('button-processing');
+        button.disabled = true;
+      } catch (err) {
+        console.error('Error in showButtonProcessing:', err);
+      }
+    }
+    
+    function hideButtonProcessing(button) {
+      if (!button) return;
+      
+      try {
+        button.classList.remove('button-processing');
+        button.disabled = false;
+      } catch (err) {
+        console.error('Error in hideButtonProcessing:', err);
+      }
+    }
+    
+    function enableDebugMode() {
+      try {
+        debugMode = true;
+        
+        if (els.debugPanel) {
+          els.debugPanel.style.display = 'block';
+          els.debugPanel.textContent = "Debug Mode Enabled\n";
+        }
+        
+        // Add visual indicators for troubleshooting
+        ['addSection', 'updateSection', 'removeSection'].forEach(id => {
+          if (els[id]) {
+            els[id].classList.add('debug-outline');
+          }
+        });
+        
+        console.log("Debug mode enabled");
+      } catch (err) {
+        console.error('Error enabling debug mode:', err);
+      }
+    }
+    
+    function logDebug(...args) {
+      if (!debugMode) return;
+      
+      try {
+        console.log(...args);
+        
+        if (els.debugPanel) {
+          const timestamp = new Date().toLocaleTimeString();
+          let message = `[${timestamp}] `;
+          
+          for (const arg of args) {
+            if (typeof arg === 'object') {
+              message += JSON.stringify(arg) + " ";
+            } else {
+              message += arg + " ";
+            }
+          }
+          
+          els.debugPanel.textContent += message + "\n";
+          els.debugPanel.scrollTop = els.debugPanel.scrollHeight;
+        }
+      } catch (err) {
+        console.error('Error in logDebug:', err);
+      }
+    }
+  </script>
+</body>
+</html>
+

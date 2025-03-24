@@ -1,0 +1,1393 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    :root {
+      --primary-color: #1976d2;
+      --hover-color: #1565c0;
+      --text-color: #444;
+      --light-bg: #f9f9f9;
+      --border-color: #e0e0e0;
+      --success-color: #4caf50;
+      --warning-color: #ff9800;
+      --notes-color: #9c27b0;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 8px;
+      font-size: 13px;
+      color: var(--text-color);
+      overflow-x: hidden;
+      background-color: #fff;
+      contain: paint; /* Add containment for performance */
+    }
+    h3 {
+      margin-top: 0;
+      margin-bottom: 12px;
+      color: var(--primary-color);
+      font-size: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--primary-color);
+    }
+    h3 button {
+      background: transparent;
+      border: none;
+      color: var(--primary-color);
+      cursor: pointer;
+      font-size: 14px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      will-change: transform, background-color;
+      transition: all 0.2s ease;
+    }
+    h3 button:hover {
+      background: rgba(25, 118, 210, 0.1);
+    }
+    h3 button:disabled {
+      opacity: 0.6;
+      cursor: wait;
+    }
+    .refresh-icon {
+      display: inline-block;
+      transition: transform 0.5s ease-in-out;
+    }
+    .refreshing .refresh-icon {
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .filter-section {
+      background-color: #f5f5f5;
+      padding: 8px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .filter-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+    .filter-item {
+      display: flex;
+      align-items: center;
+      margin-right: 8px;
+      margin-bottom: 6px;
+    }
+    .filter-item label {
+      font-weight: bold;
+      margin-right: 4px;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    select, input, button {
+      font-size: 12px;
+      padding: 4px 6px;
+      border-radius: 3px;
+      border: 1px solid var(--border-color);
+    }
+    select {
+      max-width: 100px;
+      background-color: white;
+    }
+    #searchInput {
+      flex-grow: 1;
+      min-width: 80px;
+      background-color: white;
+    }
+    button {
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background: var(--hover-color);
+    }
+    #jobTable {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 6px;
+      table-layout: fixed;
+      font-size: 12px;
+    }
+    #jobTable th {
+      background: var(--primary-color);
+      color: #fff;
+      padding: 8px 6px;
+      text-align: left;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      font-size: 13px;
+      letter-spacing: 0.5px;
+      border-right: 1px solid rgba(255,255,255,0.2);
+    }
+    #jobTable th:last-child {
+      border-right: none;
+    }
+    #jobTable td {
+      border-bottom: 1px solid var(--border-color);
+      padding: 6px 4px;
+      vertical-align: middle;
+      word-break: break-word;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 0; /* Critical fix for proper text truncation */
+      position: relative; /* Ensure text stays in bounds */
+    }
+    #jobTable td:hover {
+      white-space: normal;
+      overflow: visible;
+    }
+    /* Column widths with improved proportions */
+    #jobTable th:nth-child(1), #jobTable td:nth-child(1) { width: 60%; } /* Job Name */
+    #jobTable th:nth-child(2), #jobTable td:nth-child(2) { width: 18%; } /* Status */
+    #jobTable th:nth-child(3), #jobTable td:nth-child(3) { width: 14%; text-align: center; } /* Notes */
+    #jobTable th:nth-child(4), #jobTable td:nth-child(4) { width: 8%; text-align: center; } /* Find */
+    
+    tr:nth-child(even) td {
+      background: var(--light-bg);
+    }
+    tr:hover td {
+      background-color: rgba(25, 118, 210, 0.05);
+    }
+    .job-row.done {
+      color: #999;
+      text-decoration: line-through;
+    }
+    .status-pending {
+      position: relative;
+      padding-left: 12px !important;
+    }
+    .status-pending::before {
+      content: "";
+      position: absolute;
+      left: 3px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 8px;
+      height: 8px;
+      background-color: var(--warning-color);
+      border-radius: 50%;
+    }
+    .status-done {
+      position: relative;
+      padding-left: 12px !important;
+    }
+    .status-done::before {
+      content: "";
+      position: absolute;
+      left: 3px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 8px;
+      height: 8px;
+      background-color: var(--success-color);
+      border-radius: 50%;
+    }
+    
+    /* Unified emoji styling for consistency */
+    .emoji-icon {
+      font-size: 16px;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+      width: 20px;
+      height: 20px;
+      text-align: center;
+    }
+    
+    /* Specific styling for note icons */
+    .note-icon {
+      font-size: 16px;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    
+    /* Better styling for the locate button */
+    .locate-btn {
+      background: #607d8b;
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      line-height: 24px;
+      font-size: 14px;
+      margin: 0 auto;
+      display: block;
+      text-align: center;
+      border-radius: 4px;
+      white-space: nowrap;
+      will-change: transform, background-color;
+      transition: transform 0.1s ease, background-color 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .locate-btn:hover {
+      background: #455a64;
+      transform: translateY(-1px);
+    }
+    .locate-btn:active {
+      transform: translateY(1px);
+    }
+    .locate-btn::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 5px;
+      height: 5px;
+      background: rgba(255, 255, 255, 0.5);
+      opacity: 0;
+      border-radius: 100%;
+      transform: scale(1, 1) translate(-50%, -50%);
+      transform-origin: 50% 50%;
+    }
+    .locate-btn:focus:not(:active)::after {
+      animation: ripple 0.6s ease-out;
+    }
+    @keyframes ripple {
+      0% {
+        transform: scale(0, 0) translate(-50%, -50%);
+        opacity: 0.5;
+      }
+      100% {
+        transform: scale(20, 20) translate(-50%, -50%);
+        opacity: 0;
+      }
+    }
+    
+    /* Ensure action column has fixed width and centered content */
+    #jobTable th:last-child, 
+    #jobTable td:last-child {
+      width: 30px;
+      padding: 4px 2px;
+      text-align: center;
+      vertical-align: middle;
+    }
+    .table-container {
+      max-height: 400px; /* Increased default height */
+      overflow-y: auto;
+      margin-top: 8px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      contain: content; /* Improve scrolling performance */
+      position: relative; /* For overlay positioning */
+    }
+    .table-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .table-overlay.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .overlay-content {
+      padding: 20px;
+      background: white;
+      border-radius: 4px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    .loading-spinner {
+      display: inline-block;
+      width: 30px;
+      height: 30px;
+      border: 3px solid rgba(25, 118, 210, 0.3);
+      border-radius: 50%;
+      border-top-color: var(--primary-color);
+      animation: spin 1s linear infinite;
+      margin-bottom: 10px;
+    }
+    #spinner {
+      text-align: center;
+      margin: 12px 0;
+      color: #666;
+    }
+    #toast {
+      display: none;
+      position: fixed;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.8);
+      color: #fff;
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      z-index: 9999;
+      max-width: 90%;
+      text-align: center;
+      animation: fadeIn 0.3s ease-in-out;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translate(-50%, 20px); }
+      to { opacity: 1; transform: translate(-50%, 0); }
+    }
+    .empty-state {
+      padding: 20px 10px;
+      text-align: center;
+      color: #777;
+    }
+    /* Better tooltips for any cell with long text */
+    .tooltip-cell {
+      position: relative;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      cursor: default;
+    }
+    .global-tooltip {
+      display: none;
+      position: fixed;
+      background: white;
+      border: 1px solid #ddd;
+      padding: 8px;
+      border-radius: 3px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      z-index: 1000;
+      max-width: 350px;
+      font-size: 12px;
+      line-height: 1.4;
+      word-break: break-word;
+      white-space: normal;
+      pointer-events: none;
+      transform: translateZ(0); /* Hardware acceleration for tooltip */
+      will-change: transform; /* Performance hint */
+      left: 0;
+      top: 0;
+      transition: opacity 0.15s ease-in-out;
+      opacity: 0;
+    }
+    /* Adding active state for buttons */
+    .action-btn:active {
+      transform: translateY(1px);
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);
+    }
+    #refreshBtn:active {
+      transform: translateY(1px);
+    }
+    @media (max-width: 300px) {
+      .filter-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .filter-item {
+        margin-right: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h3>
+    View Jobs
+    <button id="refreshBtn" title="Refresh"><span class="refresh-icon">↻</span> Refresh</button>
+  </h3>
+  
+  <div id="spinner">⏳ Loading jobs...</div>
+
+  <div id="controls" style="display:none;" class="filter-section">
+    <div class="filter-row">
+      <div class="filter-item">
+        <label for="statusFilter">Status:</label>
+        <select id="statusFilter"></select>
+      </div>
+    </div>
+    <div class="filter-row">
+      <div class="filter-item" style="flex-grow: 1;">
+        <label for="searchInput">Search:</label>
+        <input type="text" id="searchInput" placeholder="Job name..." />
+      </div>
+    </div>
+  </div>
+
+  <div class="table-container" id="tableContainer" style="display:none;">
+    <div id="tableOverlay" class="table-overlay">
+      <div class="overlay-content">
+        <div class="loading-spinner"></div>
+        <div>Updating jobs...</div>
+      </div>
+    </div>
+    <table id="jobTable">
+      <thead>
+        <tr id="jobTableHeader"></tr>
+      </thead>
+      <tbody id="jobTableBody"></tbody>
+    </table>
+  </div>
+
+  <div id="toast"></div>
+  <div id="globalTooltip" class="global-tooltip"></div>
+
+  <script>
+    // Use strict mode for better performance and error catching
+    'use strict';
+    
+    // Cache DOM elements to avoid repeated query selection
+    const els = {};
+    let config = {};
+    let currentJobs = [];
+    let tooltipTimer = null;
+    let debounceTimer = null;
+    let loadingTimer = null;
+    let isFirstLoad = true;
+    let cachedRows = new Map(); // Cache rendered rows by job name
+    let isRefreshing = false; // Track refresh state
+    
+    // Create a performance measurement tool
+    const perfTracker = {
+      marks: {},
+      startMark: function(name) {
+        this.marks[name] = Date.now();
+      },
+      endMark: function(name) {
+        if (!this.marks[name]) return 0;
+        const duration = Date.now() - this.marks[name];
+        delete this.marks[name];
+        return duration;
+      }
+    };
+
+    // Essential columns we want to display
+    const ESSENTIAL_COLUMNS = ["Job Name", "Status", "Notes"];
+
+    document.addEventListener('DOMContentLoaded', function() {
+      // Cache DOM elements immediately
+      cacheElements();
+      
+      // Setup unload handler
+      setupUnloadHandler();
+      
+      // Start pre-loading configuration in the background
+      preloadConfig();
+    });
+    
+    function cacheElements() {
+      // Cache DOM elements
+      ['spinner', 'controls', 'tableContainer', 'tableOverlay', 'statusFilter', 
+       'searchInput', 'refreshBtn', 'jobTableHeader', 'jobTableBody', 'toast', 
+       'globalTooltip'].forEach(id => {
+         els[id] = document.getElementById(id);
+       });
+    }
+    
+    function preloadConfig() {
+      // Set timeout to ensure UI is responsive first
+      setTimeout(() => {
+        google.script.run
+          .withSuccessHandler(setupConfig)
+          .withFailureHandler(function(err){
+            showToast("Error loading config: " + (err.message || err));
+            if (els.spinner) els.spinner.style.display = 'none';
+          })
+          .getConfig();
+      }, 0);
+    }
+
+    function setupConfig(conf) {
+      config = conf;
+      if (els.spinner) els.spinner.style.display = 'none';
+      if (els.controls) els.controls.style.display = 'block';
+
+      // Build the status filter
+      els.statusFilter.innerHTML = `<option value="">(All)</option>`;
+      (config.statuses || []).forEach(s => {
+        els.statusFilter.innerHTML += `<option value="${s}">${s}</option>`;
+      });
+      
+      // Add event listeners with debounce for better performance
+      els.statusFilter.addEventListener('change', filterJobs);
+      els.searchInput.addEventListener('input', debounceFunction(filterJobs, 300));
+      els.refreshBtn.addEventListener('click', refreshJobs);
+
+      // Setup event delegation for tooltips
+      setupTooltipDelegation();
+
+      // Pre-warm cache for faster response
+      prefetchJobs();
+    }
+    
+    // Enhanced refresh function with better visual feedback
+    function refreshJobs() {
+      if (isRefreshing) return; // Prevent multiple refreshes
+      
+      isRefreshing = true;
+      
+      // Visual feedback
+      const refreshBtn = els.refreshBtn;
+      if (refreshBtn) {
+        refreshBtn.classList.add('refreshing');
+        refreshBtn.disabled = true;
+      }
+      
+      // Show overlay if we already have data
+      if (!isFirstLoad && els.tableOverlay) {
+        els.tableOverlay.classList.add('active');
+      }
+      
+      // Clear any existing search
+      if (els.searchInput && els.searchInput.value) {
+        els.searchInput.value = '';
+      }
+      
+      // Reset status filter
+      if (els.statusFilter && els.statusFilter.value) {
+        els.statusFilter.value = '';
+      }
+      
+      // Cancel any pending cache and clear it
+      if (window.currentJobRequest && typeof window.currentJobRequest.cancel === 'function') {
+        window.currentJobRequest.cancel();
+      }
+      
+      // Clear the session storage cache to force refresh
+      try {
+        sessionStorage.removeItem('jobs_cache');
+        sessionStorage.removeItem('jobs_cache_timestamp');
+      } catch (e) {
+        console.warn('Cache clearing error', e);
+      }
+      
+      // Load fresh data
+      loadJobs(true);
+    }
+    
+    function prefetchJobs() {
+      // Use a Web Worker if available to avoid UI blocking
+      if (window.Worker) {
+        // We can't actually use a Worker in Apps Script environment,
+        // but we can simulate the effect with setTimeout
+        setTimeout(() => {
+          loadJobs();
+        }, 0);
+      } else {
+        // Fallback for browsers without Worker support
+        loadJobs();
+      }
+    }
+
+    function loadJobs(isForceRefresh = false) {
+      // Show spinner only on first load
+      if (isFirstLoad) {
+        if (els.spinner) els.spinner.style.display = 'block';
+      }
+      
+      // Cancel any previous requests
+      if (window.currentJobRequest && typeof window.currentJobRequest.cancel === 'function') {
+        window.currentJobRequest.cancel();
+      }
+      
+      // Optimize for small datasets - check local storage cache first
+      // Skip cache if this is a forced refresh
+      const cacheKey = 'jobs_cache';
+      let useCache = false;
+      
+      if (!isForceRefresh) {
+        const cachedData = sessionStorage.getItem(cacheKey);
+        const cachedTimestamp = sessionStorage.getItem(`${cacheKey}_timestamp`);
+        const now = Date.now();
+        
+        // Use cache if it's less than 30 seconds old
+        if (cachedData && cachedTimestamp && (now - parseInt(cachedTimestamp)) < 30000) {
+          try {
+            const response = JSON.parse(cachedData);
+            if (response.status === 'success' && response.jobs) {
+              processJobsData(response.jobs);
+              useCache = true;
+              
+              // Still fetch in background to update cache if not already refreshing
+              if (!isRefreshing) {
+                fetchJobsInBackground();
+              } else {
+                // If we're using cache during a refresh, we need to finish the refresh
+                finishRefresh();
+              }
+            }
+          } catch (e) {
+            console.error('Cache parsing error', e);
+            // Continue with normal fetch if cache fails
+          }
+        }
+      }
+      
+      // Skip the actual fetch if we used the cache
+      if (useCache) return;
+      
+      // Normal fetch with timeout
+      const timeoutMs = 10000; // 10 second timeout
+      let timeoutId;
+      
+      // Create request object with cancel method
+      window.currentJobRequest = {
+        cancel: function() {
+          if (timeoutId) clearTimeout(timeoutId);
+          // We can't actually cancel Apps Script, but we can ignore results
+          window.currentJobRequest.canceled = true;
+        },
+        canceled: false
+      };
+      
+      // Set timeout for slow responses
+      timeoutId = setTimeout(() => {
+        if (!window.currentJobRequest.canceled) {
+          if (isFirstLoad) {
+            showToast("Taking longer than expected to load jobs...", true);
+          } else if (isRefreshing) {
+            showToast("Refresh is taking longer than expected...", true);
+          }
+        }
+      }, 2000);
+      
+      google.script.run
+        .withSuccessHandler(function(response) {
+          // Ignore if request was canceled
+          if (window.currentJobRequest.canceled) return;
+          
+          clearTimeout(timeoutId);
+          
+          if (response.status === 'success') {
+            // Cache the result
+            try {
+              sessionStorage.setItem(cacheKey, JSON.stringify(response));
+              sessionStorage.setItem(`${cacheKey}_timestamp`, Date.now().toString());
+            } catch (e) {
+              console.warn('Cache storage error', e);
+            }
+            
+            processJobsData(response.jobs || []);
+            
+            // Show success message if this was a manual refresh
+            if (isRefreshing) {
+              showToast("Jobs refreshed successfully");
+              finishRefresh();
+            }
+          } else {
+            showToast(response.message || "Error loading jobs");
+            resetLoadingUI();
+            finishRefresh();
+          }
+        })
+        .withFailureHandler(function(err) {
+          // Ignore if request was canceled
+          if (window.currentJobRequest.canceled) return;
+          
+          clearTimeout(timeoutId);
+          showToast("Error loading jobs: " + (err.message || err));
+          resetLoadingUI();
+          finishRefresh();
+        })
+        .getJobs();
+    }
+    
+    // Helper to finish the refresh state
+    function finishRefresh() {
+      if (!isRefreshing) return;
+      
+      isRefreshing = false;
+      
+      // Reset refresh button
+      const refreshBtn = els.refreshBtn;
+      if (refreshBtn) {
+        refreshBtn.classList.remove('refreshing');
+        refreshBtn.disabled = false;
+      }
+      
+      // Hide overlay
+      if (els.tableOverlay) {
+        els.tableOverlay.classList.remove('active');
+      }
+    }
+    
+    function resetLoadingUI() {
+      // Reset UI elements after error
+      if (isFirstLoad) {
+        if (els.spinner) els.spinner.style.display = 'none';
+      }
+      
+      // Remove loading row if it exists
+      const loadingRow = document.getElementById('loadingRow');
+      if (loadingRow) loadingRow.remove();
+      
+      finishRefresh();
+    }
+    
+    function fetchJobsInBackground() {
+      // This function updates the cache without affecting the UI
+      google.script.run
+        .withSuccessHandler(function(response) {
+          if (response.status === 'success') {
+            // Just update the cache
+            const cacheKey = 'jobs_cache';
+            try {
+              sessionStorage.setItem(cacheKey, JSON.stringify(response));
+              sessionStorage.setItem(`${cacheKey}_timestamp`, Date.now().toString());
+            } catch (e) {
+              console.warn('Cache update error', e);
+            }
+          }
+        })
+        .getJobs();
+    }
+    
+    function processJobsData(jobs) {
+      // Store the jobs
+      currentJobs = jobs || [];
+      
+      // Reset UI state
+      if (isFirstLoad) {
+        if (els.spinner) els.spinner.style.display = 'none';
+        if (els.tableContainer) els.tableContainer.style.display = 'block';
+        isFirstLoad = false;
+      }
+      
+      // Small dataset optimization - for less than 20 rows, simplify rendering
+      if (jobs.length < 20) {
+        renderSimple(jobs);
+      } else {
+        renderJobs(jobs);
+      }
+      
+      filterJobs();
+    }
+    
+    function renderSimple(jobs) {
+      // Simplified rendering for small datasets
+      // Create header
+      let headerHtml = '';
+      ESSENTIAL_COLUMNS.forEach(field => {
+        if (field !== "Notes") {
+          headerHtml += `<th>${escapeHtml(field)}</th>`;
+        } else {
+          headerHtml += `<th style="text-align:center;">Note</th>`;
+        }
+      });
+      headerHtml += `<th style="width:30px; text-align:center; padding: 6px 4px;">Find</th>`;
+      
+      if (els.jobTableHeader) {
+        els.jobTableHeader.innerHTML = `<tr>${headerHtml}</tr>`;
+      }
+      
+      // Clear and rebuild body
+      if (els.jobTableBody) {
+        els.jobTableBody.innerHTML = '';
+        
+        // Create all rows at once for small datasets
+        const html = jobs.map(job => {
+          const jobName = String(job["Job Name"] || "");
+          const status = String(job["Status"] || "");
+          const statusVal = status.toLowerCase();
+          const statusClass = (statusVal === "done" || statusVal === "completed") ? "status-done" : "status-pending";
+          const hasNotes = job["Notes"] && String(job["Notes"]).trim() !== "";
+          const notesIcon = hasNotes ? "<span class='note-icon'>📝</span>" : "";
+          const notesTitle = hasNotes ? escapeHtml(String(job["Notes"])) : "No notes";
+          
+          return `
+          <tr class="job-row ${statusVal === "done" || statusVal === "completed" ? "done" : ""}" 
+              data-name="${jobName.toLowerCase()}" 
+              data-status="${statusVal}">
+            <td class="tooltip-cell" data-content="${escapeHtml(jobName)}">${escapeHtml(jobName)}</td>
+            <td class="${statusClass} tooltip-cell" data-content="${escapeHtml(status)}">${escapeHtml(status)}</td>
+            <td class="tooltip-cell" style="text-align:center;" data-content="${notesTitle}">${notesIcon}</td>
+            <td class="tooltip-cell" data-content="Find this job in spreadsheet">
+              <button class="action-btn locate-btn" onclick="locate('${escapeQuotes(jobName)}')"><span class='emoji-icon'>🔍</span></button>
+            </td>
+          </tr>`;
+        }).join('');
+        
+        els.jobTableBody.innerHTML = html || `<tr><td colspan="4" class="empty-state">No jobs found</td></tr>`;
+      }
+    }
+
+    function renderJobs(jobs) {
+      // Pre-compile templates for better performance
+      const rowTemplate = document.createElement('template');
+      
+      // Create header - simplified to just show essential columns
+      let headerHtml = '';
+      ESSENTIAL_COLUMNS.forEach(field => {
+        if (field !== "Notes") {
+          headerHtml += `<th>${escapeHtml(field)}</th>`;
+        } else {
+          headerHtml += `<th style="text-align:center;">Note</th>`;
+        }
+      });
+      // Add the Find column
+      headerHtml += `<th style="width:30px; text-align:center; padding: 6px 4px;">Find</th>`;
+      els.jobTableHeader.innerHTML = `<tr>${headerHtml}</tr>`;
+      
+      // Clear body
+      els.jobTableBody.innerHTML = '';
+      
+      // Create document fragment for better performance
+      const fragment = document.createDocumentFragment();
+      
+      // Check if we have jobs
+      if (!jobs || !jobs.length) {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td colspan="4" class="empty-state">No jobs found</td>`;
+        fragment.appendChild(row);
+        els.jobTableBody.appendChild(fragment);
+        return;
+      }
+
+      // Use virtual scrolling for large datasets to dramatically improve performance
+      const totalJobs = jobs.length;
+      
+      if (totalJobs <= 50) {
+        // For small datasets, render everything at once
+        renderJobBatch(jobs, fragment);
+        els.jobTableBody.appendChild(fragment);
+      } else {
+        // For large datasets, implement progressive loading with visual feedback
+        const initialBatchSize = 20;
+        const batchSize = 30;
+        const initialJobs = jobs.slice(0, initialBatchSize);
+        
+        // Render initial batch immediately
+        renderJobBatch(initialJobs, fragment);
+        
+        // Add a load more indicator row
+        const loadMoreRow = document.createElement('tr');
+        loadMoreRow.id = 'loadMoreRow';
+        loadMoreRow.innerHTML = `<td colspan="4" class="empty-state" style="background-color: #f5f5f5; cursor: pointer;">
+          Loading more jobs... (${initialBatchSize}/${totalJobs})
+        </td>`;
+        fragment.appendChild(loadMoreRow);
+        
+        els.jobTableBody.appendChild(fragment);
+        
+        // Set up progressive loading
+        let loadedCount = initialBatchSize;
+        let isLoading = false;
+        
+        const loadMoreJobs = () => {
+          if (isLoading || loadedCount >= totalJobs) return;
+          
+          isLoading = true;
+          const loadMoreRow = document.getElementById('loadMoreRow');
+          if (loadMoreRow) {
+            loadMoreRow.querySelector('td').textContent = `Loading more jobs... (${loadedCount}/${totalJobs})`;
+          }
+          
+          // Load next batch
+          setTimeout(() => {
+            const nextBatchEnd = Math.min(loadedCount + batchSize, totalJobs);
+            const nextBatch = jobs.slice(loadedCount, nextBatchEnd);
+            loadedCount = nextBatchEnd;
+            
+            const batchFragment = document.createDocumentFragment();
+            renderJobBatch(nextBatch, batchFragment);
+            
+            // Remove the load more row
+            if (loadMoreRow) {
+              loadMoreRow.remove();
+            }
+            
+            // Add the new batch
+            els.jobTableBody.appendChild(batchFragment);
+            
+            // Add a new load more row if needed
+            if (loadedCount < totalJobs) {
+              const newLoadMoreRow = document.createElement('tr');
+              newLoadMoreRow.id = 'loadMoreRow';
+              newLoadMoreRow.innerHTML = `<td colspan="4" class="empty-state" style="background-color: #f5f5f5; cursor: pointer;">
+                Click to load more jobs (${loadedCount}/${totalJobs})
+              </td>`;
+              newLoadMoreRow.onclick = loadMoreJobs;
+              els.jobTableBody.appendChild(newLoadMoreRow);
+            } else {
+              // We've loaded all jobs
+              showToast(`All ${totalJobs} jobs loaded`);
+            }
+            
+            isLoading = false;
+          }, 50);
+        };
+        
+        // Load the first batch automatically after a short delay
+        setTimeout(loadMoreJobs, 500);
+        
+        // Add scroll event listener to load more when scrolling near bottom
+        els.tableContainer.addEventListener('scroll', () => {
+          if (isLoading || loadedCount >= totalJobs) return;
+          
+          const scrollPos = els.tableContainer.scrollTop + els.tableContainer.clientHeight;
+          const scrollHeight = els.tableContainer.scrollHeight;
+          
+          // Load more when within 200px of the bottom
+          if (scrollHeight - scrollPos < 200) {
+            loadMoreJobs();
+          }
+        });
+      }
+    }
+    
+    function renderJobBatch(jobs, fragment) {
+      // Batch DOM operations by building all rows in memory first
+      jobs.forEach(job => {
+        const jobName = String(job["Job Name"] || "");
+        const jobKey = jobName.trim().toLowerCase();
+        
+        // Check if we already have this row cached
+        let row;
+        if (cachedRows.has(jobKey)) {
+          // Get cached row element and update status if needed
+          row = cachedRows.get(jobKey).cloneNode(true);
+          
+          // Check if status needs updating
+          const currentStatus = row.querySelector('td:nth-child(2)').textContent;
+          const newStatus = String(job["Status"] || "");
+          
+          if (currentStatus !== newStatus) {
+            // Update status if changed
+            const statusVal = newStatus.toLowerCase();
+            const statusClass = statusVal === "done" || statusVal === "completed" ? "status-done" : "status-pending";
+            const statusCell = row.querySelector('td:nth-child(2)');
+            
+            statusCell.className = `${statusClass} tooltip-cell`;
+            statusCell.textContent = newStatus;
+            statusCell.setAttribute('data-content', escapeHtml(newStatus));
+            
+            // Update row class if needed
+            if (statusVal === "done" || statusVal === "completed") {
+              row.classList.add('done');
+            } else {
+              row.classList.remove('done');
+            }
+          }
+          
+          // Update notes if needed
+          const hasNotes = job["Notes"] && String(job["Notes"]).trim() !== "";
+          const notesCell = row.querySelector('td:nth-child(3)');
+          const notesIcon = hasNotes ? "<span class='note-icon'>📝</span>" : "";
+          const notesTitle = hasNotes ? escapeHtml(String(job["Notes"])) : "No notes";
+          
+          notesCell.innerHTML = notesIcon;
+          notesCell.setAttribute('data-content', notesTitle);
+        } else {
+          // Create new row if not cached
+          row = document.createElement('tr');
+          row.classList.add('job-row');
+
+          const statusVal = String(job["Status"] || "").toLowerCase();
+          if (statusVal === "done" || statusVal === "completed") {
+            row.classList.add('done');
+          }
+          
+          // Add data attributes for filtering
+          row.dataset.name = jobName.toLowerCase();
+          row.dataset.status = statusVal;
+
+          // Optimized row creation - use DOM APIs instead of innerHTML for better performance
+          
+          // Job Name column
+          const nameCell = document.createElement('td');
+          nameCell.className = 'tooltip-cell';
+          nameCell.textContent = jobName;
+          nameCell.setAttribute('data-content', escapeHtml(jobName));
+          row.appendChild(nameCell);
+          
+          // Status column
+          const status = String(job["Status"] || "");
+          const statusClass = statusVal === "done" || statusVal === "completed" ? "status-done" : "status-pending";
+          const statusCell = document.createElement('td');
+          statusCell.className = `${statusClass} tooltip-cell`;
+          statusCell.textContent = status;
+          statusCell.setAttribute('data-content', escapeHtml(status));
+          row.appendChild(statusCell);
+          
+          // Notes indicator column
+          const hasNotes = job["Notes"] && String(job["Notes"]).trim() !== "";
+          const notesIcon = hasNotes ? "<span class='note-icon'>📝</span>" : "";
+          const notesTitle = hasNotes ? escapeHtml(String(job["Notes"])) : "No notes";
+          
+          const notesCell = document.createElement('td');
+          notesCell.className = 'tooltip-cell';
+          notesCell.style.textAlign = 'center';
+          notesCell.innerHTML = notesIcon;
+          notesCell.setAttribute('data-content', notesTitle);
+          row.appendChild(notesCell);
+          
+          // Find button column
+          const findCell = document.createElement('td');
+          findCell.className = 'tooltip-cell';
+          findCell.setAttribute('data-content', 'Find this job in spreadsheet');
+          
+          const findBtn = document.createElement('button');
+          findBtn.className = 'action-btn locate-btn';
+          findBtn.innerHTML = "<span class='emoji-icon'>🔍</span>";
+          findBtn.onclick = function() { locate(jobName); };
+          
+          findCell.appendChild(findBtn);
+          row.appendChild(findCell);
+          
+          // Cache the row for future use
+          cachedRows.set(jobKey, row.cloneNode(true));
+        }
+        
+        fragment.appendChild(row);
+      });
+    }
+
+    function filterJobs() {
+      const statusVal = els.statusFilter ? els.statusFilter.value.toLowerCase() : "";
+      const searchVal = els.searchInput ? els.searchInput.value.toLowerCase().trim() : "";
+      
+      // IMPORTANT: Always remove all empty state rows before filtering
+      removeEmptyStateRows();
+      
+      // Small dataset optimization - for fewer than 20 rows, don't use animation frames
+      if (currentJobs.length < 20) {
+        const rows = els.jobTableBody.querySelectorAll('.job-row');
+        let visibleCount = 0;
+        
+        rows.forEach(row => {
+          const rowStatus = row.dataset.status || "";
+          const rowName = row.dataset.name || "";
+          const matchStatus = (!statusVal) || rowStatus === statusVal;
+          const matchName = (!searchVal) || rowName.includes(searchVal);
+          const visible = matchStatus && matchName;
+          
+          row.style.display = visible ? '' : 'none';
+          if (visible) visibleCount++;
+        });
+        
+        handleEmptyState(visibleCount);
+        return;
+      }
+      
+      // For larger datasets, use optimized approach with requestAnimationFrame
+      requestAnimationFrame(() => {
+        const rows = els.jobTableBody.querySelectorAll('.job-row');
+        let visibleCount = 0;
+
+        // Process in chunks if there are many rows
+        const processRows = (startIdx, chunkSize) => {
+          const endIdx = Math.min(startIdx + chunkSize, rows.length);
+          
+          for (let i = startIdx; i < endIdx; i++) {
+            const row = rows[i];
+            const rowStatus = row.dataset.status || "";
+            const rowName = row.dataset.name || "";
+            const matchStatus = (!statusVal) || rowStatus === statusVal;
+            const matchName = (!searchVal) || rowName.includes(searchVal);
+            const visible = matchStatus && matchName;
+            
+            row.style.display = visible ? '' : 'none';
+            if (visible) visibleCount++;
+          }
+          
+          if (endIdx < rows.length) {
+            // Process next chunk in next animation frame
+            requestAnimationFrame(() => processRows(endIdx, chunkSize));
+          } else {
+            // All rows processed, handle empty state if needed
+            handleEmptyState(visibleCount);
+          }
+        };
+        
+        // Start processing rows in chunks (adjust chunk size based on perf testing)
+        processRows(0, 50);
+      });
+    }
+    
+    // Helper to ensure we remove all empty state rows
+    function removeEmptyStateRows() {
+      if (!els.jobTableBody) return;
+      
+      const emptyRows = els.jobTableBody.querySelectorAll('.empty-filter-row');
+      emptyRows.forEach(row => {
+        row.parentNode.removeChild(row);
+      });
+      
+      // Also look for any rows with text "No matching jobs found"
+      const allRows = els.jobTableBody.getElementsByTagName('tr');
+      for (let i = allRows.length - 1; i >= 0; i--) {
+        const row = allRows[i];
+        const cellText = row.textContent || '';
+        if (cellText.trim() === 'No matching jobs found') {
+          row.parentNode.removeChild(row);
+        }
+      }
+    }
+    
+    function handleEmptyState(visibleCount) {
+      if (visibleCount === 0 && currentJobs.length > 0) {
+        // First ensure there aren't already empty state rows
+        removeEmptyStateRows();
+        
+        // Then add a single empty state row
+        const emptyRow = document.createElement('tr');
+        emptyRow.classList.add('empty-filter-row');
+        emptyRow.innerHTML = `<td colspan="4" class="empty-state">
+          No matching jobs found
+        </td>`;
+        els.jobTableBody.appendChild(emptyRow);
+      }
+    }
+
+    function locate(jobName) {
+      // Visual feedback for the locate button
+      const allButtons = document.querySelectorAll('.locate-btn');
+      allButtons.forEach(btn => {
+        btn.disabled = true;
+        btn.style.opacity = '0.5';
+      });
+      
+      // Update the toast to show "Locating job..."
+      showToast("Locating job...", false);
+      
+      google.script.run
+        .withSuccessHandler(function(response){
+          // Re-enable buttons
+          allButtons.forEach(btn => {
+            btn.disabled = false;
+            btn.style.opacity = '1';
+          });
+          
+          // Check response format
+          const message = response.message || response;
+          
+          // Flash the row that was found
+          const rows = els.jobTableBody.querySelectorAll('.job-row');
+          rows.forEach(row => {
+            if (row.dataset.name === jobName.toLowerCase()) {
+              // Flash animation
+              row.style.transition = 'background-color 0.5s';
+              row.style.backgroundColor = '#e3f2fd';
+              setTimeout(() => {
+                row.style.backgroundColor = '';
+                setTimeout(() => {
+                  row.style.transition = '';
+                }, 500);
+              }, 1000);
+              
+              // Scroll to the row if needed
+              row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          });
+          
+          showToast(message);
+        })
+        .withFailureHandler(function(err){
+          // Re-enable buttons
+          allButtons.forEach(btn => {
+            btn.disabled = false;
+            btn.style.opacity = '1';
+          });
+          
+          showToast("Error locating job: " + (err.message || err));
+        })
+        .locateInSheet(jobName);
+    }
+    
+    // Define handleTooltipEvent in global scope so it can be referenced for removal
+    let handleTooltipEvent; 
+    
+    // Track whether event listeners have been initialized
+    let tooltipListenersActive = false;
+    
+    // Event delegation for tooltips with improved error handling
+    function setupTooltipDelegation() {
+      const tooltip = els.globalTooltip;
+      
+      // Define the event handler in a way that it can be accessed for removal
+      handleTooltipEvent = function(e) {
+        try {
+          // Bail early if tooltip isn't available
+          if (!tooltip) return;
+          
+          // Find the tooltip cell target if any
+          const cell = e.target ? e.target.closest('.tooltip-cell') : null;
+          
+          switch (e.type) {
+            case 'mouseover':
+              if (!cell) return;
+              
+              const content = cell.getAttribute('data-content');
+              if (!content) return;
+              
+              // Show tooltip
+              tooltip.textContent = content;
+              tooltip.style.display = 'block';
+              
+              // Clear any existing tooltip timer
+              if (tooltipTimer) clearTimeout(tooltipTimer);
+              
+              // Position tooltip
+              updateTooltipPosition(e);
+              break;
+              
+            case 'mousemove':
+              if (cell && tooltip.style.display === 'block') {
+                updateTooltipPosition(e);
+              }
+              break;
+              
+            case 'mouseout':
+              if (!cell) return;
+              
+              const relatedTarget = e.relatedTarget;
+              if (!cell.contains(relatedTarget) && (!tooltip || !tooltip.contains(relatedTarget))) {
+                // Add slight delay to prevent flicker
+                tooltipTimer = setTimeout(() => {
+                  if (tooltip) tooltip.style.display = 'none';
+                }, 100);
+              }
+              break;
+          }
+        } catch (err) {
+          console.error('Tooltip error:', err);
+        }
+      };
+      
+      // Only add listeners if not already active
+      if (!tooltipListenersActive) {
+        document.addEventListener('mouseover', handleTooltipEvent);
+        document.addEventListener('mousemove', handleTooltipEvent);
+        document.addEventListener('mouseout', handleTooltipEvent);
+        tooltipListenersActive = true;
+      }
+    }
+    
+    function updateTooltipPosition(e) {
+      // Position tooltip near cursor with offset
+      const tooltip = els.globalTooltip;
+      if (!tooltip) return;
+      
+      // Add a small delay to ensure tooltip stays visible
+      requestAnimationFrame(() => {
+        const x = e.clientX + 15;
+        const y = e.clientY + 15;
+        
+        // Keep tooltip in viewport
+        const rect = tooltip.getBoundingClientRect();
+        const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+        const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+        
+        const maxX = viewportWidth - rect.width - 10;
+        const maxY = viewportHeight - rect.height - 10;
+        
+        // Use transform for better performance instead of left/top
+        const posX = Math.min(x, maxX);
+        const posY = Math.min(y, maxY);
+        
+        tooltip.style.transform = `translate3d(${posX}px, ${posY}px, 0)`;
+        tooltip.style.left = '0';
+        tooltip.style.top = '0';
+        tooltip.style.opacity = '1'; // Ensure opacity is set
+      });
+    }
+    
+    // Clean up when sidebar is closed (prevent memory leaks)
+    function cleanupEventListeners() {
+      try {
+        if (tooltipListenersActive && typeof handleTooltipEvent === 'function') {
+          document.removeEventListener('mouseover', handleTooltipEvent);
+          document.removeEventListener('mousemove', handleTooltipEvent);
+          document.removeEventListener('mouseout', handleTooltipEvent);
+          tooltipListenersActive = false;
+        }
+      } catch (err) {
+        console.error('Error removing event listeners:', err);
+      }
+    }
+    
+    // Safe cleanup on unload
+    function setupUnloadHandler() {
+      window.addEventListener('unload', function() {
+        try {
+          // Clear cached rows to free memory if available
+          if (cachedRows && typeof cachedRows.clear === 'function') {
+            cachedRows.clear();
+          }
+          
+          // Clear timers safely
+          if (debounceTimer) clearTimeout(debounceTimer);
+          if (tooltipTimer) clearTimeout(tooltipTimer);
+          if (loadingTimer) clearTimeout(loadingTimer);
+          
+          // Clear cached references
+          if (els) {
+            for (let key in els) {
+              if (els.hasOwnProperty(key)) {
+                els[key] = null;
+              }
+            }
+          }
+          
+          // Remove event listeners
+          if (typeof cleanupEventListeners === 'function') {
+            cleanupEventListeners();
+          }
+        } catch (err) {
+          // We can't log here as the page is unloading, but this prevents crashes
+        }
+      });
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>'"]/g, c => {
+        const map = { '&':'&amp;', '<':'&lt;', '>':'&gt;', '\'':'&#39;', '"':'&quot;' };
+        return map[c];
+      });
+    }
+    
+    function escapeQuotes(str) {
+      return String(str).replace(/'/g, "\\'");
+    }
+    
+    function showToast(msg, autoHide = true) {
+      const t = els.toast;
+      if (!t) return;
+      
+      t.textContent = msg;
+      t.style.display = 'block';
+      
+      if (autoHide) {
+        setTimeout(() => { 
+          if (t) t.style.display = 'none'; 
+        }, 3000);
+      }
+    }
+    
+    // Debounce helper function for input events
+    function debounceFunction(func, delay) {
+      return function() {
+        const context = this;
+        const args = arguments;
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => func.apply(context, args), delay);
+      };
+    }
+  </script>
+</body>
+</html>
+

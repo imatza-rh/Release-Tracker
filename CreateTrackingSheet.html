@@ -729,9 +729,8 @@
       
       <label for="defaultJobsSource">Job Source:</label>
       <select id="defaultJobsSource" onchange="toggleJobSource()">
-        <option value="blank">Create empty sheet (headers only)</option>
-        <option value="DefaultJobs">Use DefaultJobs sheet</option>
         <option value="manual">Enter jobs below</option>
+        <option value="DefaultJobs">Use DefaultJobs sheet</option>
       </select>
       
       <div id="defaultJobsInfo" style="display: none;" class="action-area">
@@ -778,14 +777,39 @@ Review code changes"></textarea>
       </div>
       
       <div class="info-box">
-        <div class="info-title"><span class="icon">📌</span> URL Tips</div>
-        <ul>
-          <li>Both HTTP and HTTPS protocols are supported</li>
-          <li>You can include or exclude trailing slashes - we'll handle it</li>
-          <li>For Jenkins: if your URL already includes "/job", we'll detect it</li>
-          <li>For Jira: if your URL already includes "/browse", we'll detect it</li>
-          <li>Leaving URLs empty will use plain text (no hyperlinks)</li>
+        <div class="info-title"><span class="icon">💡</span> URL Tips</div>
+        <ul style="padding-left: 20px; margin-top: 10px;">
+          <li style="margin-bottom: 8px; display: flex; align-items: baseline; gap: 5px;">
+            <span style="color: #1976d2; font-size: 16px;">•</span>
+            <span>Both <strong>HTTP</strong> and <strong>HTTPS</strong> protocols are supported</span>
+          </li>
+          <li style="margin-bottom: 8px; display: flex; align-items: baseline; gap: 5px;">
+            <span style="color: #1976d2; font-size: 16px;">•</span>
+            <span>You can include or exclude trailing slashes - we'll handle it</span>
+          </li>
+          <li style="margin-bottom: 8px; display: flex; align-items: baseline; gap: 5px;">
+            <span style="color: #1976d2; font-size: 16px;">•</span>
+            <span>For <strong>Jenkins</strong>: if your URL already includes "/job", we'll detect it</span>
+          </li>
+          <li style="margin-bottom: 8px; display: flex; align-items: baseline; gap: 5px;">
+            <span style="color: #1976d2; font-size: 16px;">•</span>
+            <span>For <strong>Jira</strong>: if your URL already includes "/browse", we'll detect it</span>
+          </li>
+          <li style="margin-bottom: 8px; display: flex; align-items: baseline; gap: 5px;">
+            <span style="color: #1976d2; font-size: 16px;">•</span>
+            <span>Leaving URLs empty will use plain text (no hyperlinks)</span>
+          </li>
         </ul>
+        
+        <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #d0e5fa;">
+          <div style="font-weight: 500; color: #0d47a1; margin-bottom: 6px;">Examples:</div>
+          <div style="background-color: white; padding: 8px; border-radius: 4px; border: 1px solid #d0e5fa; font-family: monospace; margin-bottom: 6px;">
+            <span style="color: #0d47a1;">Jenkins:</span> https://jenkins.example.com
+          </div>
+          <div style="background-color: white; padding: 8px; border-radius: 4px; border: 1px solid #d0e5fa; font-family: monospace;">
+            <span style="color: #0d47a1;">Jira:</span> https://jira.example.com
+          </div>
+        </div>
       </div>
     </div>
     
@@ -1419,9 +1443,28 @@ Review code changes"></textarea>
         document.getElementById("defaultJobsInfo").style.display = "block";
         // Check DefaultJobs existence when this option is selected
         checkDefaultJobsSheet();
+        
+        // If the sheet exists, try to activate it
+        if (defaultJobsSheetExists) {
+          activateDefaultJobsSheet();
+        }
       } else if (source === "manual") {
         document.getElementById("manualJobsInput").style.display = "block";
       }
+    }
+    
+    // Add this new function to switch to the DefaultJobs sheet
+    function activateDefaultJobsSheet() {
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result && result.status === 'success') {
+            console.log('DefaultJobs sheet activated');
+          }
+        })
+        .withFailureHandler(function(error) {
+          console.error('Failed to activate DefaultJobs sheet:', error);
+        })
+        .activateSheet('DefaultJobs');
     }
     
     function loadSettings() {
@@ -1468,7 +1511,7 @@ Review code changes"></textarea>
         return;
       }
       
-      const source = document.getElementById("defaultJobsSource").value;
+      let source = document.getElementById("defaultJobsSource").value;
       
       // Get manual job list if needed
       let manualJobs = [];
@@ -1476,6 +1519,11 @@ Review code changes"></textarea>
         const jobsList = document.getElementById("manualJobsList").value;
         if (jobsList.trim()) {
           manualJobs = jobsList.trim().split('\n').map(job => job.trim()).filter(job => job);
+        }
+        
+        // If manual is selected but no jobs are entered, treat it as a blank sheet
+        if (manualJobs.length === 0) {
+          source = "blank"; // We'll still handle the "blank" case in the backend
         }
       }
       

@@ -478,6 +478,34 @@
       margin-bottom: 10px;
     }
     
+    /* Action button styles */
+    .action-btn {
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 13px;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .action-btn:hover {
+      background: var(--hover-color);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+    
+    .action-btn:active {
+      transform: translateY(1px);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+    
     /* Better tooltips for any cell with long text */
     .tooltip-cell {
       position: relative;
@@ -508,32 +536,6 @@
       opacity: 0;
       box-shadow: 0 4px 15px rgba(0,0,0,0.15);
       border: 1px solid #f0f0f0;
-    }
-    
-    /* Action button styling */
-    .action-btn {
-      border-radius: 6px;
-      padding: 5px 12px;
-      background: var(--primary-color);
-      color: white;
-      border: none;
-      cursor: pointer;
-      transition: all 0.2s;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    
-    .action-btn:hover {
-      background: var(--hover-color);
-      transform: translateY(-1px);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    }
-    
-    .action-btn:active {
-      transform: translateY(1px);
-      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
     }
     
     /* Add a more modern scrollbar */
@@ -996,7 +998,6 @@
     }
     
     function renderSimple(jobs) {
-      // Simplified rendering for small datasets
       // Create header
       let headerHtml = '';
       ESSENTIAL_COLUMNS.forEach(field => {
@@ -1022,8 +1023,13 @@
             <tr>
               <td colspan="4" class="empty-state">
                 <div class="empty-state-icon">📋</div>
-                <div>No jobs found</div>
-                <div style="font-size: 12px; color: #9e9e9e;">Try changing your filters or refreshing</div>
+                <div style="font-size: 16px; font-weight: 500; margin-bottom: 10px; color: #666;">No jobs found</div>
+                <div style="color: #888;">
+                  Create a new job using the "Manage Jobs" option<br>or refresh to update the list
+                </div>
+                <button onclick="refreshJobs()" class="action-btn" style="margin-top: 15px; padding: 8px 16px;">
+                  <span class="refresh-icon">↻</span> Refresh
+                </button>
               </td>
             </tr>`;
           return;
@@ -1085,8 +1091,13 @@
         row.innerHTML = `
           <td colspan="4" class="empty-state">
             <div class="empty-state-icon">📋</div>
-            <div>No jobs found</div>
-            <div style="font-size: 12px; color: #9e9e9e;">Try changing your filters or refreshing</div>
+            <div style="font-size: 16px; font-weight: 500; margin-bottom: 10px; color: #666;">No jobs found</div>
+            <div style="color: #888;">
+              Create a new job using the "Manage Jobs" option<br>or refresh to update the list
+            </div>
+            <button onclick="refreshJobs()" class="action-btn" style="margin-top: 15px; padding: 8px 16px;">
+              <span class="refresh-icon">↻</span> Refresh
+            </button>
           </td>`;
         fragment.appendChild(row);
         els.jobTableBody.appendChild(fragment);
@@ -1399,17 +1410,27 @@
         // First ensure there aren't already empty state rows
         removeEmptyStateRows();
         
-        // Then add a single empty state row
+        // Then add a single empty state row with improved styling
         const emptyRow = document.createElement('tr');
         emptyRow.classList.add('empty-filter-row');
         emptyRow.innerHTML = `
           <td colspan="4" class="empty-state">
             <div class="empty-state-icon">🔍</div>
-            <div>No matching jobs found</div>
-            <div style="font-size: 12px; color: #9e9e9e;">Try changing your search or filters</div>
+            <div style="font-size: 16px; font-weight: 500; margin-bottom: 10px; color: #666;">No matching jobs found</div>
+            <div style="color: #888;">Try changing your search criteria or filters</div>
+            <button onclick="resetFilters()" class="action-btn" style="margin-top: 15px; padding: 8px 16px;">
+              <span>✖</span> Clear Filters
+            </button>
           </td>`;
         els.jobTableBody.appendChild(emptyRow);
       }
+    }
+    
+    // Add this new helper function to reset filters
+    function resetFilters() {
+      if (els.statusFilter) els.statusFilter.value = '';
+      if (els.searchInput) els.searchInput.value = '';
+      filterJobs();
     }
 
     function locate(jobName) {

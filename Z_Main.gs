@@ -48,3 +48,36 @@ function manuallyCheckPhases() {
     return { error: error.message || String(error) };
   }
 }
+
+/**
+ * Activates a specified sheet by name
+ * 
+ * @param {string} sheetName - Name of the sheet to activate
+ * @returns {Object} Result object indicating success or failure
+ */
+function activateSheet(sheetName) {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName(sheetName);
+    
+    if (!sheet) {
+      return {
+        status: 'error',
+        message: `Sheet "${sheetName}" not found`
+      };
+    }
+    
+    ss.setActiveSheet(sheet);
+    
+    return {
+      status: 'success',
+      message: `Sheet "${sheetName}" activated`
+    };
+  } catch (error) {
+    handleError('activateSheet', error, false);
+    return {
+      status: 'error',
+      message: `Error activating sheet: ${error.message || error}`
+    };
+  }
+}

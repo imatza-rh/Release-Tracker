@@ -61,6 +61,7 @@
       border: 1px solid var(--border-color);
       border-bottom: none;
       border-radius: 4px 4px 0 0;
+      transition: all 0.2s ease;
     }
     
     .tab-button.active {
@@ -69,6 +70,10 @@
       color: var(--primary-color);
       border-bottom: 3px solid white;
       margin-bottom: -2px;
+    }
+    
+    .tab-button:hover:not(.active) {
+      background: #e5e5e5;
     }
     
     .tab-content {
@@ -100,6 +105,7 @@
       padding: 8px;
       border: 1px solid var(--border-color);
       border-radius: 4px;
+      transition: border-color 0.2s, box-shadow 0.2s;
     }
     
     select:focus, input:focus, textarea:focus {
@@ -131,12 +137,18 @@
 
     .field-description {
       margin-bottom: 15px;
+      line-height: 1.4;
     }
 
     .field-item {
       display: flex;
       align-items: center;
       margin-bottom: 10px;
+      transition: transform 0.1s ease-in-out;
+    }
+    
+    .field-item:hover {
+      transform: translateY(-1px);
     }
 
     .text-input {
@@ -155,6 +167,12 @@
       border: 1px solid #ccc;
       margin-right: 10px;
       cursor: pointer;
+      transition: transform 0.2s;
+    }
+    
+    .color-box:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 5px rgba(0,0,0,0.2);
     }
 
     .remove-btn {
@@ -166,6 +184,11 @@
       border-radius: 4px;
       font-size: 16px;
       cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    
+    .remove-btn:hover {
+      background: #5a6268;
     }
 
     .add-btn {
@@ -178,6 +201,15 @@
       margin-top: 10px;
       display: inline-flex;
       align-items: center;
+      transition: background-color 0.2s, transform 0.1s;
+    }
+    
+    .add-btn:hover {
+      background: #5a6268;
+    }
+    
+    .add-btn:active {
+      transform: translateY(1px);
     }
 
     /* Color Picker (Google Sheets Style) */
@@ -190,6 +222,7 @@
       padding: 10px;
       z-index: 1000;
       width: 240px;
+      border-radius: 4px;
     }
 
     .color-picker-title {
@@ -212,6 +245,12 @@
       border-radius: 50%;
       cursor: pointer;
       position: relative;
+      transition: transform 0.15s ease;
+    }
+    
+    .color-cell:hover {
+      transform: scale(1.2);
+      z-index: 1;
     }
 
     .color-cell.selected::after {
@@ -268,6 +307,15 @@
       cursor: pointer;
       margin-top: 10px;
       font-size: 13px;
+      transition: background-color 0.2s, transform 0.1s;
+    }
+    
+    .create-default-btn:hover {
+      background-color: var(--hover-color);
+    }
+    
+    .create-default-btn:active {
+      transform: translateY(1px);
     }
 
     /* Success/Error Dialogs */
@@ -291,6 +339,12 @@
       box-shadow: 0 4px 12px rgba(0,0,0,0.2);
       padding: 20px;
       text-align: center;
+      animation: dialogFadeIn 0.3s ease forwards;
+    }
+    
+    @keyframes dialogFadeIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     .dialog-icon {
@@ -316,6 +370,11 @@
       border-radius: 4px;
       cursor: pointer;
       font-size: 14px;
+      transition: background-color 0.2s;
+    }
+    
+    .dialog-button:hover {
+      background-color: var(--hover-color);
     }
 
     /* Loading Overlay */
@@ -370,6 +429,11 @@
       border: none;
       cursor: pointer;
       font-size: 14px;
+      transition: background-color 0.2s, transform 0.1s;
+    }
+    
+    button:active {
+      transform: translateY(1px);
     }
     
     .btn-primary {
@@ -385,10 +449,18 @@
       background-color: var(--success-color);
       color: white;
     }
+    
+    .btn-success:hover {
+      background-color: #218838;
+    }
 
     .btn-secondary {
       background-color: #6c757d;
       color: white;
+    }
+    
+    .btn-secondary:hover {
+      background-color: #5a6268;
     }
     
     /* Helper text */
@@ -419,6 +491,11 @@
     }
 
     .field-checkbox input[type="checkbox"] {
+      width: auto;
+      margin: 0;
+    }
+
+    .field-checkbox input[type="radio"] {
       width: auto;
       margin: 0;
     }
@@ -483,6 +560,17 @@
       align-items: center;
       justify-content: center;
       font-size: 20px;
+    }
+    
+    /* Sample color block in descriptions */
+    .color-sample {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      margin-right: 2px;
+      border-radius: 2px;
+      border: 1px solid #ccc;
+      vertical-align: middle;
     }
   </style>
 </head>
@@ -567,6 +655,7 @@ Review code changes"></textarea>
           <li>You can include or exclude trailing slashes - we'll handle it</li>
           <li>For Jenkins: if your URL already includes "/job", we'll detect it</li>
           <li>For Jira: if your URL already includes "/browse", we'll detect it</li>
+          <li>Leaving URLs empty will use plain text (no hyperlinks)</li>
         </ul>
       </div>
     </div>
@@ -575,8 +664,23 @@ Review code changes"></textarea>
     <div id="tab-fields" class="tab-content">
       <p>Customize the fields and dropdown options for your tracking sheet.</p>
       
-      <!-- Field Selection Section -->
+      <!-- Field Selection Strategy Section -->
       <div class="field-section">
+        <div class="status-header">Fields Setup Strategy</div>
+        <div id="fields-strategy" class="field-selections">
+          <div class="field-checkbox">
+            <input type="radio" id="strategy-standard" name="fields-strategy" checked onchange="updateFieldStrategy('standard')">
+            <label for="strategy-standard">Use standard fields + custom fields</label>
+          </div>
+          <div class="field-checkbox">
+            <input type="radio" id="strategy-custom" name="fields-strategy" onchange="updateFieldStrategy('custom')">
+            <label for="strategy-custom">Use fully customized fields</label>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Standard Fields Section -->
+      <div class="field-section" id="standard-fields-section">
         <div class="status-header">Standard Fields</div>
         <div class="field-description">Select which standard fields to include in your tracking sheet.</div>
         <div id="field-selections" class="field-selections">
@@ -614,7 +718,9 @@ Review code changes"></textarea>
       <!-- Custom Fields Section -->
       <div class="field-section">
         <div class="status-header">Custom Fields</div>
-        <div class="field-description">Add your own custom fields to the tracking sheet.</div>
+        <div class="field-description" id="custom-fields-description">
+          Add your own custom fields to the tracking sheet. These will be added in addition to the selected standard fields above.
+        </div>
         <div id="custom-fields-container" class="custom-fields-section">
           <!-- Custom fields will be added here dynamically -->
           <div class="custom-field-row">
@@ -627,7 +733,13 @@ Review code changes"></textarea>
       <!-- Status Options -->
       <div class="field-section" id="status-section">
         <div class="status-header">Status Options</div>
-        <div class="field-description">Define status options to track job progress.</div>
+        <div class="field-description">
+          Define status options to track job progress. 
+          Cells will be colored based on your selected colors
+          (e.g., <span class="color-sample" style="background-color:#3d85c6"></span> Pending, 
+          <span class="color-sample" style="background-color:#f1c232"></span> In-Progress,
+          <span class="color-sample" style="background-color:#6aa84f"></span> Done).
+        </div>
         <div id="status-items"></div>
         <button onclick="addFieldOption('status')" class="add-btn">+ Add Status</button>
       </div>
@@ -635,7 +747,13 @@ Review code changes"></textarea>
       <!-- Type Options -->
       <div class="field-section" id="type-section">
         <div class="type-header">Job Type Options</div>
-        <div class="field-description">Define different types of jobs you want to track.</div>
+        <div class="field-description">
+          Define different types of jobs you want to track.
+          Cells will be colored based on your selected colors
+          (e.g., <span class="color-sample" style="background-color:#e69138"></span> Build,
+          <span class="color-sample" style="background-color:#674ea7"></span> Test,
+          <span class="color-sample" style="background-color:#3d85c6"></span> Deploy).
+        </div>
         <div id="type-items"></div>
         <button onclick="addFieldOption('type')" class="add-btn">+ Add Type</button>
       </div>
@@ -643,7 +761,13 @@ Review code changes"></textarea>
       <!-- Priority Options -->
       <div class="field-section" id="priority-section">
         <div class="priority-header">Priority Options</div>
-        <div class="field-description">Define priority levels for your jobs.</div>
+        <div class="field-description">
+          Define priority levels for your jobs.
+          Cells will be colored based on your selected colors
+          (e.g., <span class="color-sample" style="background-color:#e06666"></span> High,
+          <span class="color-sample" style="background-color:#f1c232"></span> Medium,
+          <span class="color-sample" style="background-color:#6aa84f"></span> Low).
+        </div>
         <div id="priority-items"></div>
         <button onclick="addFieldOption('priority')" class="add-btn">+ Add Priority</button>
       </div>
@@ -842,6 +966,34 @@ Review code changes"></textarea>
       document.getElementById('status-section').style.display = statusEnabled ? 'block' : 'none';
       document.getElementById('type-section').style.display = typeEnabled ? 'block' : 'none';
       document.getElementById('priority-section').style.display = priorityEnabled ? 'block' : 'none';
+    }
+    
+    // Controls the field strategy (standard vs custom)
+    function updateFieldStrategy(strategy) {
+      if (strategy === 'standard') {
+        // Standard mode: Show standard fields section
+        document.getElementById('standard-fields-section').style.display = 'block';
+        document.getElementById('custom-fields-description').textContent = 
+          'Add your own custom fields to the tracking sheet. These will be added in addition to the selected standard fields above.';
+      } else if (strategy === 'custom') {
+        // Custom mode: Hide standard fields section
+        document.getElementById('standard-fields-section').style.display = 'none';
+        document.getElementById('custom-fields-description').textContent = 
+          'Define all fields for your tracking sheet. "Job Name" will automatically be included as the first field.';
+        
+        // Ensure there are enough rows to define fields
+        ensureCustomFieldRows(3); // Ensure at least 3 rows for custom fields
+      }
+    }
+    
+    function ensureCustomFieldRows(minCount) {
+      const container = document.getElementById('custom-fields-container');
+      const currentRows = container.querySelectorAll('.custom-field-row').length;
+      
+      // Add rows if needed
+      for (let i = currentRows; i < minCount; i++) {
+        addCustomFieldRow();
+      }
     }
     
     // Add a new custom field input row
@@ -1142,14 +1294,6 @@ Review code changes"></textarea>
         let jenkinsUrl = settings.jenkinsUrl || "";
         let jiraUrl = settings.jiraUrl || "";
         
-        if (jenkinsUrl.endsWith('/')) {
-          jenkinsUrl = jenkinsUrl.slice(0, -1);
-        }
-        
-        if (jiraUrl.endsWith('/')) {
-          jiraUrl = jiraUrl.slice(0, -1);
-        }
-        
         document.getElementById("jenkinsUrl").value = jenkinsUrl;
         document.getElementById("jiraUrl").value = jiraUrl;
       }
@@ -1195,6 +1339,28 @@ Review code changes"></textarea>
       const formatAsTable = document.getElementById("formatAsTable").checked;
       const freezeHeaders = document.getElementById("freezeHeaders").checked;
       
+      // Determine field strategy
+      const useCustomFieldsOnly = document.getElementById("strategy-custom").checked;
+      
+      // Collect selected fields
+      let selectedFields = ['Job Name']; // Job Name is always required
+      
+      if (!useCustomFieldsOnly) {
+        // Add standard fields if they're selected
+        if (document.getElementById('field-status').checked) selectedFields.push('Status');
+        if (document.getElementById('field-type').checked) selectedFields.push('Type');
+        if (document.getElementById('field-priority').checked) selectedFields.push('Priority');
+        if (document.getElementById('field-notes').checked) selectedFields.push('Notes');
+        if (document.getElementById('field-joblink').checked) selectedFields.push('Job Link');
+        if (document.getElementById('field-jiraticket').checked) selectedFields.push('Jira Ticket');
+      }
+      
+      // Add custom fields
+      const customFields = getCustomFields();
+      if (customFields.length > 0) {
+        selectedFields.push(...customFields);
+      }
+      
       // Collect field options
       const fieldOptions = {
         statuses: getFieldValues('status'),
@@ -1202,26 +1368,9 @@ Review code changes"></textarea>
         priorities: getFieldValues('priority'),
         statusColors: getFieldColors('status'),
         typeColors: getFieldColors('type'),
-        priorityColors: getFieldColors('priority')
+        priorityColors: getFieldColors('priority'),
+        selectedFields: selectedFields
       };
-      
-      // Collect selected fields
-      const selectedFields = ['Job Name']; // Job Name is always required
-      if (document.getElementById('field-status').checked) selectedFields.push('Status');
-      if (document.getElementById('field-type').checked) selectedFields.push('Type');
-      if (document.getElementById('field-priority').checked) selectedFields.push('Priority');
-      if (document.getElementById('field-notes').checked) selectedFields.push('Notes');
-      if (document.getElementById('field-joblink').checked) selectedFields.push('Job Link');
-      if (document.getElementById('field-jiraticket').checked) selectedFields.push('Jira Ticket');
-      
-      // Add custom fields if any
-      const customFields = getCustomFields();
-      if (customFields.length > 0) {
-        selectedFields.push(...customFields);
-      }
-      
-      // Add selected fields to fieldOptions
-      fieldOptions.selectedFields = selectedFields;
       
       // Validate required field options
       if (document.getElementById('field-status').checked && fieldOptions.statuses.length === 0) {
@@ -1370,18 +1519,6 @@ Review code changes"></textarea>
       }
       
       return colors;
-    }
-    
-    function onCreateSuccess(result) {
-      showLoading(false);
-      showSuccessDialog(result.message || 'Tracking sheet created successfully!', function() {
-        google.script.host.close();
-      });
-    }
-    
-    function onCreateFailure(error) {
-      showLoading(false);
-      showErrorDialog('Failed to create tracking sheet: ' + error);
     }
     
     function showLoading(show) {

@@ -57,6 +57,24 @@ function saveIntegrationSettings(settings) {
 }
 
 /**
+ * Creates a direct hyperlink in Google Sheets format
+ * 
+ * @param {string} url - The URL to link to
+ * @param {string} text - The display text for the hyperlink
+ * @returns {string} A Google Sheets HYPERLINK formula
+ */
+function createDirectHyperlink(url, text) {
+  if (!url || !text) return text || '';
+  
+  // Escape double quotes (they need to be doubled in Sheets formulas)
+  const escapedUrl = url.replace(/"/g, '""');
+  const escapedText = text.replace(/"/g, '""');
+  
+  // Create the formula
+  return `=HYPERLINK("${escapedUrl}","${escapedText}")`;
+}
+
+/**
  * Creates a hyperlink for a Jenkins job
  * 
  * @param {string} jobName - Name of the Jenkins job
@@ -71,7 +89,7 @@ function createJenkinsJobLink(jobName) {
     
     if (!baseUrl) return jobName;
     
-    // Clean and normalize the base URL first
+    // Clean and normalize the base URL 
     baseUrl = baseUrl.trim();
     if (!baseUrl.startsWith('http://') && !baseUrl.startsWith('https://')) {
       baseUrl = 'https://' + baseUrl;
@@ -82,33 +100,18 @@ function createJenkinsJobLink(jobName) {
       baseUrl = baseUrl.slice(0, -1);
     }
     
-    // Determine the correct path to add
-    let finalUrl = baseUrl;
-    const lowerUrl = baseUrl.toLowerCase();
-    
-    // Check if URL already contains "/job" pattern
-    if (lowerUrl.includes('/job/') || lowerUrl.endsWith('/job')) {
-      // If URL ends with /job, add another slash
-      if (lowerUrl.endsWith('/job')) {
-        finalUrl += '/';
-      }
-    } else {
-      // Otherwise add /job/ path
-      finalUrl += '/job/';
+    // Add /job/ path consistently
+    if (!baseUrl.toLowerCase().includes('/job/')) {
+      baseUrl += '/job/';
+    } else if (baseUrl.toLowerCase().endsWith('/job')) {
+      baseUrl += '/';
     }
     
-    // Add encoded job name
-    finalUrl += encodeURIComponent(jobName);
+    // Create the final URL
+    const finalUrl = baseUrl + encodeURIComponent(jobName);
     
-    // DEBUG log the final URL to ensure it's correct
-    log(`Jenkins URL generated: ${finalUrl}`, LOG_LEVELS.DEBUG);
-    
-    // Create a hyperlink formula with proper quote escaping for the URL
-    // Use double quotes for the formula and escaped double quotes for attributes
-    const escapedUrl = finalUrl.replace(/"/g, '""');
-    const escapedJobName = jobName.replace(/"/g, '""');
-    
-    return `=HYPERLINK("${escapedUrl}","${escapedJobName}")`;
+    // Create a direct hyperlink formula
+    return createDirectHyperlink(finalUrl, jobName);
   } catch (error) {
     log('Error creating Jenkins link', LOG_LEVELS.ERROR, error);
     return jobName;
@@ -130,7 +133,7 @@ function createJiraTicketLink(ticketId) {
     
     if (!baseUrl) return ticketId;
     
-    // Clean and normalize the base URL first
+    // Clean and normalize the base URL
     baseUrl = baseUrl.trim();
     if (!baseUrl.startsWith('http://') && !baseUrl.startsWith('https://')) {
       baseUrl = 'https://' + baseUrl;
@@ -141,33 +144,18 @@ function createJiraTicketLink(ticketId) {
       baseUrl = baseUrl.slice(0, -1);
     }
     
-    // Determine the correct path to add
-    let finalUrl = baseUrl;
-    const lowerUrl = baseUrl.toLowerCase();
-    
-    // Check if URL already contains "/browse" pattern
-    if (lowerUrl.includes('/browse/') || lowerUrl.endsWith('/browse')) {
-      // If URL ends with /browse, add another slash
-      if (lowerUrl.endsWith('/browse')) {
-        finalUrl += '/';
-      }
-    } else {
-      // Otherwise add /browse/ path
-      finalUrl += '/browse/';
+    // Add /browse/ path consistently
+    if (!baseUrl.toLowerCase().includes('/browse/')) {
+      baseUrl += '/browse/';
+    } else if (baseUrl.toLowerCase().endsWith('/browse')) {
+      baseUrl += '/';
     }
     
-    // Add encoded ticket ID
-    finalUrl += encodeURIComponent(ticketId);
+    // Create the final URL
+    const finalUrl = baseUrl + encodeURIComponent(ticketId);
     
-    // DEBUG log the final URL to ensure it's correct
-    log(`Jira URL generated: ${finalUrl}`, LOG_LEVELS.DEBUG);
-    
-    // Create a hyperlink formula with proper quote escaping for the URL
-    // Use double quotes for the formula and escaped double quotes for attributes
-    const escapedUrl = finalUrl.replace(/"/g, '""');
-    const escapedTicketId = ticketId.replace(/"/g, '""');
-    
-    return `=HYPERLINK("${escapedUrl}","${escapedTicketId}")`;
+    // Create a direct hyperlink formula
+    return createDirectHyperlink(finalUrl, ticketId);
   } catch (error) {
     log('Error creating Jira link', LOG_LEVELS.ERROR, error);
     return ticketId;

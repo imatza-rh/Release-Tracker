@@ -103,19 +103,15 @@ function createTrackingSheetWithOptions(sheetName, source, fieldOptions, manualJ
       }
     }
     
-    // Create or get the sheet with proper headers and formatting
-    log('Getting or creating sheet', LOG_LEVELS.INFO);
-    const sheet = getOrCreateSheet(sheetName, fieldOptions.selectedFields);
-    
-    // Apply validation based on updated config
-    setupDataValidation(sheet);
-    log('Data validation applied', LOG_LEVELS.INFO);
-    
     // Set default format options if not provided
     const formatOpts = {
       formatAsTable: formatOptions.formatAsTable !== false,
       freezeHeaders: formatOptions.freezeHeaders !== false
     };
+    
+    // Create or get the sheet with proper headers and formatting
+    log('Getting or creating sheet', LOG_LEVELS.INFO);
+    const sheet = getOrCreateSheet(sheetName, fieldOptions.selectedFields);
     
     // If manual jobs were provided, add them to the sheet
     let result;
@@ -138,9 +134,6 @@ function createTrackingSheetWithOptions(sheetName, source, fieldOptions, manualJ
       result = addJobsFromDefaultSheet(sheetName);
     }
     
-    // Apply conditional formatting for colors
-    applyConditionalFormatting(sheet, fieldOptions);
-    
     // Apply table formatting
     applyTableFormatting(sheet, formatOpts);
     
@@ -150,106 +143,6 @@ function createTrackingSheetWithOptions(sheetName, source, fieldOptions, manualJ
     };
   } catch (error) {
     return handleError('createTrackingSheetWithOptions', error, true);
-  }
-}
-
-/**
- * Applies conditional formatting rules for status, type, and priority colors
- * 
- * @param {Sheet} sheet - The sheet to apply formatting to
- * @param {Object} fieldOptions - Field options including colors
- */
-function applyConditionalFormatting(sheet, fieldOptions) {
-  try {
-    if (!sheet) return;
-    
-    // Get the sheet's header row
-    const header = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-    
-    // Clear existing conditional format rules to avoid duplicates
-    sheet.clearConditionalFormatRules();
-    let rules = [];
-    
-    // Apply status colors
-    const statusColIndex = header.indexOf('Status');
-    if (statusColIndex >= 0 && 
-        fieldOptions.statuses && 
-        fieldOptions.statusColors && 
-        fieldOptions.statuses.length === fieldOptions.statusColors.length) {
-      
-      // Create conditional formatting rules for each status
-      fieldOptions.statuses.forEach((status, index) => {
-        const color = fieldOptions.statusColors[index];
-        if (color) {
-          const range = sheet.getRange(2, statusColIndex + 1, sheet.getMaxRows() - 1, 1);
-          const rule = SpreadsheetApp.newConditionalFormatRule()
-            .whenTextEqualTo(status)
-            .setBackground(color)
-            .setRanges([range])
-            .build();
-          
-          rules.push(rule);
-        }
-      });
-      
-      log('Applied conditional formatting for Status column', LOG_LEVELS.INFO);
-    }
-    
-    // Apply type colors
-    const typeColIndex = header.indexOf('Type');
-    if (typeColIndex >= 0 && 
-        fieldOptions.types && 
-        fieldOptions.typeColors && 
-        fieldOptions.types.length === fieldOptions.typeColors.length) {
-      
-      // Create conditional formatting rules for each type
-      fieldOptions.types.forEach((type, index) => {
-        const color = fieldOptions.typeColors[index];
-        if (color) {
-          const range = sheet.getRange(2, typeColIndex + 1, sheet.getMaxRows() - 1, 1);
-          const rule = SpreadsheetApp.newConditionalFormatRule()
-            .whenTextEqualTo(type)
-            .setBackground(color)
-            .setRanges([range])
-            .build();
-          
-          rules.push(rule);
-        }
-      });
-      
-      log('Applied conditional formatting for Type column', LOG_LEVELS.INFO);
-    }
-    
-    // Apply priority colors
-    const priorityColIndex = header.indexOf('Priority');
-    if (priorityColIndex >= 0 && 
-        fieldOptions.priorities && 
-        fieldOptions.priorityColors && 
-        fieldOptions.priorities.length === fieldOptions.priorityColors.length) {
-      
-      // Create conditional formatting rules for each priority
-      fieldOptions.priorities.forEach((priority, index) => {
-        const color = fieldOptions.priorityColors[index];
-        if (color) {
-          const range = sheet.getRange(2, priorityColIndex + 1, sheet.getMaxRows() - 1, 1);
-          const rule = SpreadsheetApp.newConditionalFormatRule()
-            .whenTextEqualTo(priority)
-            .setBackground(color)
-            .setRanges([range])
-            .build();
-          
-          rules.push(rule);
-        }
-      });
-      
-      log('Applied conditional formatting for Priority column', LOG_LEVELS.INFO);
-    }
-    
-    // Set all rules at once
-    sheet.setConditionalFormatRules(rules);
-    
-  } catch (error) {
-    handleError('applyConditionalFormatting', error, false);
   }
 }
 
@@ -359,6 +252,8 @@ function addManualJobs(sheetName, jobNames) {
     const typeIndex = header.indexOf('Type');
     const statusIndex = header.indexOf('Status');
     const priorityIndex = header.indexOf('Priority');
+    const jobLinkIndex = header.indexOf('Job Link');
+    const jiraTicketIndex = header.indexOf('Jira Ticket');
     
     // Prepare data for batch insert
     const rowsToAdd = [];
@@ -389,6 +284,24 @@ function addManualJobs(sheetName, jobNames) {
         newRow[priorityIndex] = config.priorities[1] || 'Medium'; // Default to Medium priority
       }
       
+      // Handle Job Link column
+      if (jobLinkIndex !== -1) {
+        // Generate a link ID from the job name
+        const linkId = jobName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+        // Create the hyperlink formula
+        newRow[jobLinkIndex] = createJenkinsJobLink(linkId);
+      }
+      
+      // Handle Jira Ticket column
+      if (jiraTicketIndex !== -1) {
+        // Generate a random Jira-like ticket ID
+        const ticketPrefix = "PROJ-";
+        const ticketNumber = Math.floor(1000 + Math.random() * 9000); // 4-digit number
+        const ticketId = ticketPrefix + ticketNumber;
+        // Create the hyperlink formula
+        newRow[jiraTicketIndex] = createJiraTicketLink(ticketId);
+      }
+      
       rowsToAdd.push(newRow);
     });
     
@@ -398,9 +311,6 @@ function addManualJobs(sheetName, jobNames) {
       sheet.getRange(sheet.getLastRow() + 1, 1, rowsToAdd.length, header.length)
         .setValues(rowsToAdd);
     }
-    
-    // Ensure data validation is applied
-    setupDataValidation(sheet);
     
     return {
       status: 'success',

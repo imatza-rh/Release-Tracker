@@ -100,6 +100,9 @@ function addJobsFromDefaultSheet(targetSheetName = JOBS_SHEET_NAME) {
     // Get config for default values
     const config = getConfig();
     
+    // Get integration settings for hyperlinks
+    const settings = getIntegrationSettings();
+    
     // Process each job in DefaultJobs
     const rowsToAdd = [];
     let addedCount = 0;
@@ -125,7 +128,8 @@ function addJobsFromDefaultSheet(targetSheetName = JOBS_SHEET_NAME) {
       if (sourceIndices.jobLink !== -1 && targetIndices.jobLink !== -1) {
         const jobLink = row[sourceIndices.jobLink];
         if (jobLink) {
-          newRow[targetIndices.jobLink] = jobLink;
+          // Create a proper hyperlink with the createJenkinsJobLink function
+          newRow[targetIndices.jobLink] = createJenkinsJobLink(jobLink);
         }
       }
       
@@ -133,7 +137,8 @@ function addJobsFromDefaultSheet(targetSheetName = JOBS_SHEET_NAME) {
       if (sourceIndices.jiraTicket !== -1 && targetIndices.jiraTicket !== -1) {
         const jiraTicket = row[sourceIndices.jiraTicket];
         if (jiraTicket) {
-          newRow[targetIndices.jiraTicket] = jiraTicket;
+          // Create a proper hyperlink with the createJiraTicketLink function
+          newRow[targetIndices.jiraTicket] = createJiraTicketLink(jiraTicket);
         }
       }
       

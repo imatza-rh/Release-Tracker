@@ -460,8 +460,9 @@
     // Use strict mode for better performance and error catching
     'use strict';
     
-    // Get the active sheet name passed from the server
-    const activeSheetName = <?= JSON.stringify(activeSheetName) ?>;
+    // CRITICAL FIX: Get the active sheet name passed from the server - FIXED VERSION
+    // This is using the proper template passing without JSON.stringify
+    const activeSheetName = "<?= activeSheetName ?>";
     
     // Cache DOM elements to avoid repeated query selection
     const els = {};
@@ -524,6 +525,15 @@
        'globalTooltip', 'activeSheetBadge'].forEach(id => {
          els[id] = document.getElementById(id);
        });
+
+      // Log any missing elements during development
+      if (false) { // Set to true for debugging only
+        for (const [key, value] of Object.entries(els)) {
+          if (!value) {
+            console.warn(`Element not found: ${key}`);
+          }
+        }
+      }
     }
     
     function preloadConfig() {
@@ -638,30 +648,35 @@
       let useCache = false;
       
       if (!isForceRefresh) {
-        const cachedData = sessionStorage.getItem(cacheKey);
-        const cachedTimestamp = sessionStorage.getItem(`${cacheKey}_timestamp`);
-        const now = Date.now();
-        
-        // Use cache if it's less than 30 seconds old
-        if (cachedData && cachedTimestamp && (now - parseInt(cachedTimestamp)) < 30000) {
-          try {
-            const response = JSON.parse(cachedData);
-            if (response.status === 'success' && response.jobs) {
-              processJobsData(response.jobs);
-              useCache = true;
-              
-              // Still fetch in background to update cache if not already refreshing
-              if (!isRefreshing) {
-                fetchJobsInBackground();
-              } else {
-                // If we're using cache during a refresh, we need to finish the refresh
-                finishRefresh();
+        try {
+          const cachedData = sessionStorage.getItem(cacheKey);
+          const cachedTimestamp = sessionStorage.getItem(`${cacheKey}_timestamp`);
+          const now = Date.now();
+          
+          // Use cache if it's less than 30 seconds old
+          if (cachedData && cachedTimestamp && (now - parseInt(cachedTimestamp)) < 30000) {
+            try {
+              const response = JSON.parse(cachedData);
+              if (response.status === 'success' && response.jobs) {
+                processJobsData(response.jobs);
+                useCache = true;
+                
+                // Still fetch in background to update cache if not already refreshing
+                if (!isRefreshing) {
+                  fetchJobsInBackground();
+                } else {
+                  // If we're using cache during a refresh, we need to finish the refresh
+                  finishRefresh();
+                }
               }
+            } catch (e) {
+              console.error('Cache parsing error', e);
+              // Continue with normal fetch if cache fails
             }
-          } catch (e) {
-            console.error('Cache parsing error', e);
-            // Continue with normal fetch if cache fails
           }
+        } catch (e) {
+          // Ignore session storage errors and continue
+          console.warn('Session storage error:', e);
         }
       }
       

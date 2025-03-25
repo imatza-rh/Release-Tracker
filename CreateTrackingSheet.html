@@ -13,34 +13,53 @@
       --success-color: #28a745;
       --warning-color: #ffc107;
       --info-color: #17a2b8;
+      --header-color: #37474f;
     }
 
     body {
-      font-family: Arial, sans-serif;
-      margin: 10px;
+      font-family: 'Roboto', Arial, sans-serif;
+      margin: 0;
+      padding: 16px;
       font-size: 14px;
       color: var(--text-color);
       background-color: #fff;
+      line-height: 1.5;
     }
 
     h3 {
       margin-top: 0;
       margin-bottom: 16px;
-      color: var(--primary-color);
-      font-size: 18px;
-      padding-bottom: 8px;
+      color: var(--header-color);
+      font-size: 20px;
+      padding-bottom: 10px;
       border-bottom: 2px solid var(--primary-color);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    h3 .icon {
+      font-size: 24px;
     }
     
     h4 {
-      color: var(--primary-color);
-      margin-bottom: 10px;
-      border-bottom: 1px solid var(--primary-color);
-      padding-bottom: 5px;
+      color: var(--header-color);
+      margin: 24px 0 15px 0;
+      font-size: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    h4 .icon {
+      font-size: 18px;
     }
 
     p {
-      margin-bottom: 12px;
+      margin-bottom: 16px;
+      line-height: 1.6;
     }
 
     /* Tab Control Styles */
@@ -51,29 +70,39 @@
     .tab-buttons {
       display: flex;
       border-bottom: 1px solid var(--border-color);
+      margin-bottom: -1px;
     }
     
     .tab-button {
-      padding: 10px 20px;
+      padding: 12px 20px;
       cursor: pointer;
       background: #f1f1f1;
-      margin-right: 2px;
       border: 1px solid var(--border-color);
       border-bottom: none;
-      border-radius: 4px 4px 0 0;
+      border-radius: 8px 8px 0 0;
       transition: all 0.2s ease;
+      font-weight: 500;
+      color: var(--text-color);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .tab-button .icon {
+      font-size: 16px;
     }
     
     .tab-button.active {
       background: white;
-      font-weight: bold;
       color: var(--primary-color);
-      border-bottom: 3px solid white;
+      border-bottom: 2px solid white;
       margin-bottom: -2px;
+      box-shadow: 0 -2px 5px rgba(0,0,0,0.05);
     }
     
     .tab-button:hover:not(.active) {
       background: #e5e5e5;
+      transform: translateY(-1px);
     }
     
     .tab-content {
@@ -82,30 +111,44 @@
       border: 1px solid var(--border-color);
       border-top: none;
       background: white;
+      border-radius: 0 0 8px 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     }
     
     .tab-content.active {
       display: block;
+      animation: fadeIn 0.3s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     /* Form controls */
     label {
       display: block;
-      margin-top: 10px;
-      margin-bottom: 5px;
-      font-weight: bold;
-      font-size: 13px;
+      margin-top: 14px;
+      margin-bottom: 6px;
+      font-weight: 500;
+      font-size: 14px;
+      color: var(--header-color);
     }
     
     select, input, textarea {
       width: 100%;
       box-sizing: border-box;
       margin-bottom: 12px;
-      font-size: 13px;
-      padding: 8px;
+      font-size: 14px;
+      padding: 10px 12px;
       border: 1px solid var(--border-color);
-      border-radius: 4px;
-      transition: border-color 0.2s, box-shadow 0.2s;
+      border-radius: 6px;
+      transition: all 0.2s;
+      font-family: 'Roboto', Arial, sans-serif;
+    }
+    
+    select:hover, input:hover, textarea:hover {
+      border-color: #bbbbbb;
     }
     
     select:focus, input:focus, textarea:focus {
@@ -116,7 +159,7 @@
 
     /* Job list textarea */
     #manualJobsList {
-      height: 120px;
+      height: 140px;
       font-family: monospace;
       resize: vertical;
     }
@@ -124,10 +167,15 @@
     /* Field Options styling to match Google Sheets */
     .field-section {
       margin-bottom: 30px;
+      background-color: #fff;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      border: 1px solid var(--border-color);
     }
 
     .status-header, .type-header, .priority-header {
-      color: var(--primary-color);
+      color: var(--header-color);
       font-size: 16px;
       font-weight: bold;
       border-bottom: 1px solid var(--primary-color);
@@ -137,79 +185,103 @@
 
     .field-description {
       margin-bottom: 15px;
-      line-height: 1.4;
+      line-height: 1.5;
+      color: #555;
     }
 
     .field-item {
       display: flex;
       align-items: center;
-      margin-bottom: 10px;
-      transition: transform 0.1s ease-in-out;
+      margin-bottom: 12px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      background: #fff;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #eee;
     }
     
     .field-item:hover {
-      transform: translateY(-1px);
+      transform: translateY(-2px);
+      box-shadow: 0 3px 6px rgba(0,0,0,0.1);
     }
 
     .text-input {
       flex-grow: 1;
-      padding: 8px 12px;
+      padding: 10px 12px;
       border: 1px solid #ccc;
-      border-radius: 4px;
+      border-radius: 6px;
       font-size: 14px;
       margin-right: 10px;
     }
 
     .color-box {
-      width: 32px;
-      height: 32px;
-      border-radius: 4px;
+      width: 36px;
+      height: 36px;
+      border-radius: 6px;
       border: 1px solid #ccc;
       margin-right: 10px;
       cursor: pointer;
-      transition: transform 0.2s;
+      transition: all 0.2s;
     }
     
     .color-box:hover {
       transform: scale(1.1);
-      box-shadow: 0 0 5px rgba(0,0,0,0.2);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
     }
 
     .remove-btn {
-      width: 32px;
-      height: 32px;
+      width: 36px;
+      height: 36px;
       background: #6c757d;
       color: white;
       border: none;
-      border-radius: 4px;
+      border-radius: 6px;
       font-size: 16px;
       cursor: pointer;
-      transition: background-color 0.2s;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     
     .remove-btn:hover {
-      background: #5a6268;
+      background: var(--danger-color);
+      transform: translateY(-1px);
+    }
+    
+    .remove-btn:active {
+      transform: translateY(1px);
     }
 
     .add-btn {
-      background: #6c757d;
+      background: var(--primary-color);
       color: white;
       border: none;
-      padding: 8px 16px;
-      border-radius: 4px;
+      padding: 10px 16px;
+      border-radius: 6px;
       cursor: pointer;
       margin-top: 10px;
       display: inline-flex;
       align-items: center;
-      transition: background-color 0.2s, transform 0.1s;
+      gap: 8px;
+      font-weight: 500;
+      transition: all 0.2s;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     
     .add-btn:hover {
-      background: #5a6268;
+      background: var(--hover-color);
+      transform: translateY(-1px);
+      box-shadow: 0 3px 6px rgba(0,0,0,0.15);
     }
     
     .add-btn:active {
       transform: translateY(1px);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+    
+    .add-btn .icon {
+      font-size: 18px;
     }
 
     /* Color Picker (Google Sheets Style) */
@@ -218,39 +290,41 @@
       position: fixed;
       background: white;
       border: 1px solid #ccc;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-      padding: 10px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      padding: 15px;
       z-index: 1000;
-      width: 240px;
-      border-radius: 4px;
+      width: 250px;
+      border-radius: 8px;
     }
 
     .color-picker-title {
       font-size: 12px;
       font-weight: bold;
       color: #666;
-      margin: 4px 0 6px 0;
+      margin: 5px 0 8px 0;
     }
 
     .color-grid {
       display: flex;
       flex-wrap: wrap;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
+      gap: 4px;
     }
 
     .color-cell {
-      width: 20px;
-      height: 20px;
-      margin: 2px;
+      width: 22px;
+      height: 22px;
       border-radius: 50%;
       cursor: pointer;
       position: relative;
-      transition: transform 0.15s ease;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      border: 1px solid rgba(0,0,0,0.1);
     }
     
     .color-cell:hover {
       transform: scale(1.2);
       z-index: 1;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
 
     .color-cell.selected::after {
@@ -261,61 +335,97 @@
       transform: translate(-50%, -50%);
       color: white;
       font-size: 12px;
-      text-shadow: 0 0 1px rgba(0,0,0,0.8);
+      text-shadow: 0 0 2px rgba(0,0,0,0.8);
     }
 
     /* Table Format Options */
     .format-options {
-      margin-top: 15px;
-      padding: 10px;
+      margin-top: 20px;
+      padding: 15px;
       border: 1px solid #eee;
-      background-color: #f9f9f9;
-      border-radius: 4px;
+      background-color: var(--light-bg);
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
 
     .format-title {
       font-weight: bold;
-      margin-bottom: 8px;
+      margin-bottom: 12px;
+      color: var(--header-color);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .format-title .icon {
+      font-size: 16px;
     }
 
     .format-checkbox {
       margin-right: 8px;
     }
+    
+    .format-option {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    
+    .format-option label {
+      margin: 0 0 0 8px;
+      font-weight: normal;
+    }
+    
+    .format-option input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      margin: 0;
+    }
 
     /* Action and notice areas */
     .action-area {
-      background-color: #f8f9fa;
-      padding: 10px;
-      border-radius: 4px;
-      margin-bottom: 15px;
+      background-color: var(--light-bg);
+      padding: 15px;
+      border-radius: 8px;
+      margin: 15px 0;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
 
     .notice {
-      background-color: #fff3cd;
+      background-color: #fff8e1;
       color: #856404;
-      padding: 8px 12px;
-      border-radius: 4px;
-      margin-bottom: 10px;
+      padding: 12px 15px;
+      border-radius: 6px;
+      margin-bottom: 12px;
+      border-left: 4px solid var(--warning-color);
     }
 
     .create-default-btn {
-      background-color: var(--primary-color);
+      background-color: var(--info-color);
       color: white;
       border: none;
-      padding: 6px 12px;
-      border-radius: 4px;
+      padding: 8px 14px;
+      border-radius: 6px;
       cursor: pointer;
       margin-top: 10px;
       font-size: 13px;
-      transition: background-color 0.2s, transform 0.1s;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     
     .create-default-btn:hover {
-      background-color: var(--hover-color);
+      background-color: #138496;
+      transform: translateY(-1px);
+      box-shadow: 0 3px 6px rgba(0,0,0,0.15);
     }
     
     .create-default-btn:active {
       transform: translateY(1px);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
     }
 
     /* Success/Error Dialogs */
@@ -330,14 +440,15 @@
       z-index: 2000;
       align-items: center;
       justify-content: center;
+      backdrop-filter: blur(2px);
     }
 
     .dialog-box {
-      width: 300px;
+      width: 320px;
       background-color: white;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.2);
+      padding: 24px;
       text-align: center;
       animation: dialogFadeIn 0.3s ease forwards;
     }
@@ -353,28 +464,39 @@
     }
 
     .dialog-title {
-      font-size: 18px;
+      font-size: 20px;
       font-weight: bold;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
+      color: var(--header-color);
     }
 
     .dialog-message {
-      margin-bottom: 20px;
+      margin-bottom: 24px;
+      line-height: 1.5;
     }
 
     .dialog-button {
       background-color: var(--primary-color);
       color: white;
       border: none;
-      padding: 8px 16px;
-      border-radius: 4px;
+      padding: 10px 20px;
+      border-radius: 6px;
       cursor: pointer;
       font-size: 14px;
-      transition: background-color 0.2s;
+      transition: all 0.2s;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      font-weight: 500;
     }
     
     .dialog-button:hover {
       background-color: var(--hover-color);
+      transform: translateY(-1px);
+      box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+    }
+    
+    .dialog-button:active {
+      transform: translateY(1px);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
     }
 
     /* Loading Overlay */
@@ -390,21 +512,22 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
+      backdrop-filter: blur(2px);
     }
 
     .spinner {
-      width: 40px;
-      height: 40px;
+      width: 50px;
+      height: 50px;
       border: 4px solid rgba(25, 118, 210, 0.2);
       border-top: 4px solid var(--primary-color);
       border-radius: 50%;
       animation: spin 1s linear infinite;
-      margin-bottom: 20px;
+      margin-bottom: 24px;
     }
 
     .loading-message {
       font-size: 16px;
-      font-weight: bold;
+      font-weight: 500;
       color: var(--primary-color);
     }
 
@@ -418,22 +541,39 @@
       display: flex;
       justify-content: flex-end;
       gap: 10px;
-      margin-top: 20px;
+      margin-top: 24px;
       padding-top: 15px;
       border-top: 1px solid #eee;
     }
 
     button {
-      padding: 8px 16px;
-      border-radius: 4px;
+      padding: 10px 16px;
+      border-radius: 6px;
       border: none;
       cursor: pointer;
       font-size: 14px;
-      transition: background-color 0.2s, transform 0.1s;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-weight: 500;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      font-family: 'Roboto', Arial, sans-serif;
+    }
+    
+    button .icon {
+      font-size: 18px;
+    }
+    
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 3px 6px rgba(0,0,0,0.15);
     }
     
     button:active {
       transform: translateY(1px);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
     }
     
     .btn-primary {
@@ -476,28 +616,39 @@
     .field-selections {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
       margin-bottom: 20px;
       padding: 15px;
-      background-color: #f9f9f9;
-      border-radius: 5px;
+      background-color: var(--light-bg);
+      border-radius: 8px;
       border: 1px solid #e0e0e0;
     }
 
     .field-checkbox {
       display: flex;
       align-items: center;
-      gap: 8px;
+      background-color: white;
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .field-checkbox:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
 
     .field-checkbox input[type="checkbox"] {
-      width: auto;
-      margin: 0;
+      width: 18px;
+      height: 18px;
+      margin: 0 8px 0 0;
     }
 
     .field-checkbox input[type="radio"] {
-      width: auto;
-      margin: 0;
+      width: 18px;
+      height: 18px;
+      margin: 0 8px 0 0;
     }
 
     .field-checkbox label {
@@ -510,16 +661,24 @@
     /* Info box in external links tab */
     .info-box {
       margin-top: 20px;
-      padding: 12px 15px;
-      background-color: #e8f4fd;
-      border-left: 4px solid #1976d2;
-      border-radius: 4px;
+      padding: 15px;
+      background-color: #e3f2fd;
+      border-left: 4px solid var(--primary-color);
+      border-radius: 6px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
 
     .info-title {
       font-weight: bold;
-      margin-bottom: 8px;
-      color: #1976d2;
+      margin-bottom: 10px;
+      color: var(--primary-color);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .info-title .icon {
+      font-size: 18px;
     }
 
     .info-box ul {
@@ -528,60 +687,80 @@
     }
 
     .info-box li {
-      margin-bottom: 4px;
+      margin-bottom: 6px;
     }
     
     /* Custom fields section */
     .custom-fields-section {
       margin-top: 20px;
-      padding: 10px;
+      padding: 15px;
       background-color: #f0f7ff;
-      border-radius: 5px;
+      border-radius: 8px;
       border: 1px solid #d0e2ff;
     }
     
     .custom-field-row {
       display: flex;
       align-items: center;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
       gap: 10px;
+      background-color: white;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #e0e0e0;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .custom-field-row:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
     
     .custom-field-input {
       flex-grow: 1;
+      border-radius: 4px;
+      border: 1px solid #e0e0e0;
+      padding: 8px 12px;
     }
     
     .custom-field-button {
       flex-shrink: 0;
-      height: 37px;
-      width: 37px;
+      height: 38px;
+      width: 38px;
       padding: 0;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 20px;
+      border-radius: 6px;
     }
     
     /* Sample color block in descriptions */
     .color-sample {
       display: inline-block;
-      width: 12px;
-      height: 12px;
-      margin-right: 2px;
-      border-radius: 2px;
+      width: 14px;
+      height: 14px;
+      margin-right: 3px;
+      border-radius: 3px;
       border: 1px solid #ccc;
       vertical-align: middle;
     }
   </style>
 </head>
 <body>
-  <h3>Create Tracking Sheet</h3>
+  <h3><span class="icon">📝</span> Create Tracking Sheet</h3>
   
   <div class="tab-container">
     <div class="tab-buttons">
-      <div id="tab-btn-basics" class="tab-button active" onclick="showTab('basics')">Basics</div>
-      <div id="tab-btn-external-links" class="tab-button" onclick="showTab('external-links')">External Links</div>
-      <div id="tab-btn-fields" class="tab-button" onclick="showTab('fields')">Field Options</div>
+      <div id="tab-btn-basics" class="tab-button active" onclick="showTab('basics')">
+        <span class="icon">📋</span> Basics
+      </div>
+      <div id="tab-btn-external-links" class="tab-button" onclick="showTab('external-links')">
+        <span class="icon">🔗</span> External Links
+      </div>
+      <div id="tab-btn-fields" class="tab-button" onclick="showTab('fields')">
+        <span class="icon">🔧</span> Field Options
+      </div>
     </div>
     
     <!-- Basics Tab -->
@@ -601,10 +780,10 @@
       
       <div id="defaultJobsInfo" style="display: none;" class="action-area">
         <div id="defaultJobsNotice" class="notice">
-          Note: The DefaultJobs sheet will be used as a template. If it doesn't exist, you'll need to create it first.
+          <strong>Note:</strong> The DefaultJobs sheet will be used as a template. If it doesn't exist, you'll need to create it first.
         </div>
         <button id="createDefaultJobsBtn" class="create-default-btn" onclick="createDefaultJobsSheet()">
-          Create DefaultJobs Sheet
+          <span class="icon">✨</span> Create DefaultJobs Sheet
         </button>
       </div>
       
@@ -618,14 +797,14 @@ Review code changes"></textarea>
       </div>
       
       <div class="format-options">
-        <div class="format-title">Table Formatting Options:</div>
-        <div style="margin-bottom: 8px;">
+        <div class="format-title"><span class="icon">🎨</span> Table Formatting Options:</div>
+        <div class="format-option">
           <input type="checkbox" id="formatAsTable" class="format-checkbox" checked>
-          <label for="formatAsTable" style="display: inline; font-weight: normal;">Format as table (alternating row colors)</label>
+          <label for="formatAsTable">Format as table (alternating row colors)</label>
         </div>
-        <div>
+        <div class="format-option">
           <input type="checkbox" id="freezeHeaders" class="format-checkbox" checked>
-          <label for="freezeHeaders" style="display: inline; font-weight: normal;">Freeze header row</label>
+          <label for="freezeHeaders">Freeze header row</label>
         </div>
       </div>
     </div>
@@ -649,7 +828,7 @@ Review code changes"></textarea>
       </div>
       
       <div class="info-box">
-        <div class="info-title">📌 URL Tips</div>
+        <div class="info-title"><span class="icon">📌</span> URL Tips</div>
         <ul>
           <li>Both HTTP and HTTPS protocols are supported</li>
           <li>You can include or exclude trailing slashes - we'll handle it</li>
@@ -736,12 +915,14 @@ Review code changes"></textarea>
         <div class="field-description">
           Define status options to track job progress. 
           Cells will be colored based on your selected colors
-          (e.g., <span class="color-sample" style="background-color:#3d85c6"></span> Pending, 
-          <span class="color-sample" style="background-color:#f1c232"></span> In-Progress,
-          <span class="color-sample" style="background-color:#6aa84f"></span> Done).
+          (e.g., <span class="color-sample" style="background-color:#e3f2fd"></span> Pending, 
+          <span class="color-sample" style="background-color:#fff8e1"></span> In-Progress,
+          <span class="color-sample" style="background-color:#e8f5e9"></span> Done).
         </div>
         <div id="status-items"></div>
-        <button onclick="addFieldOption('status')" class="add-btn">+ Add Status</button>
+        <button onclick="addFieldOption('status')" class="add-btn">
+          <span class="icon">+</span> Add Status
+        </button>
       </div>
       
       <!-- Type Options -->
@@ -750,12 +931,14 @@ Review code changes"></textarea>
         <div class="field-description">
           Define different types of jobs you want to track.
           Cells will be colored based on your selected colors
-          (e.g., <span class="color-sample" style="background-color:#e69138"></span> Build,
-          <span class="color-sample" style="background-color:#674ea7"></span> Test,
-          <span class="color-sample" style="background-color:#3d85c6"></span> Deploy).
+          (e.g., <span class="color-sample" style="background-color:#ede7f6"></span> Build,
+          <span class="color-sample" style="background-color:#e0f7fa"></span> Test,
+          <span class="color-sample" style="background-color:#f3e5f5"></span> Deploy).
         </div>
         <div id="type-items"></div>
-        <button onclick="addFieldOption('type')" class="add-btn">+ Add Type</button>
+        <button onclick="addFieldOption('type')" class="add-btn">
+          <span class="icon">+</span> Add Type
+        </button>
       </div>
       
       <!-- Priority Options -->
@@ -764,19 +947,25 @@ Review code changes"></textarea>
         <div class="field-description">
           Define priority levels for your jobs.
           Cells will be colored based on your selected colors
-          (e.g., <span class="color-sample" style="background-color:#e06666"></span> High,
-          <span class="color-sample" style="background-color:#f1c232"></span> Medium,
-          <span class="color-sample" style="background-color:#6aa84f"></span> Low).
+          (e.g., <span class="color-sample" style="background-color:#ffebee"></span> High,
+          <span class="color-sample" style="background-color:#fff8e1"></span> Medium,
+          <span class="color-sample" style="background-color:#e8f5e9"></span> Low).
         </div>
         <div id="priority-items"></div>
-        <button onclick="addFieldOption('priority')" class="add-btn">+ Add Priority</button>
+        <button onclick="addFieldOption('priority')" class="add-btn">
+          <span class="icon">+</span> Add Priority
+        </button>
       </div>
     </div>
   </div>
 
   <div class="buttons-container">
-    <button id="cancelBtn" class="btn-secondary">Cancel</button>
-    <button id="createBtn" class="btn-primary">Create Tracking Sheet</button>
+    <button id="cancelBtn" class="btn-secondary">
+      <span class="icon">✖</span> Cancel
+    </button>
+    <button id="createBtn" class="btn-primary">
+      <span class="icon">✅</span> Create Tracking Sheet
+    </button>
   </div>
   
   <!-- Color Picker (Hidden) -->
@@ -817,16 +1006,16 @@ Review code changes"></textarea>
       <div class="color-cell" data-color="#ead1dc" style="background-color: #ead1dc"></div>
     </div>
     
-    <div class="color-picker-title">COMMON</div>
+    <div class="color-picker-title">PASTEL PALETTE</div>
     <div class="color-grid">
-      <div class="color-cell" data-color="#000000" style="background-color: #000000"></div>
-      <div class="color-cell" data-color="#ffffff" style="background-color: #ffffff"></div>
-      <div class="color-cell" data-color="#3d85c6" style="background-color: #3d85c6"></div>
-      <div class="color-cell" data-color="#e06666" style="background-color: #e06666"></div>
-      <div class="color-cell" data-color="#f1c232" style="background-color: #f1c232"></div>
-      <div class="color-cell" data-color="#6aa84f" style="background-color: #6aa84f"></div>
-      <div class="color-cell" data-color="#e69138" style="background-color: #e69138"></div>
-      <div class="color-cell" data-color="#45818e" style="background-color: #45818e"></div>
+      <div class="color-cell" data-color="#e3f2fd" style="background-color: #e3f2fd"></div>
+      <div class="color-cell" data-color="#fff8e1" style="background-color: #fff8e1"></div>
+      <div class="color-cell" data-color="#e8f5e9" style="background-color: #e8f5e9"></div>
+      <div class="color-cell" data-color="#ffebee" style="background-color: #ffebee"></div>
+      <div class="color-cell" data-color="#ede7f6" style="background-color: #ede7f6"></div>
+      <div class="color-cell" data-color="#e0f7fa" style="background-color: #e0f7fa"></div>
+      <div class="color-cell" data-color="#f3e5f5" style="background-color: #f3e5f5"></div>
+      <div class="color-cell" data-color="#fff3e0" style="background-color: #fff3e0"></div>
     </div>
   </div>
   
@@ -857,22 +1046,22 @@ Review code changes"></textarea>
   </div>
 
   <script>
-    // Default field values
+    // Default field values with updated colors
     const defaultValues = {
       status: [
-        { name: "Pending", color: "#3d85c6" },
-        { name: "In-Progress", color: "#f1c232" },
-        { name: "Done", color: "#6aa84f" }
+        { name: "Pending", color: "#e3f2fd" },
+        { name: "In-Progress", color: "#fff8e1" },
+        { name: "Done", color: "#e8f5e9" }
       ],
       type: [
-        { name: "Build", color: "#e69138" },
-        { name: "Test", color: "#674ea7" },
-        { name: "Deploy", color: "#3d85c6" }
+        { name: "Build", color: "#ede7f6" },
+        { name: "Test", color: "#e0f7fa" },
+        { name: "Deploy", color: "#f3e5f5" }
       ],
       priority: [
-        { name: "High", color: "#e06666" },
-        { name: "Medium", color: "#f1c232" },
-        { name: "Low", color: "#6aa84f" }
+        { name: "High", color: "#ffebee" },
+        { name: "Medium", color: "#fff8e1" },
+        { name: "Low", color: "#e8f5e9" }
       ]
     };
     
@@ -1026,6 +1215,7 @@ Review code changes"></textarea>
       button.type = 'button';
       button.className = 'custom-field-button btn-danger';
       button.innerHTML = '−';
+      button.style.backgroundColor = '#dc3545';
       button.onclick = function() {
         container.removeChild(newRow);
       };
@@ -1120,13 +1310,13 @@ Review code changes"></textarea>
       
       // Set default values based on type
       if (type === 'status') {
-        defaultColor = '#3d85c6';
+        defaultColor = '#e3f2fd';
         defaultName = 'New Status';
       } else if (type === 'type') {
-        defaultColor = '#e69138';
+        defaultColor = '#ede7f6';
         defaultName = 'New Type';
       } else if (type === 'priority') {
-        defaultColor = '#e06666';
+        defaultColor = '#ffebee';
         defaultName = 'New Priority';
       }
       
@@ -1148,7 +1338,7 @@ Review code changes"></textarea>
       // Position color picker - Improved positioning logic
       const rect = colorBox.getBoundingClientRect();
       const pickerHeight = 320; // Approximate picker height
-      const pickerWidth = 240; // Approximate picker width
+      const pickerWidth = 250; // Approximate picker width
       
       // Get viewport dimensions
       const viewportHeight = window.innerHeight;
@@ -1253,14 +1443,16 @@ Review code changes"></textarea>
       const createBtn = document.getElementById('createDefaultJobsBtn');
       
       if (defaultJobsSheetExists) {
-        notice.innerHTML = 'The DefaultJobs sheet exists and will be used as a template.';
-        notice.style.backgroundColor = '#d4edda';
-        notice.style.color = '#155724';
+        notice.innerHTML = '<strong>✓ Ready:</strong> The DefaultJobs sheet exists and will be used as a template.';
+        notice.style.backgroundColor = '#e8f5e9';
+        notice.style.color = '#2e7d32';
+        notice.style.borderLeftColor = '#4caf50';
         createBtn.style.display = 'none';
       } else {
-        notice.innerHTML = 'The DefaultJobs sheet does not exist. Click the button below to create it.';
-        notice.style.backgroundColor = '#fff3cd';
+        notice.innerHTML = '<strong>⚠️ Note:</strong> The DefaultJobs sheet does not exist. Click the button below to create it.';
+        notice.style.backgroundColor = '#fff8e1';
         notice.style.color = '#856404';
+        notice.style.borderLeftColor = '#ffc107';
         createBtn.style.display = 'block';
       }
     }

@@ -11,135 +11,188 @@
       --border-color: #e0e0e0;
       --success-color: #4caf50;
       --warning-color: #ff9800;
-      --notes-color: #9c27b0;
+      --danger-color: #f44336;
+      --header-color: #37474f;
+      --section-bg: #fafafa;
     }
+    
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Roboto', 'Arial', sans-serif;
       margin: 0;
-      padding: 8px;
-      font-size: 13px;
+      padding: 10px;
+      font-size: 14px;
       color: var(--text-color);
       overflow-x: hidden;
       background-color: #fff;
       contain: paint; /* Add containment for performance */
     }
+    
     h3 {
       margin-top: 0;
       margin-bottom: 12px;
-      color: var(--primary-color);
-      font-size: 16px;
+      color: var(--header-color);
+      font-size: 18px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding-bottom: 8px;
+      padding: 12px 0;
       border-bottom: 2px solid var(--primary-color);
     }
+    
     h3 button {
-      background: transparent;
+      background: var(--primary-color);
       border: none;
-      color: var(--primary-color);
+      color: white;
       cursor: pointer;
       font-size: 14px;
-      padding: 2px 6px;
+      padding: 6px 12px;
       border-radius: 4px;
       display: flex;
       align-items: center;
+      gap: 6px;
       will-change: transform, background-color;
       transition: all 0.2s ease;
     }
+    
     h3 button:hover {
-      background: rgba(25, 118, 210, 0.1);
+      background: var(--hover-color);
+      transform: translateY(-1px);
     }
+    
+    h3 button:active {
+      transform: translateY(0);
+    }
+    
     h3 button:disabled {
       opacity: 0.6;
       cursor: wait;
     }
+    
     .refresh-icon {
       display: inline-block;
       transition: transform 0.5s ease-in-out;
     }
+    
     .refreshing .refresh-icon {
       animation: spin 1s linear infinite;
     }
+    
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
+    
     .filter-section {
-      background-color: #f5f5f5;
-      padding: 8px;
-      border-radius: 4px;
-      margin-bottom: 10px;
+      background-color: var(--section-bg);
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 15px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
+    
     .filter-row {
       display: flex;
       align-items: center;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
       flex-wrap: wrap;
+      gap: 10px;
     }
+    
     .filter-item {
       display: flex;
       align-items: center;
-      margin-right: 8px;
-      margin-bottom: 6px;
+      flex-grow: 1;
     }
+    
     .filter-item label {
       font-weight: bold;
-      margin-right: 4px;
-      font-size: 12px;
+      margin-right: 8px;
+      font-size: 13px;
       white-space: nowrap;
+      color: var(--header-color);
     }
+    
     select, input, button {
-      font-size: 12px;
-      padding: 4px 6px;
-      border-radius: 3px;
+      font-size: 13px;
+      padding: 8px 10px;
+      border-radius: 4px;
       border: 1px solid var(--border-color);
+      transition: all 0.2s ease;
     }
+    
+    select:hover, input:hover {
+      border-color: #bbbbbb;
+    }
+    
+    select:focus, input:focus {
+      border-color: var(--primary-color);
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
+    }
+    
     select {
-      max-width: 100px;
       background-color: white;
+      flex-grow: 1;
     }
+    
     #searchInput {
       flex-grow: 1;
-      min-width: 80px;
+      min-width: 100px;
       background-color: white;
     }
+    
     button {
       background: var(--primary-color);
       color: white;
       border: none;
       cursor: pointer;
-      transition: background 0.2s;
+      transition: all 0.2s;
     }
+    
     button:hover {
       background: var(--hover-color);
+      transform: translateY(-1px);
     }
+    
+    button:active {
+      transform: translateY(0);
+    }
+    
     #jobTable {
       width: 100%;
-      border-collapse: collapse;
+      border-collapse: separate;
+      border-spacing: 0;
       margin-top: 6px;
       table-layout: fixed;
       font-size: 12px;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
+    
     #jobTable th {
-      background: var(--primary-color);
+      background: var(--header-color);
       color: #fff;
-      padding: 8px 6px;
+      padding: 12px 8px;
       text-align: left;
       position: sticky;
       top: 0;
       z-index: 10;
       font-size: 13px;
       letter-spacing: 0.5px;
-      border-right: 1px solid rgba(255,255,255,0.2);
     }
+    
+    #jobTable th:first-child {
+      border-top-left-radius: 8px;
+    }
+    
     #jobTable th:last-child {
-      border-right: none;
+      border-top-right-radius: 8px;
     }
+    
     #jobTable td {
       border-bottom: 1px solid var(--border-color);
-      padding: 6px 4px;
+      padding: 10px 8px;
       vertical-align: middle;
       word-break: break-word;
       white-space: nowrap;
@@ -147,11 +200,15 @@
       text-overflow: ellipsis;
       max-width: 0; /* Critical fix for proper text truncation */
       position: relative; /* Ensure text stays in bounds */
+      transition: background-color 0.2s ease;
     }
+    
     #jobTable td:hover {
       white-space: normal;
       overflow: visible;
+      z-index: 1;
     }
+    
     /* Column widths with improved proportions */
     #jobTable th:nth-child(1), #jobTable td:nth-child(1) { width: 60%; } /* Job Name */
     #jobTable th:nth-child(2), #jobTable td:nth-child(2) { width: 18%; text-align: center; } /* Status */
@@ -161,92 +218,135 @@
     tr:nth-child(even) td {
       background: var(--light-bg);
     }
+    
     tr:hover td {
-      background-color: rgba(25, 118, 210, 0.05);
+      background-color: rgba(25, 118, 210, 0.08);
     }
+    
     .job-row.done {
       color: #999;
       text-decoration: line-through;
     }
     
-    /* New status dot styling */
-    .status-dot {
+    /* New status badges */
+    .status-badge {
       display: inline-block;
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      vertical-align: middle;
-      border: 1px solid rgba(0,0,0,0.1);
-      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 500;
+      text-align: center;
+      white-space: nowrap;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
       transition: transform 0.2s;
     }
     
-    tr:hover .status-dot {
-      transform: scale(1.2);
+    tr:hover .status-badge {
+      transform: scale(1.05);
+    }
+    
+    /* Status badge colors */
+    .status-pending {
+      background-color: #e3f2fd;
+      color: #0d47a1;
+    }
+    
+    .status-in-progress {
+      background-color: #fff8e1;
+      color: #f57f17;
+    }
+    
+    .status-done, .status-completed {
+      background-color: #e8f5e9;
+      color: #1b5e20;
+    }
+    
+    .status-blocked {
+      background-color: #ffebee;
+      color: #b71c1c;
+    }
+    
+    /* Fallback for any other status */
+    .status-default {
+      background-color: #eeeeee;
+      color: #424242;
     }
     
     /* Sheet info display */
     .sheet-info {
       display: flex;
       align-items: center;
-      margin-bottom: 8px;
-      font-size: 12px;
+      margin-bottom: 15px;
+      font-size: 13px;
       color: #666;
+      background-color: var(--section-bg);
+      padding: 10px 12px;
+      border-radius: 6px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
     }
     
     .sheet-badge {
       background-color: #e3f2fd;
       color: #0d47a1;
-      padding: 2px 8px;
+      padding: 3px 10px;
       border-radius: 12px;
       margin-left: 8px;
       font-weight: bold;
+      font-size: 12px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
     }
     
-    /* Unified emoji styling for consistency */
-    .emoji-icon {
-      font-size: 16px;
-      line-height: 1;
+    /* Unified icon styling for consistency */
+    .icon {
       display: inline-block;
-      vertical-align: middle;
-      width: 20px;
-      height: 20px;
+      width: 24px;
+      height: 24px;
       text-align: center;
+      line-height: 24px;
+      font-size: 16px;
     }
     
-    /* Specific styling for note icons */
+    /* Note icon styling */
     .note-icon {
       font-size: 16px;
-      line-height: 1;
       display: inline-block;
       vertical-align: middle;
+      color: var(--primary-color);
+      opacity: 0.8;
+      transition: transform 0.2s ease, opacity 0.2s ease;
+    }
+    
+    tr:hover .note-icon {
+      opacity: 1;
+      transform: scale(1.1);
     }
     
     /* Better styling for the locate button */
     .locate-btn {
-      background: #607d8b;
-      width: 24px;
-      height: 24px;
+      width: 28px;
+      height: 28px;
       padding: 0;
-      line-height: 24px;
-      font-size: 14px;
       margin: 0 auto;
-      display: block;
-      text-align: center;
-      border-radius: 4px;
-      white-space: nowrap;
-      will-change: transform, background-color;
-      transition: transform 0.1s ease, background-color 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      background: var(--primary-color);
+      color: white;
+      transition: all 0.2s ease;
       position: relative;
       overflow: hidden;
     }
+    
     .locate-btn:hover {
-      background: #455a64;
+      background: var(--hover-color);
       transform: translateY(-1px);
     }
+    
     .locate-btn:active {
       transform: translateY(1px);
     }
+    
     .locate-btn::after {
       content: '';
       position: absolute;
@@ -260,9 +360,11 @@
       transform: scale(1, 1) translate(-50%, -50%);
       transform-origin: 50% 50%;
     }
+    
     .locate-btn:focus:not(:active)::after {
       animation: ripple 0.6s ease-out;
     }
+    
     @keyframes ripple {
       0% {
         transform: scale(0, 0) translate(-50%, -50%);
@@ -274,31 +376,22 @@
       }
     }
     
-    /* Ensure action column has fixed width and centered content */
-    #jobTable th:last-child, 
-    #jobTable td:last-child {
-      width: 30px;
-      padding: 4px 2px;
-      text-align: center;
-      vertical-align: middle;
-    }
     .table-container {
-      max-height: 400px; /* Increased default height */
+      max-height: 450px; /* Increased default height */
       overflow-y: auto;
       margin-top: 8px;
-      border: 1px solid var(--border-color);
-      border-radius: 4px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      border-radius: 8px;
       contain: content; /* Improve scrolling performance */
       position: relative; /* For overlay positioning */
     }
+    
     .table-overlay {
       position: absolute;
       top: 0;
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(255, 255, 255, 0.7);
+      background: rgba(255, 255, 255, 0.8);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -306,60 +399,92 @@
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.3s ease;
+      border-radius: 8px;
     }
+    
     .table-overlay.active {
       opacity: 1;
       pointer-events: all;
     }
+    
     .overlay-content {
       padding: 20px;
       background: white;
-      border-radius: 4px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
       text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
     }
+    
     .loading-spinner {
       display: inline-block;
-      width: 30px;
-      height: 30px;
+      width: 36px;
+      height: 36px;
       border: 3px solid rgba(25, 118, 210, 0.3);
       border-radius: 50%;
       border-top-color: var(--primary-color);
       animation: spin 1s linear infinite;
-      margin-bottom: 10px;
     }
+    
     #spinner {
       text-align: center;
-      margin: 12px 0;
+      margin: 20px 0;
       color: #666;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
     }
+    
+    #spinner .loading-spinner {
+      margin-bottom: 5px;
+    }
+    
     #toast {
       display: none;
       position: fixed;
-      bottom: 16px;
+      bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(0,0,0,0.8);
+      background: rgba(33, 33, 33, 0.9);
       color: #fff;
-      padding: 6px 10px;
-      border-radius: 4px;
-      font-size: 12px;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 13px;
       z-index: 9999;
       max-width: 90%;
       text-align: center;
       animation: fadeIn 0.3s ease-in-out;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      backdrop-filter: blur(2px);
     }
     
     @keyframes fadeIn {
       from { opacity: 0; transform: translate(-50%, 20px); }
       to { opacity: 1; transform: translate(-50%, 0); }
     }
+    
     .empty-state {
-      padding: 20px 10px;
+      padding: 30px 15px;
       text-align: center;
-      color: #777;
+      color: #757575;
+      background-color: #fafafa;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
     }
+    
+    .empty-state-icon {
+      font-size: 32px;
+      color: #bdbdbd;
+      margin-bottom: 10px;
+    }
+    
     /* Better tooltips for any cell with long text */
     .tooltip-cell {
       position: relative;
@@ -368,18 +493,17 @@
       text-overflow: ellipsis;
       cursor: default;
     }
+    
     .global-tooltip {
       display: none;
       position: fixed;
       background: white;
-      border: 1px solid #ddd;
-      padding: 8px;
-      border-radius: 3px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      border-radius: 6px;
+      padding: 10px 14px;
       z-index: 1000;
       max-width: 350px;
       font-size: 12px;
-      line-height: 1.4;
+      line-height: 1.5;
       word-break: break-word;
       white-space: normal;
       pointer-events: none;
@@ -389,22 +513,65 @@
       top: 0;
       transition: opacity 0.15s ease-in-out;
       opacity: 0;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+      border: 1px solid #f0f0f0;
     }
-    /* Adding active state for buttons */
+    
+    /* Action button styling */
+    .action-btn {
+      border-radius: 6px;
+      padding: 5px 12px;
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .action-btn:hover {
+      background: var(--hover-color);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    
     .action-btn:active {
       transform: translateY(1px);
-      box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
     }
-    #refreshBtn:active {
-      transform: translateY(1px);
+    
+    /* Add a more modern scrollbar */
+    .table-container::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
     }
-    @media (max-width: 300px) {
+    
+    .table-container::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 4px;
+    }
+    
+    .table-container::-webkit-scrollbar-thumb {
+      background: #c1c1c1;
+      border-radius: 4px;
+    }
+    
+    .table-container::-webkit-scrollbar-thumb:hover {
+      background: #a8a8a8;
+    }
+    
+    @media (max-width: 350px) {
       .filter-row {
         flex-direction: column;
         align-items: stretch;
       }
+      
       .filter-item {
         margin-right: 0;
+        margin-bottom: 8px;
       }
     }
   </style>
@@ -412,7 +579,9 @@
 <body>
   <h3>
     View Jobs
-    <button id="refreshBtn" title="Refresh"><span class="refresh-icon">↻</span> Refresh</button>
+    <button id="refreshBtn" title="Refresh">
+      <span class="refresh-icon">↻</span> Refresh
+    </button>
   </h3>
   
   <!-- Active sheet info -->
@@ -421,7 +590,10 @@
     <span class="sheet-badge" id="activeSheetBadge">Jobs</span>
   </div>
   
-  <div id="spinner">⏳ Loading jobs...</div>
+  <div id="spinner">
+    <div class="loading-spinner"></div>
+    <div>Loading jobs data...</div>
+  </div>
 
   <div id="controls" style="display:none;" class="filter-section">
     <div class="filter-row">
@@ -433,7 +605,7 @@
     <div class="filter-row">
       <div class="filter-item" style="flex-grow: 1;">
         <label for="searchInput">Search:</label>
-        <input type="text" id="searchInput" placeholder="Job name..." />
+        <input type="text" id="searchInput" placeholder="Search by job name..." />
       </div>
     </div>
   </div>
@@ -555,7 +727,7 @@
       if (els.controls) els.controls.style.display = 'block';
 
       // Build the status filter
-      els.statusFilter.innerHTML = `<option value="">(All)</option>`;
+      els.statusFilter.innerHTML = `<option value="">(All Statuses)</option>`;
       (config.statuses || []).forEach(s => {
         els.statusFilter.innerHTML += `<option value="${s}">${s}</option>`;
       });
@@ -619,22 +791,15 @@
     
     function prefetchJobs() {
       // Use a Web Worker if available to avoid UI blocking
-      if (window.Worker) {
-        // We can't actually use a Worker in Apps Script environment,
-        // but we can simulate the effect with setTimeout
-        setTimeout(() => {
-          loadJobs();
-        }, 0);
-      } else {
-        // Fallback for browsers without Worker support
+      setTimeout(() => {
         loadJobs();
-      }
+      }, 0);
     }
 
     function loadJobs(isForceRefresh = false) {
       // Show spinner only on first load
       if (isFirstLoad) {
-        if (els.spinner) els.spinner.style.display = 'block';
+        if (els.spinner) els.spinner.style.display = 'flex';
       }
       
       // Cancel any previous requests
@@ -684,7 +849,7 @@
       if (useCache) return;
       
       // Normal fetch with timeout
-      const timeoutMs = 10000; // 10 second timeout
+      const timeoutMs = 15000; // 15 second timeout
       let timeoutId;
       
       // Create request object with cancel method
@@ -697,7 +862,7 @@
         canceled: false
       };
       
-      // Set timeout for slow responses - INCREASED FROM 2000ms TO 5000ms
+      // Set timeout for slow responses
       timeoutId = setTimeout(() => {
         if (!window.currentJobRequest.canceled) {
           if (isFirstLoad) {
@@ -706,7 +871,7 @@
             showToast("Refresh is taking longer than expected...", true);
           }
         }
-      }, 5000); // Increased from 2000ms to 5000ms to prevent premature messages
+      }, 5000);
       
       google.script.run
         .withSuccessHandler(function(response) {
@@ -799,34 +964,21 @@
         .getJobs(1, 0, window.activeSheetName);
     }
     
-    // Helper function to get status color from configuration
-    function getStatusColor(status) {
-      // Default colors based on common status values
-      const defaultColors = {
-        'done': '#4caf50',      // Green
-        'completed': '#4caf50', // Green
-        'in-progress': '#ff9800', // Orange
-        'in progress': '#ff9800', // Orange
-        'inprogress': '#ff9800', // Orange
-        'pending': '#1976d2',   // Blue
-        'default': '#cccccc'    // Gray (default)
-      };
+    // Helper function to get status class based on status
+    function getStatusClass(status) {
+      const statusLower = status.toLowerCase();
       
-      // If we have status colors defined in config
-      if (config && config.statuses && Array.isArray(config.statuses) && 
-          config.statusColors && Array.isArray(config.statusColors)) {
-        // Find the index of the status in the statuses array (case insensitive)
-        const index = config.statuses.findIndex(s => 
-          s.toLowerCase() === status.toLowerCase());
-        
-        // If found, return the corresponding color
-        if (index >= 0 && index < config.statusColors.length) {
-          return config.statusColors[index];
-        }
+      if (statusLower === 'pending') {
+        return 'status-pending';
+      } else if (statusLower === 'in-progress' || statusLower === 'inprogress' || statusLower === 'in progress') {
+        return 'status-in-progress';
+      } else if (statusLower === 'done' || statusLower === 'completed') {
+        return 'status-done';
+      } else if (statusLower === 'blocked') {
+        return 'status-blocked';
       }
       
-      // Fallback to default colors if not found in config
-      return defaultColors[status.toLowerCase()] || defaultColors['default'];
+      return 'status-default';
     }
     
     function processJobsData(jobs) {
@@ -858,13 +1010,13 @@
         if (field !== "Notes") {
           headerHtml += `<th>${escapeHtml(field)}</th>`;
         } else {
-          headerHtml += `<th style="text-align:center;">Note</th>`;
+          headerHtml += `<th style="text-align:center;">Notes</th>`;
         }
       });
-      headerHtml += `<th style="width:30px; text-align:center; padding: 6px 4px;">Find</th>`;
+      headerHtml += `<th style="text-align:center;">Find</th>`;
       
       if (els.jobTableHeader) {
-        els.jobTableHeader.innerHTML = `<tr>${headerHtml}</tr>`;
+        els.jobTableHeader.innerHTML = headerHtml;
       }
       
       // Clear and rebuild body
@@ -872,6 +1024,18 @@
         els.jobTableBody.innerHTML = '';
         
         // Create all rows at once for small datasets
+        if (jobs.length === 0) {
+          els.jobTableBody.innerHTML = `
+            <tr>
+              <td colspan="4" class="empty-state">
+                <div class="empty-state-icon">📋</div>
+                <div>No jobs found</div>
+                <div style="font-size: 12px; color: #9e9e9e;">Try changing your filters or refreshing</div>
+              </td>
+            </tr>`;
+          return;
+        }
+        
         const html = jobs.map(job => {
           const jobName = String(job["Job Name"] || "");
           const status = String(job["Status"] || "");
@@ -879,42 +1043,42 @@
           const hasNotes = job["Notes"] && String(job["Notes"]).trim() !== "";
           const notesIcon = hasNotes ? "<span class='note-icon'>📝</span>" : "";
           const notesTitle = hasNotes ? escapeHtml(String(job["Notes"])) : "No notes";
+          const statusClass = getStatusClass(status);
           
           return `
           <tr class="job-row ${statusVal === "done" || statusVal === "completed" ? "done" : ""}" 
               data-name="${jobName.toLowerCase()}" 
               data-status="${statusVal}">
             <td class="tooltip-cell" data-content="${escapeHtml(jobName)}">${escapeHtml(jobName)}</td>
-            <td class="tooltip-cell" data-content="${escapeHtml(status)}">
-              <span class="status-dot" style="background-color: ${getStatusColor(statusVal)}"></span>
+            <td class="tooltip-cell" style="text-align:center;" data-content="${escapeHtml(status)}">
+              <span class="status-badge ${statusClass}">${escapeHtml(status)}</span>
             </td>
             <td class="tooltip-cell" style="text-align:center;" data-content="${notesTitle}">${notesIcon}</td>
-            <td class="tooltip-cell" data-content="Find this job in spreadsheet">
-              <button class="action-btn locate-btn" onclick="locate('${escapeQuotes(jobName)}')"><span class='emoji-icon'>🔍</span></button>
+            <td class="tooltip-cell" style="text-align:center;">
+              <button class="locate-btn" onclick="locate('${escapeQuotes(jobName)}')" title="Find in spreadsheet">
+                <span class='icon'>🔍</span>
+              </button>
             </td>
           </tr>`;
         }).join('');
         
-        els.jobTableBody.innerHTML = html || `<tr><td colspan="4" class="empty-state">No jobs found</td></tr>`;
+        els.jobTableBody.innerHTML = html;
       }
     }
 
     function renderJobs(jobs) {
-      // Pre-compile templates for better performance
-      const rowTemplate = document.createElement('template');
-      
-      // Create header - simplified to just show essential columns
+      // Create header
       let headerHtml = '';
       ESSENTIAL_COLUMNS.forEach(field => {
         if (field !== "Notes") {
           headerHtml += `<th>${escapeHtml(field)}</th>`;
         } else {
-          headerHtml += `<th style="text-align:center;">Note</th>`;
+          headerHtml += `<th style="text-align:center;">Notes</th>`;
         }
       });
       // Add the Find column
-      headerHtml += `<th style="width:30px; text-align:center; padding: 6px 4px;">Find</th>`;
-      els.jobTableHeader.innerHTML = `<tr>${headerHtml}</tr>`;
+      headerHtml += `<th style="text-align:center;">Find</th>`;
+      els.jobTableHeader.innerHTML = headerHtml;
       
       // Clear body
       els.jobTableBody.innerHTML = '';
@@ -925,7 +1089,12 @@
       // Check if we have jobs
       if (!jobs || !jobs.length) {
         const row = document.createElement('tr');
-        row.innerHTML = `<td colspan="4" class="empty-state">No jobs found</td>`;
+        row.innerHTML = `
+          <td colspan="4" class="empty-state">
+            <div class="empty-state-icon">📋</div>
+            <div>No jobs found</div>
+            <div style="font-size: 12px; color: #9e9e9e;">Try changing your filters or refreshing</div>
+          </td>`;
         fragment.appendChild(row);
         els.jobTableBody.appendChild(fragment);
         return;
@@ -940,7 +1109,7 @@
         els.jobTableBody.appendChild(fragment);
       } else {
         // For large datasets, implement progressive loading with visual feedback
-        const initialBatchSize = 20;
+        const initialBatchSize = 25;
         const batchSize = 30;
         const initialJobs = jobs.slice(0, initialBatchSize);
         
@@ -950,9 +1119,11 @@
         // Add a load more indicator row
         const loadMoreRow = document.createElement('tr');
         loadMoreRow.id = 'loadMoreRow';
-        loadMoreRow.innerHTML = `<td colspan="4" class="empty-state" style="background-color: #f5f5f5; cursor: pointer;">
-          Loading more jobs... (${initialBatchSize}/${totalJobs})
-        </td>`;
+        loadMoreRow.innerHTML = `
+          <td colspan="4" class="empty-state" style="padding: 15px; cursor: pointer;">
+            <div class="loading-spinner" style="width: 24px; height: 24px; margin-bottom: 10px;"></div>
+            <div>Loading more jobs... (${initialBatchSize}/${totalJobs})</div>
+          </td>`;
         fragment.appendChild(loadMoreRow);
         
         els.jobTableBody.appendChild(fragment);
@@ -967,7 +1138,10 @@
           isLoading = true;
           const loadMoreRow = document.getElementById('loadMoreRow');
           if (loadMoreRow) {
-            loadMoreRow.querySelector('td').textContent = `Loading more jobs... (${loadedCount}/${totalJobs})`;
+            loadMoreRow.querySelector('td').innerHTML = `
+              <div class="loading-spinner" style="width: 24px; height: 24px; margin-bottom: 10px;"></div>
+              <div>Loading more jobs... (${loadedCount}/${totalJobs})</div>
+            `;
           }
           
           // Load next batch
@@ -991,9 +1165,10 @@
             if (loadedCount < totalJobs) {
               const newLoadMoreRow = document.createElement('tr');
               newLoadMoreRow.id = 'loadMoreRow';
-              newLoadMoreRow.innerHTML = `<td colspan="4" class="empty-state" style="background-color: #f5f5f5; cursor: pointer;">
-                Click to load more jobs (${loadedCount}/${totalJobs})
-              </td>`;
+              newLoadMoreRow.innerHTML = `
+                <td colspan="4" class="empty-state" style="padding: 15px; cursor: pointer;">
+                  <div>Click to load more jobs (${loadedCount}/${totalJobs})</div>
+                </td>`;
               newLoadMoreRow.onclick = loadMoreJobs;
               els.jobTableBody.appendChild(newLoadMoreRow);
             } else {
@@ -1037,15 +1212,21 @@
           
           // Get current status from the row
           const statusCell = row.querySelector('td:nth-child(2)');
-          const statusDot = statusCell ? statusCell.querySelector('.status-dot') : null;
+          const statusBadge = statusCell ? statusCell.querySelector('.status-badge') : null;
           
           // Get new status from job data
           const newStatus = String(job["Status"] || "");
           const statusVal = newStatus.toLowerCase();
           
-          if (statusDot) {
-            // Update status dot color
-            statusDot.style.backgroundColor = getStatusColor(statusVal);
+          if (statusBadge) {
+            // Update status badge text and class
+            statusBadge.textContent = newStatus;
+            
+            // Remove all existing status classes
+            statusBadge.classList.remove('status-pending', 'status-in-progress', 'status-done', 'status-blocked', 'status-default');
+            
+            // Add the correct status class
+            statusBadge.classList.add(getStatusClass(newStatus));
             
             // Update status tooltip
             statusCell.setAttribute('data-content', escapeHtml(newStatus));
@@ -1083,8 +1264,6 @@
           row.dataset.name = jobName.toLowerCase();
           row.dataset.status = statusVal;
 
-          // Optimized row creation - use DOM APIs instead of innerHTML for better performance
-          
           // Job Name column
           const nameCell = document.createElement('td');
           nameCell.className = 'tooltip-cell';
@@ -1092,18 +1271,18 @@
           nameCell.setAttribute('data-content', escapeHtml(jobName));
           row.appendChild(nameCell);
           
-          // Status column with colored dot instead of text
+          // Status column with styled badge
           const statusCell = document.createElement('td');
           statusCell.className = 'tooltip-cell';
           statusCell.setAttribute('data-content', escapeHtml(status));
           statusCell.style.textAlign = 'center';
           
-          // Create status dot with color
-          const statusDot = document.createElement('span');
-          statusDot.className = 'status-dot';
-          statusDot.style.backgroundColor = getStatusColor(statusVal);
+          // Create status badge
+          const statusBadge = document.createElement('span');
+          statusBadge.className = `status-badge ${getStatusClass(status)}`;
+          statusBadge.textContent = status;
           
-          statusCell.appendChild(statusDot);
+          statusCell.appendChild(statusBadge);
           row.appendChild(statusCell);
           
           // Notes indicator column
@@ -1121,11 +1300,13 @@
           // Find button column
           const findCell = document.createElement('td');
           findCell.className = 'tooltip-cell';
+          findCell.style.textAlign = 'center';
           findCell.setAttribute('data-content', 'Find this job in spreadsheet');
           
           const findBtn = document.createElement('button');
-          findBtn.className = 'action-btn locate-btn';
-          findBtn.innerHTML = "<span class='emoji-icon'>🔍</span>";
+          findBtn.className = 'locate-btn';
+          findBtn.innerHTML = "<span class='icon'>🔍</span>";
+          findBtn.title = "Find in spreadsheet";
           findBtn.onclick = function() { locate(jobName); };
           
           findCell.appendChild(findBtn);
@@ -1210,12 +1391,12 @@
         row.parentNode.removeChild(row);
       });
       
-      // Also look for any rows with text "No matching jobs found"
+      // Also look for any rows with the empty-state class
       const allRows = els.jobTableBody.getElementsByTagName('tr');
       for (let i = allRows.length - 1; i >= 0; i--) {
         const row = allRows[i];
-        const cellText = row.textContent || '';
-        if (cellText.trim() === 'No matching jobs found') {
+        const cell = row.querySelector('td.empty-state');
+        if (cell) {
           row.parentNode.removeChild(row);
         }
       }
@@ -1229,9 +1410,12 @@
         // Then add a single empty state row
         const emptyRow = document.createElement('tr');
         emptyRow.classList.add('empty-filter-row');
-        emptyRow.innerHTML = `<td colspan="4" class="empty-state">
-          No matching jobs found
-        </td>`;
+        emptyRow.innerHTML = `
+          <td colspan="4" class="empty-state">
+            <div class="empty-state-icon">🔍</div>
+            <div>No matching jobs found</div>
+            <div style="font-size: 12px; color: #9e9e9e;">Try changing your search or filters</div>
+          </td>`;
         els.jobTableBody.appendChild(emptyRow);
       }
     }

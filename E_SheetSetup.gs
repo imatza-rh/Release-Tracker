@@ -55,8 +55,17 @@ function getOrCreateSheet(sheetName, customFields, createIfMissing = true) {
       
       sheet.appendRow(fields);
       
-      // Format header row
-      sheet.getRange(1, 1, 1, fields.length).setFontWeight('bold').setBackground('#f3f3f3');
+      // Format header row with improved styling
+      const headerRange = sheet.getRange(1, 1, 1, fields.length);
+      headerRange.setBackground('#37474f');
+      headerRange.setFontColor('#ffffff');
+      headerRange.setFontWeight('bold');
+      headerRange.setVerticalAlignment('middle');
+      headerRange.setHorizontalAlignment('center');
+      headerRange.setFontSize(12);
+      
+      // Add proper padding to header cells
+      sheet.setRowHeight(1, 32);
       
       // Setup validation
       setupDataValidation(sheet);
@@ -134,6 +143,7 @@ function setupDataValidation(sheet) {
 
 /**
  * Sets up conditional formatting rules to color cells based on their values
+ * with improved visual styling
  * 
  * @param {Sheet} sheet - The sheet to set up formatting on
  * @param {Object} config - Configuration object with field values and colors
@@ -157,10 +167,9 @@ function setupConditionalFormatting(sheet, config) {
     const headerRow = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
     
     // Clear existing rules to avoid duplication
-    const existingRules = sheet.getConditionalFormatRules();
     sheet.clearConditionalFormatRules();
     
-    // Initialize rules array with any existing rules we want to keep
+    // Initialize rules array
     const rules = [];
     
     // Status column formatting
@@ -170,9 +179,15 @@ function setupConditionalFormatting(sheet, config) {
         const statusRange = sheet.getRange(2, statusCol + 1, sheet.getMaxRows() - 1, 1);
         
         config.statuses.forEach((status, index) => {
+          const color = config.statusColors[index];
+          // Calculate a darker text color for better contrast
+          const textColor = getDarkerShade(color);
+          
           const rule = SpreadsheetApp.newConditionalFormatRule()
             .whenTextEqualTo(status)
-            .setBackground(config.statusColors[index])
+            .setBackground(color)
+            .setFontColor(textColor)
+            .setBold(true)
             .setRanges([statusRange])
             .build();
           
@@ -188,9 +203,14 @@ function setupConditionalFormatting(sheet, config) {
         const typeRange = sheet.getRange(2, typeCol + 1, sheet.getMaxRows() - 1, 1);
         
         config.types.forEach((type, index) => {
+          const color = config.typeColors[index];
+          const textColor = getDarkerShade(color);
+          
           const rule = SpreadsheetApp.newConditionalFormatRule()
             .whenTextEqualTo(type)
-            .setBackground(config.typeColors[index])
+            .setBackground(color)
+            .setFontColor(textColor)
+            .setBold(false) // We're already making text darker
             .setRanges([typeRange])
             .build();
           
@@ -206,9 +226,14 @@ function setupConditionalFormatting(sheet, config) {
         const priorityRange = sheet.getRange(2, priorityCol + 1, sheet.getMaxRows() - 1, 1);
         
         config.priorities.forEach((priority, index) => {
+          const color = config.priorityColors[index];
+          const textColor = getDarkerShade(color);
+          
           const rule = SpreadsheetApp.newConditionalFormatRule()
             .whenTextEqualTo(priority)
-            .setBackground(config.priorityColors[index])
+            .setBackground(color)
+            .setFontColor(textColor)
+            .setBold(true)
             .setRanges([priorityRange])
             .build();
           
@@ -222,8 +247,131 @@ function setupConditionalFormatting(sheet, config) {
       sheet.setConditionalFormatRules(rules);
       log(`Applied ${rules.length} conditional formatting rules for colors`, LOG_LEVELS.INFO);
     }
+    
+    // Apply general table formatting
+    applyTableFormatting(sheet);
+    
   } catch (error) {
     handleError('setupConditionalFormatting', error, false);
+  }
+}
+
+/**
+ * Calculates a darker shade of a color for better text contrast
+ * 
+ * @param {string} hexColor - Hex color code (e.g., "#RRGGBB")
+ * @param {number} [factor=0.6] - Darkening factor (lower = darker)
+ * @returns {string} Darker hex color code
+ */
+function getDarkerShade(hexColor, factor = 0.6) {
+  try {
+    // Remove the # if it exists
+    hexColor = hexColor.replace('#', '');
+    
+    // Convert to RGB
+    const r = parseInt(hexColor.substring(0, 2), 16);
+    const g = parseInt(hexColor.substring(2, 4), 16);
+    const b = parseInt(hexColor.substring(4, 6), 16);
+    
+    // Darken the color
+    const darkerR = Math.floor(r * factor);
+    const darkerG = Math.floor(g * factor);
+    const darkerB = Math.floor(b * factor);
+    
+    // Convert back to hex
+    return '#' + 
+      darkerR.toString(16).padStart(2, '0') + 
+      darkerG.toString(16).padStart(2, '0') + 
+      darkerB.toString(16).padStart(2, '0');
+  } catch (e) {
+    // In case of any error, return a default dark color
+    return '#333333';
+  }
+}
+
+/**
+ * Applies consistent table formatting to the sheet
+ * 
+ * @param {Sheet} sheet - The sheet to format
+ */
+function applyTableFormatting(sheet) {
+  try {
+    if (!sheet) return;
+    
+    const lastRow = Math.max(sheet.getLastRow(), 2);
+    const lastCol = sheet.getLastColumn();
+    
+    if (lastRow <= 1 || lastCol === 0) return;
+    
+    // Format data rows with better styling
+    const dataRange = sheet.getRange(2, 1, lastRow - 1, lastCol);
+    
+    // Apply font family and size to all data cells
+    dataRange.setFontFamily('Arial');
+    dataRange.setFontSize(11);
+    dataRange.setVerticalAlignment('middle');
+    
+    // Alternate row colors and set borders
+    for (let i = 2; i <= lastRow; i++) {
+      const isEvenRow = (i % 2 === 0);
+      const rowColor = isEvenRow ? '#f9f9f9' : '#ffffff';
+      const rowRange = sheet.getRange(i, 1, 1, lastCol);
+      
+      // Set proper row height for better spacing
+      sheet.setRowHeight(i, 28);
+      
+      // Set background color for alternating rows
+      rowRange.setBackground(rowColor);
+      
+      // Add border only to the bottom of each row for cleaner look
+      rowRange.setBorder(
+        false, // top
+        false, // left
+        true,  // bottom
+        false, // right
+        false, // vertical
+        false, // horizontal
+        '#e0e0e0', 
+        SpreadsheetApp.BorderStyle.SOLID
+      );
+    }
+    
+    // Add vertical borders to columns
+    for (let i = 1; i <= lastCol; i++) {
+      const colRange = sheet.getRange(1, i, lastRow, 1);
+      colRange.setBorder(
+        false, // top
+        false, // left
+        false, // bottom
+        true,  // right
+        false, // vertical
+        false, // horizontal
+        '#e0e0e0',
+        SpreadsheetApp.BorderStyle.SOLID
+      );
+    }
+    
+    // Center-align specific columns (Status, Type, Priority)
+    const headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
+    
+    // Find and center columns by their header names
+    const columnsToCenter = ['Status', 'Type', 'Priority', 'Jira Ticket', 'Job Link'];
+    columnsToCenter.forEach(columnName => {
+      const colIndex = headers.indexOf(columnName);
+      if (colIndex >= 0) {
+        const centerRange = sheet.getRange(2, colIndex + 1, lastRow - 1, 1);
+        centerRange.setHorizontalAlignment('center');
+      }
+    });
+    
+    // Auto-resize columns for better readability
+    for (let i = 1; i <= lastCol; i++) {
+      sheet.autoResizeColumn(i);
+    }
+    
+    log('Applied enhanced table formatting', LOG_LEVELS.INFO);
+  } catch (error) {
+    handleError('applyTableFormatting', error, false);
   }
 }
 

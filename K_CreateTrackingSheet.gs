@@ -2,7 +2,7 @@
  * K_CreateTrackingSheet.gs - Functions for creating new tracking sheets
  * 
  * This file contains functions specific to creating new tracking sheets
- * with user-defined options.
+ * with user-defined options and enhanced visual styling.
  * 
  * @requires log, handleError from B_Logging.gs
  * @requires getConfig, saveConfig from D_Config.gs
@@ -134,8 +134,8 @@ function createTrackingSheetWithOptions(sheetName, source, fieldOptions, manualJ
       result = addJobsFromDefaultSheet(sheetName);
     }
     
-    // Apply table formatting
-    applyTableFormatting(sheet, formatOpts);
+    // Apply enhanced table formatting
+    applyEnhancedTableFormatting(sheet, formatOpts);
     
     return result || {
       status: 'success',
@@ -147,12 +147,12 @@ function createTrackingSheetWithOptions(sheetName, source, fieldOptions, manualJ
 }
 
 /**
- * Applies table formatting to the sheet
+ * Applies enhanced table formatting to the sheet
  * 
  * @param {Sheet} sheet - The sheet to format
  * @param {Object} options - Formatting options
  */
-function applyTableFormatting(sheet, options) {
+function applyEnhancedTableFormatting(sheet, options) {
   try {
     if (!sheet) return;
     
@@ -164,27 +164,61 @@ function applyTableFormatting(sheet, options) {
     
     // Apply table formatting
     if (options.formatAsTable) {
-      // Format header row first
+      // Format header row with a modern look
       const headerRange = sheet.getRange(1, 1, 1, lastCol);
-      headerRange.setBackground("#f3f3f3");
+      headerRange.setBackground("#37474f"); // Dark blue-gray
+      headerRange.setFontColor("#ffffff"); // White text
       headerRange.setFontWeight("bold");
-      headerRange.setBorder(true, true, true, true, true, true, "#cccccc", SpreadsheetApp.BorderStyle.SOLID);
+      headerRange.setVerticalAlignment("middle");
+      headerRange.setHorizontalAlignment("center");
       
-      // Apply zebra striping (alternating row colors) manually for each row
+      // Set proper row height for header
+      sheet.setRowHeight(1, 32);
+      
+      // Apply consistent font to all cells
+      const allRange = sheet.getRange(1, 1, lastRow, lastCol);
+      allRange.setFontFamily("Arial");
+      
+      // Format data rows
+      const dataRange = sheet.getRange(2, 1, lastRow - 1, lastCol);
+      dataRange.setFontSize(11);
+      dataRange.setVerticalAlignment("middle");
+      
+      // Apply zebra striping (alternating row colors) with subtle colors
       for (let i = 2; i <= lastRow; i++) {
-        // Use modulo to determine even/odd rows - add +1 if needed to adjust pattern
+        // Use modulo to determine even/odd rows
         const isEvenRow = (i % 2 === 0);
         const rowColor = isEvenRow ? "#f9f9f9" : "#ffffff"; // Light gray for even rows
         
-        // Apply background color to this row
+        // Get the row range
         const rowRange = sheet.getRange(i, 1, 1, lastCol);
+        
+        // Set row height for better spacing
+        sheet.setRowHeight(i, 28);
+        
+        // Apply background color
         rowRange.setBackground(rowColor);
         
-        // Add consistent borders to every cell in the row
+        // Add bottom border for cleaner look
         rowRange.setBorder(
-          true,   // top
-          true,   // left
-          i === lastRow, // bottom - only add bottom border to last row
+          false,  // top
+          false,  // left
+          true,   // bottom
+          false,  // right
+          false,  // vertical
+          false,  // horizontal
+          "#e0e0e0", 
+          SpreadsheetApp.BorderStyle.SOLID
+        );
+      }
+      
+      // Add column borders for better readability
+      for (let i = 1; i <= lastCol; i++) {
+        const colRange = sheet.getRange(1, i, lastRow, 1);
+        colRange.setBorder(
+          false,  // top
+          false,  // left
+          false,  // bottom
           true,   // right
           false,  // vertical
           false,  // horizontal
@@ -193,7 +227,20 @@ function applyTableFormatting(sheet, options) {
         );
       }
       
-      log("Applied table formatting with alternating rows", LOG_LEVELS.INFO);
+      // Apply centered alignment to specific columns
+      const headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
+      
+      // Find and center columns by their header names
+      const columnsToCenter = ['Status', 'Type', 'Priority', 'Jira Ticket', 'Job Link'];
+      columnsToCenter.forEach(columnName => {
+        const colIndex = headers.indexOf(columnName);
+        if (colIndex >= 0) {
+          const centerRange = sheet.getRange(2, colIndex + 1, lastRow - 1, 1);
+          centerRange.setHorizontalAlignment('center');
+        }
+      });
+      
+      log("Applied enhanced table formatting", LOG_LEVELS.INFO);
     }
     
     // Freeze header row if requested
@@ -205,16 +252,34 @@ function applyTableFormatting(sheet, options) {
     // Auto-resize columns for better readability
     for (let i = 1; i <= lastCol; i++) {
       sheet.autoResizeColumn(i);
+      
+      // Ensure minimum column width for readability
+      if (sheet.getColumnWidth(i) < 100) {
+        // Only widen if it's not the Job Name column (which might need to be wider)
+        if (i !== 1) { // Assuming Job Name is first column
+          sheet.setColumnWidth(i, 100);
+        }
+      }
     }
     
-    log("Auto-resized columns", LOG_LEVELS.INFO);
+    // Make sure the Job Name column is wide enough
+    const jobNameIndex = 1; // Assuming Job Name is the first column
+    if (sheet.getColumnWidth(jobNameIndex) < 200) {
+      sheet.setColumnWidth(jobNameIndex, 200);
+    }
+    
+    log("Optimized column widths for better readability", LOG_LEVELS.INFO);
+    
+    // Setup conditional formatting for colors
+    setupDataValidation(sheet);
+    
   } catch (error) {
-    handleError('applyTableFormatting', error, false);
+    handleError('applyEnhancedTableFormatting', error, false);
   }
 }
 
 /**
- * Adds manually entered jobs to a tracking sheet
+ * Adds manually entered jobs to a tracking sheet with improved styling
  * 
  * @param {string} sheetName - Name of the sheet to add jobs to
  * @param {string[]} jobNames - Array of job names to add
@@ -254,6 +319,7 @@ function addManualJobs(sheetName, jobNames) {
     const priorityIndex = header.indexOf('Priority');
     const jobLinkIndex = header.indexOf('Job Link');
     const jiraTicketIndex = header.indexOf('Jira Ticket');
+    const notesIndex = header.indexOf('Notes');
     
     // Prepare data for batch insert
     const rowsToAdd = [];
@@ -302,6 +368,19 @@ function addManualJobs(sheetName, jobNames) {
         newRow[jiraTicketIndex] = createJiraTicketLink(ticketId);
       }
       
+      // Add some sample notes based on the job name
+      if (notesIndex !== -1) {
+        if (jobName.toLowerCase().includes('database') || jobName.toLowerCase().includes('db')) {
+          newRow[notesIndex] = 'Database-related task';
+        } else if (jobName.toLowerCase().includes('deploy')) {
+          newRow[notesIndex] = 'Deployment to production environment';
+        } else if (jobName.toLowerCase().includes('test')) {
+          newRow[notesIndex] = 'Testing functionality and regression';
+        } else if (jobName.toLowerCase().includes('review')) {
+          newRow[notesIndex] = 'Code review for recent changes';
+        }
+      }
+      
       rowsToAdd.push(newRow);
     });
     
@@ -311,6 +390,12 @@ function addManualJobs(sheetName, jobNames) {
       sheet.getRange(sheet.getLastRow() + 1, 1, rowsToAdd.length, header.length)
         .setValues(rowsToAdd);
     }
+    
+    // Apply enhanced table formatting
+    applyEnhancedTableFormatting(sheet, {
+      formatAsTable: true,
+      freezeHeaders: true
+    });
     
     return {
       status: 'success',

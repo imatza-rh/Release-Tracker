@@ -12,41 +12,52 @@
       --success-color: #4caf50;
       --warning-color: #ff9800;
       --danger-color: #f44336;
-      --heading-color: #333;
+      --header-color: #37474f;
       --section-bg: #fafafa;
     }
     
     body {
-      font-family: Arial, sans-serif;
-      padding: 10px;
+      font-family: 'Roboto', 'Arial', sans-serif;
+      padding: 12px;
       font-size: 14px;
       color: var(--text-color);
       margin: 0;
+      background: #fff;
       contain: paint;
     }
     
     h3 {
       margin-top: 0;
       margin-bottom: 16px;
-      color: var(--primary-color);
-      font-size: 16px;
-      padding-bottom: 8px;
+      color: var(--header-color);
+      font-size: 18px;
+      padding-bottom: 10px;
       border-bottom: 2px solid var(--primary-color);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    h3 .icon {
+      font-size: 22px;
     }
     
     h4 {
       margin-top: 0;
       margin-bottom: 12px;
-      color: var(--heading-color);
-      font-size: 15px;
+      color: var(--header-color);
+      font-size: 16px;
+      background-color: var(--section-bg);
+      padding: 10px 14px;
+      border-radius: 8px 8px 0 0;
+      border-left: 4px solid var(--primary-color);
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
     
-    label {
-      display: block;
-      margin-top: 10px;
-      margin-bottom: 4px;
-      font-weight: bold;
-      font-size: 13px;
+    h4 .icon {
+      font-size: 18px;
     }
     
     .required::after {
@@ -58,12 +69,17 @@
     select, input, textarea {
       width: 100%;
       box-sizing: border-box;
-      margin-bottom: 12px;
-      font-size: 13px;
-      padding: 8px;
+      margin-bottom: 16px;
+      font-size: 14px;
+      padding: 10px 12px;
       border: 1px solid var(--border-color);
-      border-radius: 4px;
-      transition: border-color 0.2s, box-shadow 0.2s;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+      font-family: 'Roboto', 'Arial', sans-serif;
+    }
+    
+    select:hover, input:hover, textarea:hover {
+      border-color: #bbbbbb;
     }
     
     select:focus, input:focus, textarea:focus {
@@ -74,22 +90,33 @@
     
     textarea {
       resize: vertical;
-      min-height: 80px;
+      min-height: 90px;
     }
     
-    /* Section styling - simplified for reliability */
+    /* Section styling - improved for visual appeal */
     .section {
       display: none;
       border: 1px solid var(--border-color);
-      border-radius: 5px;
-      background: var(--section-bg);
+      border-radius: 8px;
+      background: #fff;
+      padding: 0;
+      margin-top: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      overflow: hidden;
+    }
+    
+    .section-content {
       padding: 16px;
-      margin-top: 16px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
     }
     
     .section.visible {
       display: block;
+      animation: fadeIn 0.3s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
     
     /* Debug outline for troubleshooting */
@@ -103,19 +130,19 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      height: 150px;
+      min-height: 200px;
       text-align: center;
     }
     
     .spinner {
       display: inline-block;
-      width: 30px;
-      height: 30px;
+      width: 36px;
+      height: 36px;
       border: 3px solid rgba(25, 118, 210, 0.3);
       border-radius: 50%;
       border-top-color: var(--primary-color);
       animation: spin 1s linear infinite;
-      margin-bottom: 12px;
+      margin-bottom: 16px;
     }
     
     @keyframes spin {
@@ -132,18 +159,20 @@
     #toast {
       display: none;
       position: fixed;
-      bottom: 16px;
+      bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(0,0,0,0.8);
+      background: rgba(33, 33, 33, 0.9);
       color: #fff;
-      padding: 8px 16px;
-      border-radius: 4px;
+      padding: 10px 20px;
+      border-radius: 8px;
       font-size: 13px;
       z-index: 9999;
       max-width: 90%;
       text-align: center;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      animation: fadeIn 0.3s ease-in-out;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      backdrop-filter: blur(2px);
     }
     
     /* Button styling */
@@ -151,27 +180,43 @@
       background: var(--primary-color);
       color: white;
       border: none;
-      border-radius: 4px;
-      padding: 8px 16px;
+      border-radius: 6px;
+      padding: 10px 18px;
       cursor: pointer;
       font-size: 14px;
       width: 100%;
-      margin-top: 8px;
-      transition: background 0.2s;
+      margin-top: 10px;
+      transition: all 0.2s ease;
       position: relative;
+      font-family: 'Roboto', 'Arial', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      font-weight: 500;
     }
     
     button:hover {
       background: var(--hover-color);
+      transform: translateY(-1px);
+      box-shadow: 0 3px 6px rgba(0,0,0,0.15);
     }
     
     button:active {
       transform: translateY(1px);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
     }
     
     button:disabled {
       background: #b0bec5;
       cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+    
+    .button-icon {
+      font-size: 18px;
     }
     
     .button-processing {
@@ -184,21 +229,21 @@
       position: absolute;
       top: 50%;
       left: 50%;
-      width: 16px;
-      height: 16px;
-      margin-top: -8px;
-      margin-left: -8px;
-      border: 2px solid rgba(255, 255, 255, 0.5);
+      width: 20px;
+      height: 20px;
+      margin-top: -10px;
+      margin-left: -10px;
+      border: 2px solid rgba(255, 255, 255, 0.2);
       border-radius: 50%;
       border-top-color: white;
-      animation: spin 1s linear infinite;
+      animation: spin 0.8s linear infinite;
     }
     
     .helper-text {
       font-size: 12px;
       color: #757575;
       margin-top: -8px;
-      margin-bottom: 12px;
+      margin-bottom: 16px;
     }
     
     .success-text {
@@ -209,7 +254,88 @@
       color: var(--danger-color);
     }
     
-    /* Debug info panel */
+    /* Sheet info display */
+    .sheet-info {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+      font-size: 13px;
+      color: #666;
+      background-color: var(--section-bg);
+      padding: 10px 14px;
+      border-radius: 6px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    
+    .sheet-badge {
+      background-color: #e3f2fd;
+      color: #0d47a1;
+      padding: 3px 10px;
+      border-radius: 12px;
+      margin-left: 8px;
+      font-weight: bold;
+      font-size: 12px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+    
+    /* Action selection with radio buttons */
+    .action-selector {
+      display: flex;
+      background: var(--section-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    
+    .action-option {
+      flex: 1;
+      text-align: center;
+      position: relative;
+    }
+    
+    .action-option input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    
+    .action-option label {
+      display: block;
+      padding: 12px 8px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 14px;
+      color: var(--text-color);
+    }
+    
+    .action-option:not(:last-child) label {
+      border-right: 1px solid var(--border-color);
+    }
+    
+    .action-option input[type="radio"]:checked + label {
+      background: var(--primary-color);
+      color: white;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    .action-option:hover input[type="radio"]:not(:checked) + label {
+      background: rgba(25, 118, 210, 0.05);
+    }
+    
+    label {
+      display: block;
+      margin-top: 10px;
+      margin-bottom: 8px;
+      font-weight: 500;
+      font-size: 14px;
+      color: var(--header-color);
+    }
+    
+    /* Debug panel */
     #debugPanel {
       display: none;
       margin-top: 20px;
@@ -219,24 +345,7 @@
       font-family: monospace;
       font-size: 12px;
       white-space: pre-wrap;
-    }
-    
-    /* Sheet info display */
-    .sheet-info {
-      display: flex;
-      align-items: center;
-      margin-bottom: 8px;
-      font-size: 12px;
-      color: #666;
-    }
-    
-    .sheet-badge {
-      background-color: #e3f2fd;
-      color: #0d47a1;
-      padding: 2px 8px;
-      border-radius: 12px;
-      margin-left: 8px;
-      font-weight: bold;
+      border-radius: 4px;
     }
   </style>
 </head>
@@ -244,12 +353,12 @@
   <!-- Loading spinner shown first -->
   <div id="spinner-container">
     <div class="spinner"></div>
-    <div>Loading data, please wait...</div>
+    <div>Loading job data...</div>
   </div>
 
   <!-- Main content, hidden until data is loaded -->
   <div id="mainContent" class="hidden">
-    <h3>Manage Jobs</h3>
+    <h3><span class="icon">🛠️</span> Manage Jobs</h3>
     
     <!-- Active sheet info -->
     <div class="sheet-info">
@@ -257,67 +366,90 @@
       <span class="sheet-badge" id="activeSheetBadge">Jobs</span>
     </div>
 
-    <!-- Action Selection -->
-    <label for="actionSelect">Action:</label>
-    <select id="actionSelect">
-      <option value="add">➕ Add Job</option>
-      <option value="update">✏️ Update Job</option>
-      <option value="remove">🗑️ Remove Job</option>
-    </select>
+    <!-- Action Selection - Improved with radio buttons -->
+    <div class="action-selector">
+      <div class="action-option">
+        <input type="radio" id="action-add" name="action" value="add" checked>
+        <label for="action-add">➕ Add</label>
+      </div>
+      <div class="action-option">
+        <input type="radio" id="action-update" name="action" value="update">
+        <label for="action-update">✏️ Update</label>
+      </div>
+      <div class="action-option">
+        <input type="radio" id="action-remove" name="action" value="remove">
+        <label for="action-remove">🗑️ Remove</label>
+      </div>
+    </div>
 
     <!-- ADD Section -->
     <div id="addSection" class="section">
-      <h4>➕ Add Job</h4>
-      <label for="addName" class="required">Job Name</label>
-      <input type="text" id="addName" placeholder="Enter job name..." />
-      <div id="addNameHelper" class="helper-text"></div>
+      <h4><span class="icon">➕</span> Add New Job</h4>
+      <div class="section-content">
+        <label for="addName" class="required">Job Name</label>
+        <input type="text" id="addName" placeholder="Enter new job name..." />
+        <div id="addNameHelper" class="helper-text"></div>
 
-      <label for="addType">Type</label>
-      <select id="addType"></select>
+        <label for="addType">Type</label>
+        <select id="addType"></select>
 
-      <label for="addStatus">Status</label>
-      <select id="addStatus"></select>
+        <label for="addStatus">Status</label>
+        <select id="addStatus"></select>
 
-      <label for="addPriority">Priority</label>
-      <select id="addPriority"></select>
+        <label for="addPriority">Priority</label>
+        <select id="addPriority"></select>
 
-      <label for="addNotes">Notes</label>
-      <textarea id="addNotes" placeholder="Optional notes about this job"></textarea>
+        <label for="addNotes">Notes</label>
+        <textarea id="addNotes" placeholder="Add notes about this job (optional)"></textarea>
 
-      <button id="addBtn">Add Job</button>
+        <button id="addBtn">
+          <span class="button-icon">➕</span> Add Job
+        </button>
+      </div>
     </div>
 
     <!-- UPDATE Section -->
     <div id="updateSection" class="section">
-      <h4>✏️ Update Job</h4>
-      <label for="updateSelect" class="required">Select a Job</label>
-      <select id="updateSelect"></select>
-      <div id="updateHelper" class="helper-text"></div>
+      <h4><span class="icon">✏️</span> Update Existing Job</h4>
+      <div class="section-content">
+        <label for="updateSelect" class="required">Select Job to Update</label>
+        <select id="updateSelect"></select>
+        <div id="updateHelper" class="helper-text"></div>
 
-      <label for="updateType">New Type (optional)</label>
-      <select id="updateType"></select>
+        <label for="updateType">New Type (optional)</label>
+        <select id="updateType"></select>
 
-      <label for="updateStatus">New Status (optional)</label>
-      <select id="updateStatus"></select>
+        <label for="updateStatus">New Status (optional)</label>
+        <select id="updateStatus"></select>
 
-      <label for="updatePriority">New Priority (optional)</label>
-      <select id="updatePriority"></select>
+        <label for="updatePriority">New Priority (optional)</label>
+        <select id="updatePriority"></select>
 
-      <label for="updateNotes">New Notes (optional)</label>
-      <textarea id="updateNotes" placeholder="Leave blank to keep current notes"></textarea>
+        <label for="updateNotes">New Notes (optional)</label>
+        <textarea id="updateNotes" placeholder="Leave blank to keep current notes"></textarea>
 
-      <button id="updateBtn" disabled>Update Job</button>
+        <button id="updateBtn" disabled>
+          <span class="button-icon">✏️</span> Update Job
+        </button>
+      </div>
     </div>
 
     <!-- REMOVE Section -->
     <div id="removeSection" class="section">
-      <h4>🗑️ Remove Job</h4>
-      <label for="removeSelect" class="required">Select a Job</label>
-      <select id="removeSelect"></select>
-      <div id="removeHelper" class="helper-text"></div>
+      <h4><span class="icon">🗑️</span> Remove Job</h4>
+      <div class="section-content">
+        <label for="removeSelect" class="required">Select Job to Remove</label>
+        <select id="removeSelect"></select>
+        <div id="removeHelper" class="helper-text"></div>
 
-      <div class="helper-text error-text">Warning: This action cannot be undone!</div>
-      <button id="removeBtn" disabled>Remove Job</button>
+        <div class="helper-text error-text" style="background: #ffebee; padding: 10px; border-radius: 6px; margin: 10px 0;">
+          <strong>⚠️ Warning:</strong> This action cannot be undone!
+        </div>
+        
+        <button id="removeBtn" disabled style="background: var(--danger-color);">
+          <span class="button-icon">🗑️</span> Remove Job
+        </button>
+      </div>
     </div>
     
     <!-- Debug panel for troubleshooting -->
@@ -392,8 +524,10 @@
           els[id] = document.getElementById(id);
         });
         
-        // Cache action selector
-        els.actionSelect = document.getElementById('actionSelect');
+        // Cache action radio inputs
+        document.querySelectorAll('input[name="action"]').forEach(radio => {
+          els[radio.id] = radio;
+        });
         
         // Cache add form elements
         ['addSection', 'addName', 'addNameHelper', 'addType', 'addStatus', 
@@ -412,7 +546,7 @@
           els[id] = document.getElementById(id);
         });
         
-        // Log any missing elements
+        // Log any missing elements during development
         for (const [key, value] of Object.entries(els)) {
           if (!value) {
             console.warn(`Element not found: ${key}`);
@@ -426,11 +560,11 @@
     function setupEventListeners() {
       try {
         // Action selection change
-        if (els.actionSelect) {
-          els.actionSelect.addEventListener('change', function() {
+        document.querySelectorAll('input[name="action"]').forEach(radio => {
+          radio.addEventListener('change', function() {
             showSection(this.value);
           });
-        }
+        });
         
         // Add job form
         if (els.addBtn) {
@@ -510,7 +644,7 @@
           return;
         }
         
-        // data = { statuses, jobTypes, priorities, jobNames }
+        // Populate dropdown menus with data
         populateSelect(els.addType, data.jobTypes);
         populateSelect(els.addStatus, data.statuses);
         populateSelect(els.addPriority, data.priorities);
@@ -528,8 +662,13 @@
         showSection('add');
         
         // If we were previously on update or remove, re-validate forms
-        if (els.actionSelect.value === 'update') validateUpdateForm();
-        if (els.actionSelect.value === 'remove') validateRemoveForm();
+        if (document.querySelector('input[name="action"]:checked').value === 'update') {
+          validateUpdateForm();
+        }
+        
+        if (document.querySelector('input[name="action"]:checked').value === 'remove') {
+          validateRemoveForm();
+        }
       } catch (err) {
         console.error('Error in setupUI:', err);
         showToast("❌ Error setting up the interface. See console for details.");
@@ -540,23 +679,41 @@
       try {
         logDebug("Showing section:", action);
         
-        // Simple direct approach - hide all sections
+        // Hide all sections
         if (els.addSection) els.addSection.classList.remove('visible');
         if (els.updateSection) els.updateSection.classList.remove('visible');
         if (els.removeSection) els.removeSection.classList.remove('visible');
         
-        // Show the selected section immediately
+        // Set the correct radio button
+        const radio = document.getElementById(`action-${action}`);
+        if (radio) {
+          radio.checked = true;
+        }
+        
+        // Show the selected section
         let sectionToShow = null;
         
         switch (action) {
           case 'add':
             sectionToShow = els.addSection;
+            // Focus the job name field
+            setTimeout(() => {
+              if (els.addName) els.addName.focus();
+            }, 100);
             break;
           case 'update':
             sectionToShow = els.updateSection;
+            // Focus the job select
+            setTimeout(() => {
+              if (els.updateSelect) els.updateSelect.focus();
+            }, 100);
             break;
           case 'remove':
             sectionToShow = els.removeSection;
+            // Focus the job select
+            setTimeout(() => {
+              if (els.removeSelect) els.removeSelect.focus();
+            }, 100);
             break;
         }
         
@@ -602,19 +759,24 @@
           jobNames = [];
         }
         
+        // Sort job names alphabetically for better usability
+        const sortedJobNames = [...jobNames].sort((a, b) => 
+          a.toLowerCase().localeCompare(b.toLowerCase())
+        );
+        
         // Update job selector for update section
         if (els.updateSelect) {
-          els.updateSelect.innerHTML = '<option value="">-- Select a job --</option>';
-          jobNames.forEach(name => {
+          els.updateSelect.innerHTML = '<option value="">-- Select a job to update --</option>';
+          sortedJobNames.forEach(name => {
             els.updateSelect.appendChild(new Option(name, name));
           });
-          logDebug("Rebuilt update job list with", jobNames.length, "jobs");
+          logDebug("Rebuilt update job list with", sortedJobNames.length, "jobs");
         }
         
         // Update job selector for remove section
         if (els.removeSelect) {
-          els.removeSelect.innerHTML = '<option value="">-- Select a job --</option>';
-          jobNames.forEach(name => {
+          els.removeSelect.innerHTML = '<option value="">-- Select a job to remove --</option>';
+          sortedJobNames.forEach(name => {
             els.removeSelect.appendChild(new Option(name, name));
           });
         }

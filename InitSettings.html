@@ -13,29 +13,47 @@
       --success-color: #28a745;
       --warning-color: #ffc107;
       --info-color: #17a2b8;
+      --header-color: #37474f;
     }
 
     body {
-      font-family: Arial, sans-serif;
-      margin: 10px;
+      font-family: 'Roboto', Arial, sans-serif;
+      margin: 0;
+      padding: 16px;
       font-size: 14px;
       color: var(--text-color);
       background-color: #fff;
+      line-height: 1.5;
     }
 
     h3, h4 {
       margin-top: 0;
-      margin-bottom: 12px;
-      color: var(--primary-color);
-      font-size: 16px;
-      padding-bottom: 8px;
+      margin-bottom: 16px;
+      color: var(--header-color);
+      font-size: 18px;
+      padding-bottom: 10px;
       border-bottom: 2px solid var(--primary-color);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    h3 .icon {
+      font-size: 22px;
     }
     
     h4 {
-      margin-top: 20px;
-      font-size: 15px;
-      border-bottom-width: 1px;
+      margin-top: 24px;
+      font-size: 16px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    h4 .icon {
+      font-size: 18px;
     }
 
     /* Tab Control Styles */
@@ -45,80 +63,122 @@
     
     .tab-buttons {
       display: flex;
-      gap: 4px;
       border-bottom: 1px solid var(--border-color);
-      padding-bottom: 1px;
+      margin-bottom: -1px;
     }
     
     .tab-button {
-      padding: 8px 12px;
-      border: 1px solid var(--border-color);
-      border-bottom: none;
-      border-radius: 4px 4px 0 0;
+      padding: 12px 20px;
       cursor: pointer;
       background: #f1f1f1;
+      border: 1px solid var(--border-color);
+      border-bottom: none;
+      border-radius: 8px 8px 0 0;
+      transition: all 0.2s ease;
+      font-weight: 500;
+      color: var(--text-color);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .tab-button .icon {
+      font-size: 16px;
     }
     
     .tab-button.active {
       background: white;
-      font-weight: bold;
       color: var(--primary-color);
-      position: relative;
       border-bottom: 2px solid white;
-      margin-bottom: -1px;
+      margin-bottom: -2px;
+      box-shadow: 0 -2px 5px rgba(0,0,0,0.05);
+    }
+    
+    .tab-button:hover:not(.active) {
+      background: #e5e5e5;
+      transform: translateY(-1px);
     }
     
     .tab-content {
       display: none;
-      padding: 12px;
+      padding: 20px;
       border: 1px solid var(--border-color);
       border-top: none;
-      border-radius: 0 0 4px 4px;
+      background: white;
+      border-radius: 0 0 8px 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     }
     
     .tab-content.active {
       display: block;
+      animation: fadeIn 0.3s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     /* Property item styling */
     .property-item {
       display: flex;
       flex-direction: column;
-      margin-bottom: 12px;
-      padding: 10px;
+      margin-bottom: 16px;
+      padding: 16px;
       border: 1px solid var(--border-color);
-      border-radius: 6px;
+      border-radius: 8px;
       background: var(--light-bg);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      transition: all 0.2s ease;
+    }
+    
+    .property-item:hover {
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      transform: translateY(-1px);
     }
 
     .property-header {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
+      margin-bottom: 12px;
     }
 
     .value-container {
       display: flex;
       flex-wrap: wrap;
-      gap: 6px;
-      margin-top: 6px;
+      gap: 10px;
+      margin-top: 8px;
     }
 
     .value-box {
       display: flex;
       align-items: center;
       background: white;
-      padding: 6px 10px;
-      border-radius: 4px;
+      padding: 8px 12px;
+      border-radius: 6px;
       border: 1px solid var(--border-color);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+      transition: all 0.2s ease;
+    }
+    
+    .value-box:hover {
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      transform: translateY(-1px);
     }
 
     .color-picker {
-      width: 20px;
-      height: 20px;
+      width: 24px;
+      height: 24px;
       border-radius: 50%;
       cursor: pointer;
       border: 1px solid #ccc;
+      transition: transform 0.2s;
+      margin-left: 8px;
+    }
+    
+    .color-picker:hover {
+      transform: scale(1.1);
     }
 
     .remove-btn, .remove-value-btn {
@@ -128,31 +188,44 @@
       padding: 4px 8px;
       cursor: pointer;
       border-radius: 4px;
-      margin-left: 6px;
+      margin-left: 8px;
+      transition: all 0.2s;
+      font-weight: 500;
     }
 
     .remove-btn:hover, .remove-value-btn:hover {
-      background: #c82333; /* Darker shade on hover */
+      background: #c82333;
+      transform: translateY(-1px);
+    }
+    
+    .remove-btn:active, .remove-value-btn:active {
+      transform: translateY(1px);
     }
 
     /* Form controls */
     label {
       display: block;
-      margin-top: 10px;
-      margin-bottom: 4px;
-      font-weight: bold;
-      font-size: 13px;
+      margin-top: 14px;
+      margin-bottom: 6px;
+      font-weight: 500;
+      font-size: 14px;
+      color: var(--header-color);
     }
     
     select, input, textarea {
       width: 100%;
       box-sizing: border-box;
       margin-bottom: 12px;
-      font-size: 13px;
-      padding: 8px;
+      font-size: 14px;
+      padding: 10px 12px;
       border: 1px solid var(--border-color);
-      border-radius: 4px;
-      transition: border-color 0.2s, box-shadow 0.2s;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+      font-family: 'Roboto', Arial, sans-serif;
+    }
+    
+    select:hover, input:hover, textarea:hover {
+      border-color: #bbbbbb;
     }
     
     select:focus, input:focus, textarea:focus {
@@ -163,26 +236,57 @@
 
     /* Integration section */
     .integration-settings {
-      background-color: #f8f9fa;
-      padding: 12px;
-      border-radius: 4px;
-      margin-bottom: 16px;
-      border: 1px solid #e9ecef;
+      background-color: var(--light-bg);
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      transition: all 0.2s ease;
+    }
+    
+    .integration-settings:hover {
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      transform: translateY(-1px);
     }
 
     /* Buttons */
     .buttons-container {
       display: flex;
       justify-content: space-between;
-      margin-top: 20px;
+      margin-top: 24px;
+      border-top: 1px solid #eee;
+      padding-top: 16px;
     }
 
     button {
-      padding: 6px 12px;
-      border-radius: 4px;
+      padding: 10px 16px;
+      border-radius: 6px;
       border: none;
       cursor: pointer;
-      transition: background-color 0.2s;
+      transition: all 0.2s;
+      font-size: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-weight: 500;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      font-family: 'Roboto', Arial, sans-serif;
+    }
+    
+    button .icon {
+      font-size: 18px;
+    }
+    
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+    }
+    
+    button:active {
+      transform: translateY(1px);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
     }
     
     .btn-primary {
@@ -214,42 +318,53 @@
     
     /* Notifications */
     #error-message, #success-message, #warning-message {
-      margin-top: 10px;
-      padding: 8px;
-      border-radius: 4px;
+      margin-top: 15px;
+      padding: 12px 16px;
+      border-radius: 8px;
       display: none;
+      animation: fadeIn 0.3s ease;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
 
     #error-message {
-      background-color: #fdecea;
-      border: 1px solid #e74c3c;
-      color: #e74c3c;
+      background-color: #ffebee;
+      border-left: 4px solid var(--danger-color);
+      color: #b71c1c;
     }
 
     #success-message {
       background-color: #e8f5e9;
-      border: 1px solid #2ecc71;
-      color: #2ecc71;
+      border-left: 4px solid var(--success-color);
+      color: #1b5e20;
     }
     
     #warning-message {
-      background-color: #fff9e6;
-      border: 1px solid #ffc107;
+      background-color: #fff8e1;
+      border-left: 4px solid var(--warning-color);
       color: #856404;
     }
 
     /* Metadata display */
     .meta-info {
-      background: #f5f5f5;
-      padding: 8px;
-      border-radius: 4px;
-      font-size: 12px;
-      margin-bottom: 15px;
+      background: var(--light-bg);
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 20px;
+      border: 1px solid var(--border-color);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
     }
     
     .meta-info span {
-      margin-right: 15px;
-      display: inline-block;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .meta-info .icon {
+      color: var(--primary-color);
     }
 
     .helper-text {
@@ -261,39 +376,102 @@
     }
 
     .backup-list {
-      max-height: 150px;
+      max-height: 180px;
       overflow-y: auto;
       border: 1px solid var(--border-color);
-      border-radius: 4px;
-      margin-bottom: 8px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      background: white;
+    }
+    
+    .backup-item {
+      padding: 12px;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background-color 0.2s;
+    }
+    
+    .backup-item:hover {
+      background-color: #f5f5f5;
+    }
+    
+    .backup-item:last-child {
+      border-bottom: none;
+    }
+    
+    .backup-date {
+      font-weight: 500;
+    }
+    
+    /* JSON code blocks */
+    .json-textarea {
+      font-family: monospace;
+      font-size: 12px;
+      height: 150px;
+      overflow-y: auto;
+      white-space: pre;
+      background-color: #f8f9fa;
+      resize: vertical;
+    }
+    
+    /* Advanced section */
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    
+    /* Property type selector */
+    .type-select {
+      width: 120px;
+      margin-right: 8px;
+    }
+    
+    /* Add property button */
+    #addPropertyBtn {
+      margin-top: 16px;
+      align-self: flex-start;
+      padding: 8px 16px;
     }
   </style>
 </head>
 <body>
-  <h3>Tracker Settings & Initialization</h3>
+  <h3><span class="icon">⚙️</span> Tracker Settings & Initialization</h3>
   
   <div id="error-message"></div>
   <div id="success-message"></div>
   <div id="warning-message"></div>
   
   <div class="meta-info" id="config-metadata">
-    <span>Version: Loading...</span>
-    <span>Last Modified: Loading...</span>
+    <span><span class="icon">📊</span> Version: <b>Loading...</b></span>
+    <span><span class="icon">🕒</span> Last Modified: <b>Loading...</b></span>
   </div>
   
   <div class="tab-container">
     <div class="tab-buttons">
-      <div id="tab-btn-properties" class="tab-button active" onclick="showTab('properties')">Properties</div>
-      <div id="tab-btn-initialize" class="tab-button" onclick="showTab('initialize')">Initialize Jobs</div>
-      <div id="tab-btn-integrations" class="tab-button" onclick="showTab('integrations')">Integrations</div>
-      <div id="tab-btn-advanced" class="tab-button" onclick="showTab('advanced')">Advanced</div>
+      <div id="tab-btn-properties" class="tab-button active" onclick="showTab('properties')">
+        <span class="icon">🔧</span> Properties
+      </div>
+      <div id="tab-btn-initialize" class="tab-button" onclick="showTab('initialize')">
+        <span class="icon">🚀</span> Initialize Jobs
+      </div>
+      <div id="tab-btn-integrations" class="tab-button" onclick="showTab('integrations')">
+        <span class="icon">🔗</span> Integrations
+      </div>
+      <div id="tab-btn-advanced" class="tab-button" onclick="showTab('advanced')">
+        <span class="icon">🛠️</span> Advanced
+      </div>
     </div>
     
     <!-- Properties Tab -->
     <div id="tab-properties" class="tab-content active">
-      <p>Modify existing properties or add new ones.</p>
+      <p>Modify existing properties or add new ones. These properties define dropdown values in your tracking sheets.</p>
       <div id="propertiesList"></div>
-      <button id="addPropertyBtn" class="btn-primary">+ Add Property</button>
+      <button id="addPropertyBtn" class="btn-primary">
+        <span class="icon">+</span> Add Property
+      </button>
     </div>
     
     <!-- Initialize Jobs Tab -->
@@ -310,33 +488,35 @@
         <option value="empty">Empty sheet (headers only)</option>
       </select>
       
-      <div id="jobSourceOptions">
+      <div id="jobSourceOptions" style="margin-top: 16px; padding: 12px 16px; background-color: var(--light-bg); border-radius: 8px; border: 1px solid var(--border-color);">
         <p>Jobs will be read from the "DefaultJobs" sheet. Make sure it contains at least these columns:</p>
         <ul>
-          <li>Job Name (required)</li>
+          <li><strong>Job Name</strong> (required)</li>
           <li>Job Link (optional)</li>
           <li>Jira Ticket (optional)</li>
         </ul>
       </div>
       
       <div class="buttons-container">
-        <button id="initJobsBtn" class="btn-success">Initialize Jobs Sheet</button>
+        <button id="initJobsBtn" class="btn-success">
+          <span class="icon">✨</span> Initialize Jobs Sheet
+        </button>
       </div>
     </div>
     
     <!-- Integrations Tab -->
     <div id="tab-integrations" class="tab-content">
-      <p>Configure integrations with external systems.</p>
+      <p>Configure integrations with external systems to enable hyperlinks in your job sheets.</p>
       
       <div class="integration-settings">
-        <h4>Jenkins Integration</h4>
+        <h4><span class="icon">🏗️</span> Jenkins Integration</h4>
         <label for="jenkinsUrl">Jenkins Base URL:</label>
         <input type="text" id="jenkinsUrl" placeholder="https://jenkins.example.com/">
         <div class="helper-text">Used for "Job Link" hyperlinks. Include trailing slash.</div>
       </div>
       
       <div class="integration-settings">
-        <h4>Jira Integration</h4>
+        <h4><span class="icon">🎯</span> Jira Integration</h4>
         <label for="jiraUrl">Jira Base URL:</label>
         <input type="text" id="jiraUrl" placeholder="https://jira.example.com/browse/">
         <div class="helper-text">Used for "Jira Ticket" hyperlinks. Include trailing slash and "browse/" if needed.</div>
@@ -345,34 +525,51 @@
     
     <!-- Advanced Tab (Backup/Restore) -->
     <div id="tab-advanced" class="tab-content">
-      <h4>Backup & Restore</h4>
+      <h4><span class="icon">💾</span> Backup & Restore</h4>
       <p>Manage configuration backups or import/export settings.</p>
       
-      <h4>Available Backups</h4>
+      <h4><span class="icon">📁</span> Available Backups</h4>
       <div class="backup-list" id="backups-list">
-        <div style="padding: 10px;">Loading backups...</div>
+        <div style="padding: 16px; text-align: center;">
+          <div style="margin-bottom: 8px; display: inline-block; width: 20px; height: 20px; border: 2px solid rgba(25, 118, 210, 0.2); border-top-color: var(--primary-color); border-radius: 50%; animation: spin 1s linear infinite;"></div>
+          <div>Loading backups...</div>
+        </div>
       </div>
-      <button onclick="loadBackupsList()" class="btn-secondary">Refresh List</button>
+      <button onclick="loadBackupsList()" class="btn-secondary">
+        <span class="icon">🔄</span> Refresh List
+      </button>
       
-      <h4>Export Configuration</h4>
-      <textarea id="export-json" style="height: 100px;" readonly></textarea>
-      <div style="margin-top: 8px;">
-        <button onclick="exportConfigToJson()" class="btn-primary">Export</button>
-        <button onclick="copyToClipboard()" class="btn-secondary">Copy</button>
+      <h4><span class="icon">📤</span> Export Configuration</h4>
+      <textarea id="export-json" class="json-textarea" readonly></textarea>
+      <div class="action-buttons">
+        <button onclick="exportConfigToJson()" class="btn-primary">
+          <span class="icon">📥</span> Export
+        </button>
+        <button onclick="copyToClipboard()" class="btn-secondary">
+          <span class="icon">📋</span> Copy
+        </button>
       </div>
       
-      <h4>Import Configuration</h4>
-      <textarea id="import-json" style="height: 100px;" placeholder="Paste configuration JSON here..."></textarea>
-      <div style="margin-top: 8px;">
-        <button onclick="importConfigFromJson()" class="btn-primary">Import</button>
-        <button onclick="clearImportText()" class="btn-secondary">Clear</button>
+      <h4><span class="icon">📥</span> Import Configuration</h4>
+      <textarea id="import-json" class="json-textarea" placeholder="Paste configuration JSON here..."></textarea>
+      <div class="action-buttons">
+        <button onclick="importConfigFromJson()" class="btn-primary">
+          <span class="icon">📥</span> Import
+        </button>
+        <button onclick="clearImportText()" class="btn-secondary">
+          <span class="icon">🗑️</span> Clear
+        </button>
       </div>
     </div>
   </div>
 
   <div class="buttons-container">
-    <button id="saveBtn" class="btn-success">Save Settings</button>
-    <button id="cancelBtn" class="btn-secondary">Close</button>
+    <button id="saveBtn" class="btn-success">
+      <span class="icon">💾</span> Save Settings
+    </button>
+    <button id="cancelBtn" class="btn-secondary">
+      <span class="icon">✖</span> Close
+    </button>
   </div>
 
   <script>
@@ -459,11 +656,11 @@
       const metaInfoDiv = document.getElementById("config-metadata");
       if (metaInfoDiv && configMetadata) {
         metaInfoDiv.innerHTML = `
-          <span>Version: ${configMetadata.version || 'Unknown'}</span>
-          <span>Last Modified: ${formatDate(configMetadata.lastModified)}</span>
-          <span>Statuses: ${configMetadata.statusCount || 0}</span>
-          <span>Types: ${configMetadata.typeCount || 0}</span>
-          <span>Priorities: ${configMetadata.priorityCount || 0}</span>
+          <span><span class="icon">📊</span> Version: <b>${configMetadata.version || 'Unknown'}</b></span>
+          <span><span class="icon">🕒</span> Last Modified: <b>${formatDate(configMetadata.lastModified)}</b></span>
+          <span><span class="icon">📋</span> Statuses: <b>${configMetadata.statusCount || 0}</b></span>
+          <span><span class="icon">🔖</span> Types: <b>${configMetadata.typeCount || 0}</b></span>
+          <span><span class="icon">🔑</span> Priorities: <b>${configMetadata.priorityCount || 0}</b></span>
         `;
       }
     }
@@ -495,14 +692,16 @@
       if (!backupsList || !availableBackups) return;
       
       if (availableBackups.length === 0) {
-        backupsList.innerHTML = '<div style="padding: 10px;">No backups available</div>';
+        backupsList.innerHTML = '<div style="padding: 16px; text-align: center; color: #757575;">No backups available</div>';
         return;
       }
       
       backupsList.innerHTML = availableBackups.map(backup => `
-        <div style="padding: 8px; border-bottom: 1px solid #eee;">
-          <div>${backup.readableDate}</div>
-          <button onclick="confirmRestore('${backup.key}')" class="btn-secondary" style="margin-top: 4px;">Restore</button>
+        <div class="backup-item">
+          <div class="backup-date">${backup.readableDate}</div>
+          <button class="btn-secondary" onclick="confirmRestore('${backup.key}')">
+            <span class="icon">↩️</span> Restore
+          </button>
         </div>
       `).join('');
     }
@@ -515,7 +714,7 @@
         optionsDiv.innerHTML = `
           <p>Jobs will be read from the "DefaultJobs" sheet. Make sure it contains at least these columns:</p>
           <ul>
-            <li>Job Name (required)</li>
+            <li><strong>Job Name</strong> (required)</li>
             <li>Job Link (optional)</li>
             <li>Jira Ticket (optional)</li>
           </ul>
@@ -685,19 +884,19 @@
           name: "Status", 
           type: "dropdown", 
           values: ["Pending", "In-Progress", "Done"], 
-          colors: ["#1976d2", "#1976d2", "#1976d2"] 
+          colors: ["#e3f2fd", "#fff8e1", "#e8f5e9"] 
         },
         { 
           name: "Job Type", 
           type: "dropdown", 
           values: ["Build", "Test", "Deploy"], 
-          colors: ["#ff9800", "#ff9800", "#ff9800"] 
+          colors: ["#ede7f6", "#e0f7fa", "#f3e5f5"] 
         },
         { 
           name: "Priority", 
           type: "dropdown", 
           values: ["High", "Medium", "Low"], 
-          colors: ["#f44336", "#f44336", "#f44336"] 
+          colors: ["#ffebee", "#fff8e1", "#e8f5e9"] 
         }
       ];
 
@@ -718,7 +917,7 @@
           <div class="value-box">
             <input type="text" value="${val || ''}" onchange="updateValue(${index}, ${i}, this.value)">
             <input type="color" class="color-picker" value="${prop.colors[i] || '#cccccc'}" onchange="updateColor(${index}, ${i}, this.value)">
-            <button class="remove-value-btn" onclick="removeValue(${index}, ${i})">X</button>
+            <button class="remove-value-btn" onclick="removeValue(${index}, ${i})">✕</button>
           </div>
         `).join("");
 
@@ -729,11 +928,15 @@
               <option value="text" ${prop.type === "text" ? "selected" : ""}>Text</option>
               <option value="dropdown" ${prop.type === "dropdown" ? "selected" : ""}>Dropdown</option>
             </select>
-            <button class="remove-btn" onclick="removeProperty(${index})">Delete</button>
+            <button class="remove-btn" onclick="removeProperty(${index})">
+              <span class="icon">🗑️</span> Delete
+            </button>
           </div>
           <div class="value-container" id="values-${index}" style="display: ${prop.type === 'dropdown' ? 'flex' : 'none'};">
             ${valuesHTML}
-            <button onclick="addDropdownValue(${index})">+ Add Value</button>
+            <button class="btn-primary" style="padding: 8px 12px; margin-top: 0;" onclick="addDropdownValue(${index})">
+              <span class="icon" style="font-size: 16px;">+</span> Add Value
+            </button>
           </div>
         `;
         container.appendChild(div);
@@ -792,7 +995,7 @@
         properties[propertyIndex].colors = [];
       }
       properties[propertyIndex].values.push("");
-      properties[propertyIndex].colors.push("#ffffff");
+      properties[propertyIndex].colors.push("#e3f2fd");
       renderProperties(properties);
     }
 

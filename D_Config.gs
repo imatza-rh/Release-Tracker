@@ -71,14 +71,14 @@ function getConfig(bypassCache = false) {
       return _configCache;
     }
     
-    // Default if not yet saved - includes default colors
+    // Default if not yet saved - includes improved default colors
     const defaultConfig = {
       statuses:    ['Pending', 'In-Progress', 'Done'],
-      statusColors: ['#1976d2', '#ff9800', '#4caf50'], // Blue, Orange, Green
+      statusColors: ['#e3f2fd', '#fff8e1', '#e8f5e9'], // Light blue, amber, green
       types:       ['Build', 'Test', 'Deploy'],
-      typeColors:  ['#e69138', '#674ea7', '#3d85c6'], // Orange, Purple, Blue
+      typeColors:  ['#ede7f6', '#e0f7fa', '#f3e5f5'], // Light purple, cyan, pink
       priorities:  ['High', 'Medium', 'Low'],
-      priorityColors: ['#e06666', '#f1c232', '#6aa84f'], // Red, Yellow, Green
+      priorityColors: ['#ffebee', '#fff8e1', '#e8f5e9'], // Light red, amber, green
       fields:      ['Job Name', 'Type', 'Status', 'Priority', 'Notes', 'Job Link', 'Jira Ticket'],
       metadata: {
         version: 1,
@@ -99,11 +99,11 @@ function getConfig(bypassCache = false) {
     // Return default config if error, including default colors
     return {
       statuses:    ['Pending', 'In-Progress', 'Done'],
-      statusColors: ['#1976d2', '#ff9800', '#4caf50'], // Blue, Orange, Green
+      statusColors: ['#e3f2fd', '#fff8e1', '#e8f5e9'], // Light blue, amber, green
       types:       ['Build', 'Test', 'Deploy'],
-      typeColors:  ['#e69138', '#674ea7', '#3d85c6'], // Orange, Purple, Blue
+      typeColors:  ['#ede7f6', '#e0f7fa', '#f3e5f5'], // Light purple, cyan, pink
       priorities:  ['High', 'Medium', 'Low'],
-      priorityColors: ['#e06666', '#f1c232', '#6aa84f'], // Red, Yellow, Green
+      priorityColors: ['#ffebee', '#fff8e1', '#e8f5e9'], // Light red, amber, green
       fields:      ['Job Name', 'Type', 'Status', 'Priority', 'Notes', 'Job Link', 'Jira Ticket'],
       metadata: {
         version: 1,
@@ -115,7 +115,7 @@ function getConfig(bypassCache = false) {
 }
 
 /**
- * Generates default colors for categories
+ * Generates default colors for categories with improved color schemes
  * 
  * @param {Array} items - Array of items to generate colors for
  * @param {string} category - Category type ('status', 'type', or 'priority')
@@ -126,45 +126,45 @@ function generateDefaultColors(items, category) {
     return [];
   }
   
-  // Default color palettes
+  // Modern color palettes with improved visual aesthetics
   const palettes = {
     status: {
-      // Common status colors
-      'pending': '#1976d2',    // Blue
-      'in-progress': '#ff9800', // Orange
-      'in progress': '#ff9800', // Orange
-      'inprogress': '#ff9800',  // Orange
-      'done': '#4caf50',       // Green
-      'completed': '#4caf50',  // Green
-      'blocked': '#f44336',    // Red
-      'canceled': '#9e9e9e',   // Gray
-      'cancelled': '#9e9e9e',  // Gray
-      'postponed': '#9c27b0',  // Purple
-      'default': '#1976d2'     // Default blue
+      // Status colors - more subtle and professional
+      'pending': '#e3f2fd',     // Light blue
+      'in-progress': '#fff8e1', // Light amber
+      'inprogress': '#fff8e1',  // Light amber
+      'in progress': '#fff8e1', // Light amber
+      'done': '#e8f5e9',        // Light green
+      'completed': '#e8f5e9',   // Light green
+      'blocked': '#ffebee',     // Light red
+      'canceled': '#f5f5f5',    // Light gray
+      'cancelled': '#f5f5f5',   // Light gray
+      'postponed': '#f3e5f5',   // Light purple
+      'default': '#e3f2fd'      // Default light blue
     },
     type: {
-      // Common type colors
-      'build': '#e69138',      // Orange
-      'test': '#674ea7',       // Purple
-      'deploy': '#3d85c6',     // Blue
-      'development': '#e69138', // Orange
-      'design': '#9c27b0',     // Purple
-      'documentation': '#607d8b', // Blue Gray
-      'planning': '#4caf50',   // Green
-      'review': '#ff5722',     // Deep Orange
-      'research': '#009688',   // Teal
-      'default': '#e69138'     // Default orange
+      // Type colors - visually distinct but cohesive
+      'build': '#ede7f6',      // Light deep purple
+      'test': '#e0f7fa',       // Light cyan
+      'deploy': '#f3e5f5',     // Light purple
+      'development': '#ede7f6', // Light deep purple
+      'design': '#f3e5f5',     // Light purple
+      'documentation': '#e1f5fe', // Light blue
+      'planning': '#e8f5e9',   // Light green
+      'review': '#fff3e0',     // Light orange
+      'research': '#e0f2f1',   // Light teal
+      'default': '#ede7f6'     // Default light purple
     },
     priority: {
-      // Common priority colors
-      'high': '#e06666',      // Red
-      'critical': '#dc3545',  // Darker Red
-      'urgent': '#dc3545',    // Darker Red
-      'medium': '#f1c232',    // Yellow
-      'normal': '#f1c232',    // Yellow
-      'low': '#6aa84f',       // Green
-      'trivial': '#9e9e9e',   // Gray
-      'default': '#f1c232'    // Default yellow
+      // Priority colors - intuitive color coding
+      'high': '#ffebee',       // Light red
+      'critical': '#ffcdd2',   // Lighter red
+      'urgent': '#ffcdd2',     // Lighter red
+      'medium': '#fff8e1',     // Light amber
+      'normal': '#fff8e1',     // Light amber
+      'low': '#e8f5e9',        // Light green
+      'trivial': '#f5f5f5',    // Light gray
+      'default': '#fff8e1'     // Default light amber
     }
   };
   
@@ -285,7 +285,7 @@ function validateConfig(configArray) {
         }
       }
       
-      // Ensure colors are defined for all options
+      // Ensure colors are defined for all options with improved defaults
       if (updatedConfig.statuses && updatedConfig.statuses.length > 0) {
         if (!updatedConfig.statusColors || updatedConfig.statusColors.length !== updatedConfig.statuses.length) {
           updatedConfig.statusColors = generateDefaultColors(updatedConfig.statuses, 'status');
@@ -436,7 +436,7 @@ function restoreBackup(backupKey) {
     config.metadata.lastModified = new Date().toISOString();
     config.metadata.restoredFrom = backupKey;
     
-    // Ensure all color arrays exist and are complete
+    // Ensure all color arrays exist and are complete with improved color schemes
     if (config.statuses && Array.isArray(config.statuses)) {
       if (!config.statusColors || config.statusColors.length !== config.statuses.length) {
         config.statusColors = generateDefaultColors(config.statuses, 'status');
@@ -518,7 +518,7 @@ function importConfig(jsonConfig) {
     config.metadata.lastModified = new Date().toISOString();
     config.metadata.importedAt = new Date().toISOString();
     
-    // Ensure all color arrays exist and are complete
+    // Ensure all color arrays exist and are complete with improved colors
     if (config.statuses && Array.isArray(config.statuses)) {
       if (!config.statusColors || config.statusColors.length !== config.statuses.length) {
         config.statusColors = generateDefaultColors(config.statuses, 'status');
@@ -565,13 +565,6 @@ function loadConfig() {
     const config = getConfig();
     const result = [];
     
-    // Default colors if none are defined
-    const defaultColors = {
-      status: '#1976d2',   // Blue
-      type: '#ff9800',     // Orange
-      priority: '#f44336'  // Red
-    };
-    
     // Status dropdown
     if (config.statuses && Array.isArray(config.statuses)) {
       // Use stored colors if available, otherwise use defaults
@@ -580,7 +573,7 @@ function loadConfig() {
           config.statusColors.length === config.statuses.length) {
         colors = config.statusColors;
       } else {
-        colors = Array(config.statuses.length).fill(defaultColors.status);
+        colors = generateDefaultColors(config.statuses, 'status');
       }
       
       result.push({
@@ -595,7 +588,7 @@ function loadConfig() {
         name: "Status",
         type: "dropdown",
         values: ['Pending', 'In-Progress', 'Done'],
-        colors: ['#1976d2', '#1976d2', '#1976d2']
+        colors: ['#e3f2fd', '#fff8e1', '#e8f5e9']
       });
     }
     
@@ -607,7 +600,7 @@ function loadConfig() {
           config.typeColors.length === config.types.length) {
         colors = config.typeColors;
       } else {
-        colors = Array(config.types.length).fill(defaultColors.type);
+        colors = generateDefaultColors(config.types, 'type');
       }
       
       result.push({
@@ -622,7 +615,7 @@ function loadConfig() {
         name: "Job Type",
         type: "dropdown",
         values: ['Build', 'Test', 'Deploy'],
-        colors: ['#ff9800', '#ff9800', '#ff9800']
+        colors: ['#ede7f6', '#e0f7fa', '#f3e5f5']
       });
     }
     
@@ -634,7 +627,7 @@ function loadConfig() {
           config.priorityColors.length === config.priorities.length) {
         colors = config.priorityColors;
       } else {
-        colors = Array(config.priorities.length).fill(defaultColors.priority);
+        colors = generateDefaultColors(config.priorities, 'priority');
       }
       
       result.push({
@@ -649,7 +642,7 @@ function loadConfig() {
         name: "Priority",
         type: "dropdown",
         values: ['High', 'Medium', 'Low'],
-        colors: ['#f44336', '#f44336', '#f44336']
+        colors: ['#ffebee', '#fff8e1', '#e8f5e9']
       });
     }
     
@@ -664,19 +657,19 @@ function loadConfig() {
         name: "Status",
         type: "dropdown",
         values: ['Pending', 'In-Progress', 'Done'],
-        colors: ['#1976d2', '#1976d2', '#1976d2']
+        colors: ['#e3f2fd', '#fff8e1', '#e8f5e9']
       },
       {
         name: "Job Type",
         type: "dropdown",
         values: ['Build', 'Test', 'Deploy'],
-        colors: ['#ff9800', '#ff9800', '#ff9800']
+        colors: ['#ede7f6', '#e0f7fa', '#f3e5f5']
       },
       {
         name: "Priority",
         type: "dropdown",
         values: ['High', 'Medium', 'Low'],
-        colors: ['#f44336', '#f44336', '#f44336']
+        colors: ['#ffebee', '#fff8e1', '#e8f5e9']
       }
     ];
   }

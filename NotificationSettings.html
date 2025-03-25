@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    :root {
+      --primary-color: #1976d2;
+      --hover-color: #1565c0;
+      --text-color: #444;
+      --light-bg: #f9f9f9;
+      --border-color: #e0e0e0;
+      --danger-color: #dc3545;
+      --success-color: #28a745;
+      --warning-color: #ffc107;
+      --info-color: #17a2b8;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      margin: 10px;
+      font-size: 14px;
+      color: var(--text-color);
+      background-color: #fff;
+      line-height: 1.5;
+    }
+
+    h3 {
+      margin-top: 0;
+      margin-bottom: 12px;
+      color: var(--primary-color);
+      font-size: 16px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--primary-color);
+      display: flex;
+      align-items: center;
+    }
+    
+    h3 .icon {
+      margin-right: 8px;
+      font-size: 20px;
+    }
+    
+    h4 {
+      margin-top: 24px;
+      margin-bottom: 8px;
+      font-size: 15px;
+      color: var(--primary-color);
+      border-bottom: 1px solid #e0e0e0;
+      padding-bottom: 5px;
+    }
+
+    /* Banner showing prerequisite */
+    .prereq-banner {
+      background-color: #e8f4fd;
+      border-left: 4px solid var(--primary-color);
+      padding: 12px;
+      margin: 15px 0;
+      border-radius: 4px;
+    }
+    
+    .prereq-banner .title {
+      font-weight: bold;
+      color: var(--primary-color);
+      margin-bottom: 5px;
+    }
+    
+    .prereq-banner li {
+      margin-bottom: 6px;
+    }
+    
+    .prereq-banner ul {
+      margin-top: 8px;
+      margin-bottom: 0;
+      padding-left: 20px;
+    }
+    
+    /* Form controls */
+    label {
+      display: block;
+      margin-top: 10px;
+      margin-bottom: 4px;
+      font-weight: bold;
+      font-size: 13px;
+    }
+    
+    select, input, textarea {
+      width: 100%;
+      box-sizing: border-box;
+      margin-bottom: 12px;
+      font-size: 13px;
+      padding: 8px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    
+    select:focus, input:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    /* Notifications */
+    #error-message, #success-message, #warning-message {
+      margin-top: 10px;
+      padding: 8px;
+      border-radius: 4px;
+      display: none;
+    }
+
+    #error-message {
+      background-color: #fdecea;
+      border: 1px solid #e74c3c;
+      color: #e74c3c;
+    }
+
+    #success-message {
+      background-color: #e8f5e9;
+      border: 1px solid #2ecc71;
+      color: #2ecc71;
+    }
+    
+    #warning-message {
+      background-color: #fff9e6;
+      border: 1px solid #ffc107;
+      color: #856404;
+    }
+    
+    .helper-text {
+      font-size: 12px;
+      color: #757575;
+      margin-top: -8px;
+      margin-bottom: 12px;
+      font-style: italic;
+    }
+
+    /* Toggle switch */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 24px;
+      margin-left: 10px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 24px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: #1976d2;
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(26px);
+    }
+    
+    .toggle-container {
+      display: flex;
+      align-items: center;
+      margin: 15px 0;
+      background-color: #f5f5f5;
+      padding: 10px;
+      border-radius: 4px;
+    }
+    
+    .toggle-label {
+      font-weight: bold;
+      flex-grow: 1;
+    }
+
+    /* Buttons */
+    .buttons-container {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    button {
+      padding: 8px 12px;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 13px;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+    }
+    
+    button:active {
+      transform: translateY(1px);
+    }
+    
+    button:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+    
+    .btn-primary {
+      background-color: var(--primary-color);
+      color: white;
+      flex-grow: 1;
+    }
+    
+    .btn-primary:hover:not(:disabled) {
+      background-color: var(--hover-color);
+    }
+    
+    .btn-secondary {
+      background-color: #6c757d;
+      color: white;
+    }
+    
+    .btn-secondary:hover:not(:disabled) {
+      background-color: #5a6268;
+    }
+    
+    .btn-info {
+      background-color: #17a2b8;
+      color: white;
+    }
+    
+    .btn-info:hover:not(:disabled) {
+      background-color: #138496;
+    }
+    
+    .btn-success {
+      background-color: #28a745;
+      color: white;
+    }
+    
+    .btn-success:hover:not(:disabled) {
+      background-color: #218838;
+    }
+    
+    /* Loading spinner */
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(25, 118, 210, 0.3);
+      border-radius: 50%;
+      border-top-color: var(--primary-color);
+      animation: spin 1s linear infinite;
+      margin-left: 10px;
+      display: none;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    /* Main page loading overlay */
+    #page-loading {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(255, 255, 255, 0.9);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    
+    .page-spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(25, 118, 210, 0.3);
+      border-radius: 50%;
+      border-top-color: var(--primary-color);
+      animation: spin 1s linear infinite;
+      margin-bottom: 15px;
+    }
+    
+    .page-loading-text {
+      font-size: 16px;
+      color: var(--primary-color);
+      margin-top: 10px;
+    }
+    
+    /* Status display */
+    .status-container {
+      display: flex;
+      flex-direction: column;
+      margin-top: 15px;
+      padding: 10px;
+      background-color: #f5f5f5;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    
+    .status-item {
+      display: flex;
+      margin-bottom: 4px;
+    }
+    
+    .status-label {
+      font-weight: bold;
+      width: 80px;
+    }
+    
+    .status-value {
+      flex-grow: 1;
+    }
+    
+    .hidden {
+      display: none;
+    }
+    
+    /* Sheet status display */
+    .sheet-status {
+      display: flex;
+      align-items: center;
+      margin-top: 20px;
+      padding: 10px;
+      border-radius: 4px;
+    }
+    
+    .success-status {
+      background-color: #e8f5e9;
+      color: #2e7d32;
+    }
+    
+    .warning-status {
+      background-color: #fff3cd;
+      color: #856404;
+    }
+    
+    .sheet-status-icon {
+      margin-right: 10px;
+      font-size: 18px;
+    }
+    
+    .sheet-status-message {
+      flex-grow: 1;
+    }
+    
+    .sheet-status-action {
+      white-space: nowrap;
+    }
+    
+    /* Phase Checker section */
+    .phase-checker {
+      margin-top: 15px;
+      padding: 12px;
+      background-color: #e8f4fd;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+    
+    .phase-checker-title {
+      font-weight: bold;
+      margin-bottom: 8px;
+      color: var(--primary-color);
+    }
+    
+    .phase-checker-content {
+      margin-bottom: 10px;
+    }
+    
+    .phase-list {
+      margin-top: 10px;
+      margin-bottom: 10px;
+      max-height: 150px;
+      overflow-y: auto;
+      background-color: white;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      padding: 8px;
+    }
+    
+    .phase-item {
+      padding: 5px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .phase-item:last-child {
+      border-bottom: none;
+    }
+    
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid #e0e0e0;
+      margin-bottom: 15px;
+    }
+    
+    .tab {
+      padding: 8px 16px;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s;
+    }
+    
+    .tab.active {
+      border-bottom-color: var(--primary-color);
+      color: var(--primary-color);
+      font-weight: bold;
+    }
+    
+    .tab:hover:not(.active) {
+      background-color: #f5f5f5;
+    }
+    
+    .tab-content {
+      display: none;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    .section-divider {
+      height: 1px;
+      background-color: #e0e0e0;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <div id="page-loading">
+    <div class="page-spinner"></div>
+    <div class="page-loading-text">Loading notification settings...</div>
+  </div>
+
+  <h3><span class="icon">🔔</span> Phase Notification Settings</h3>
+  
+  <div id="error-message"></div>
+  <div id="success-message"></div>
+  <div id="warning-message"></div>
+  
+  <div class="tabs">
+    <div id="tab-settings" class="tab active" onclick="switchTab('settings')">Settings</div>
+    <div id="tab-status" class="tab" onclick="switchTab('status')">System Status</div>
+  </div>
+  
+  <!-- Settings Tab -->
+  <div id="content-settings" class="tab-content active">
+    <div class="prereq-banner">
+      <div class="title">📋 Required Setup</div>
+      <p>To use phase notifications, you need a sheet named "Phases and Dates" with the following columns:</p>
+      <ul>
+        <li><strong>Phases</strong> - Name of each phase</li>
+        <li><strong>Start Date</strong> - When the phase begins</li>
+        <li><strong>End Date</strong> - When the phase ends</li>
+        <li><strong>Objective</strong> (optional) - What the phase aims to accomplish</li>
+        <li><strong>Criteria for Completion</strong> (optional) - How to measure completion</li>
+      </ul>
+    </div>
+    
+    <div id="sheet-status-container"></div>
+    
+    <div class="toggle-container">
+      <div class="toggle-label">Enable daily phase notifications</div>
+      <label class="switch">
+        <input type="checkbox" id="enableNotifications">
+        <span class="slider"></span>
+      </label>
+    </div>
+    
+    <label for="notificationEmails">Email Recipients (one per line):</label>
+    <textarea id="notificationEmails" placeholder="Enter email addresses, one per line"></textarea>
+    <div class="helper-text">Emails will be sent when phases start or end</div>
+    
+    <label for="slackWebhooks">Slack Webhook URLs (one per line):</label>
+    <textarea id="slackWebhooks" placeholder="Enter Slack webhook URLs, one per line"></textarea>
+    <div class="helper-text">Notifications will be posted to these Slack channels</div>
+    
+    <div class="buttons-container">
+      <button id="testBtn" class="btn-success" onclick="sendTestNotification()">
+        <span>🧪</span> Test Notification
+        <span id="test-spinner" class="loading"></span>
+      </button>
+      <button id="saveBtn" class="btn-primary" onclick="saveSettings()">
+        <span id="save-icon">💾</span> Save Settings
+        <span id="save-spinner" class="loading"></span>
+      </button>
+    </div>
+    
+    <div class="section-divider"></div>
+    
+    <h4>Check Today's Phases</h4>
+    <p>Check if any phases are starting or ending today:</p>
+    
+    <button id="checkPhasesBtn" class="btn-info" onclick="checkPhasesToday()">
+      <span>🔍</span> Check Phases for Today
+      <span id="check-spinner" class="loading"></span>
+    </button>
+    
+    <div id="phase-checker" class="phase-checker hidden">
+      <div class="phase-checker-title">Phase Check Results</div>
+      <div class="phase-checker-content" id="phase-checker-content">
+        Checking for phases starting or ending today...
+      </div>
+      <div id="phase-list" class="phase-list hidden"></div>
+    </div>
+  </div>
+  
+  <!-- Status Tab -->
+  <div id="content-status" class="tab-content">
+    <h4>System Status</h4>
+    
+    <div class="status-container">
+      <div class="status-item">
+        <div class="status-label">State:</div>
+        <div class="status-value" id="notification-state">Loading...</div>
+      </div>
+      <div class="status-item">
+        <div class="status-label">Last run:</div>
+        <div class="status-value" id="notification-last-run">Unknown</div>
+      </div>
+      <div class="status-item">
+        <div class="status-label">Last status:</div>
+        <div class="status-value" id="notification-last-status">Unknown</div>
+      </div>
+      <div class="status-item">
+        <div class="status-label">Trigger:</div>
+        <div class="status-value" id="notification-trigger">Unknown</div>
+      </div>
+    </div>
+    
+    <h4>How It Works</h4>
+    <p>
+      When enabled, the system checks the "Phases and Dates" sheet every day at 8:00 AM and sends notifications if:
+    </p>
+    <ul>
+      <li>A phase has its Start Date set to today</li>
+      <li>A phase has its End Date set to today</li>
+    </ul>
+    <p>
+      Notifications include phase details, objectives, and completion criteria if available.
+    </p>
+    
+    <div class="buttons-container" style="margin-top: 15px;">
+      <button id="refreshStatusBtn" class="btn-info" onclick="refreshStatus()">
+        <span>🔄</span> Refresh Status
+        <span id="refresh-spinner" class="loading"></span>
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // Global variables
+    let phasesData = null;
+    let sheetExists = false;
+    let currentSettings = null;
+    let triggerStatus = null;
+    
+    // Load settings when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      initializeUi();
+    });
+    
+    function initializeUi() {
+      // First, load everything
+      loadAllData();
+    }
+    
+    function loadAllData() {
+      // Start by showing full page loading indicator
+      document.getElementById('page-loading').style.display = 'flex';
+      
+      // Start with checking if the sheet exists
+      google.script.run
+        .withSuccessHandler(function(result) {
+          // First check if the Phases sheet exists
+          if (result) {
+            // Sheet exists if we got a valid result (even if no phases today)
+            sheetExists = true;
+          } else {
+            // Something went wrong, we'll double-check in the next step
+            sheetExists = false;
+          }
+          
+          // Now let's verify by trying to check if the sheet exists directly
+          google.script.run
+            .withSuccessHandler(function(sheetResult) {
+              // This is a more direct check for the sheet existence
+              sheetExists = !!sheetResult;
+              
+              // Now load the settings
+              loadSettings();
+            })
+            .withFailureHandler(function(error) {
+              console.error("Error checking for sheet:", error);
+              sheetExists = false;
+              loadSettings();
+            })
+            .checkSheetExists("Phases and Dates");
+        })
+        .withFailureHandler(function(error) {
+          console.error("Error checking for phases:", error);
+          sheetExists = false;
+          loadSettings();
+        })
+        .checkPhasesToday();
+    }
+    
+    function loadSettings() {
+      // Load notification settings
+      google.script.run
+        .withSuccessHandler(function(settings) {
+          currentSettings = settings;
+          
+          // Update form elements
+          document.getElementById('notificationEmails').value = (settings.notificationEmails || []).join('\n');
+          document.getElementById('slackWebhooks').value = (settings.slackWebhookUrls || []).join('\n');
+          document.getElementById('enableNotifications').checked = settings.enableNotifications || false;
+          
+          // Update sheet status
+          updateSheetStatus();
+          
+          // Update status section
+          updateStatusSection(settings);
+          
+          // Get trigger status
+          getTriggerStatus();
+        })
+        .withFailureHandler(function(error) {
+          console.error("Error loading notification settings:", error);
+          hidePageLoading();
+          showError("Failed to load settings: " + error);
+          
+          // Update sheet status anyway
+          updateSheetStatus();
+        })
+        .getNotificationSettings();
+    }
+    
+    function getTriggerStatus() {
+      google.script.run
+        .withSuccessHandler(function(triggers) {
+          triggerStatus = triggers;
+          updateTriggerDisplay(triggers);
+          
+          // Hide loading screen now that everything is loaded
+          hidePageLoading();
+        })
+        .withFailureHandler(function(error) {
+          console.error("Error getting trigger status:", error);
+          hidePageLoading();
+          showError("Failed to check trigger status");
+        })
+        .getTriggersStatus();
+    }
+    
+    function hidePageLoading() {
+      // Hide the page loading indicator
+      document.getElementById('page-loading').style.display = 'none';
+    }
+    
+    function refreshStatus() {
+      showSpinner('refresh', true);
+      document.getElementById('refreshStatusBtn').disabled = true;
+      
+      showMessage('info', 'Refreshing status...');
+      
+      // First load notification settings
+      google.script.run
+        .withSuccessHandler(function(settings) {
+          // Update status section with fresh data
+          updateStatusSection(settings);
+          
+          // Get fresh trigger status
+          google.script.run
+            .withSuccessHandler(function(triggers) {
+              triggerStatus = triggers;
+              updateTriggerDisplay(triggers);
+              
+              showSpinner('refresh', false);
+              document.getElementById('refreshStatusBtn').disabled = false;
+              showMessage('success', 'Status refreshed');
+            })
+            .withFailureHandler(function(error) {
+              console.error("Error refreshing trigger status:", error);
+              showError("Failed to refresh trigger status");
+              showSpinner('refresh', false);
+              document.getElementById('refreshStatusBtn').disabled = false;
+            })
+            .getTriggersStatus();
+        })
+        .withFailureHandler(function(error) {
+          console.error("Error refreshing settings:", error);
+          showError("Failed to refresh status: " + error);
+          showSpinner('refresh', false);
+          document.getElementById('refreshStatusBtn').disabled = false;
+        })
+        .getNotificationSettings();
+    }
+    
+    function updateSheetStatus() {
+      const container = document.getElementById('sheet-status-container');
+      
+      if (sheetExists) {
+        container.innerHTML = `
+          <div class="sheet-status success-status">
+            <div class="sheet-status-icon">✅</div>
+            <div class="sheet-status-message">
+              "Phases and Dates" sheet found and ready for notifications
+            </div>
+          </div>
+        `;
+      } else {
+        container.innerHTML = `
+          <div class="sheet-status warning-status">
+            <div class="sheet-status-icon">⚠️</div>
+            <div class="sheet-status-message">
+              "Phases and Dates" sheet not found! 
+              Notifications require this sheet with proper columns.
+            </div>
+            <div class="sheet-status-action">
+              <button class="btn-info" onclick="createPhaseSheet()">Create</button>
+            </div>
+          </div>
+        `;
+      }
+    }
+    
+    function updateStatusSection(settings) {
+      // Update state
+      document.getElementById('notification-state').textContent = 
+        settings.enableNotifications ? 'Enabled' : 'Disabled';
+      
+      // Update last run
+      const lastRun = settings.lastRunTime ? 
+        new Date(settings.lastRunTime).toLocaleString() : 'Never';
+      document.getElementById('notification-last-run').textContent = lastRun;
+      
+      // Update last status
+      document.getElementById('notification-last-status').textContent = 
+        settings.lastRunStatus || 'No status recorded';
+    }
+    
+    function updateTriggerDisplay(triggers) {
+      let triggerText = 'No trigger installed';
+      
+      if (triggers && triggers.exists) {
+        triggerText = `Active (runs daily at ${triggers.time})`;
+      }
+      
+      document.getElementById('notification-trigger').textContent = triggerText;
+    }
+    
+    function createPhaseSheet() {
+      showMessage('info', 'Creating "Phases and Dates" sheet...');
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.success) {
+            showMessage('success', 'Sheet created successfully!');
+            sheetExists = true;
+            updateSheetStatus();
+          } else {
+            showError('Failed to create sheet: ' + result.message);
+          }
+        })
+        .withFailureHandler(function(error) {
+          showError('Failed to create sheet: ' + error);
+        })
+        .createPhasesSheet();
+    }
+    
+    function saveSettings() {
+      // Validate inputs
+      const emailsText = document.getElementById('notificationEmails').value;
+      const webhooksText = document.getElementById('slackWebhooks').value;
+      const enableNotifications = document.getElementById('enableNotifications').checked;
+      
+      // Split and clean the inputs
+      const emails = emailsText.split('\n')
+        .map(email => email.trim())
+        .filter(email => email.length > 0);
+      
+      const webhooks = webhooksText.split('\n')
+        .map(url => url.trim())
+        .filter(url => url.length > 0);
+      
+      // Validate emails
+      if (enableNotifications && emails.length === 0 && webhooks.length === 0) {
+        showError("You must provide at least one email address or Slack webhook URL when notifications are enabled.");
+        return;
+      }
+      
+      if (emails.length > 0) {
+        const invalidEmails = emails.filter(email => !validateEmail(email));
+        
+        if (invalidEmails.length > 0) {
+          showError("Invalid email address format: " + invalidEmails.join(", "));
+          return;
+        }
+      }
+      
+      // Validate webhooks - basic URL validation
+      if (webhooks.length > 0) {
+        const invalidUrls = webhooks.filter(url => !validateUrl(url));
+        
+        if (invalidUrls.length > 0) {
+          showError("Invalid webhook URL format: " + invalidUrls.join(", "));
+          return;
+        }
+      }
+      
+      // Build the settings object
+      const settings = {
+        notificationEmails: emails,
+        slackWebhookUrls: webhooks,
+        enableNotifications: enableNotifications
+      };
+      
+      // Show spinner and disable form
+      showSpinner('save', true);
+      document.getElementById('saveBtn').disabled = true;
+      document.getElementById('testBtn').disabled = true;
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.status === 'success') {
+            showMessage('success', result.message || "Settings saved successfully");
+            
+            // Update current settings
+            currentSettings = {
+              ...currentSettings,
+              notificationEmails: emails,
+              slackWebhookUrls: webhooks,
+              enableNotifications: enableNotifications
+            };
+            
+            // Refresh UI state and switch to status tab
+            setTimeout(function() {
+              refreshStatus();
+              switchTab('status');
+            }, 1000);
+          } else {
+            showError(result.message || "Error saving settings");
+          }
+          
+          showSpinner('save', false);
+          document.getElementById('saveBtn').disabled = false;
+          document.getElementById('testBtn').disabled = false;
+        })
+        .withFailureHandler(function(error) {
+          showError("Failed to save settings: " + error);
+          showSpinner('save', false);
+          document.getElementById('saveBtn').disabled = false;
+          document.getElementById('testBtn').disabled = false;
+        })
+        .saveNotificationSettings(settings);
+    }
+    
+    function checkPhasesToday() {
+      // Hide any previous results
+      document.getElementById('phase-checker').classList.add('hidden');
+      document.getElementById('phase-list').classList.add('hidden');
+      
+      showMessage('info', 'Checking for phases today...');
+      showSpinner('check', true);
+      document.getElementById('checkPhasesBtn').disabled = true;
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          document.getElementById('checkPhasesBtn').disabled = false;
+          showSpinner('check', false);
+          hideMessages();
+          
+          const phaseChecker = document.getElementById('phase-checker');
+          const phaseCheckerContent = document.getElementById('phase-checker-content');
+          const phaseList = document.getElementById('phase-list');
+          
+          phaseChecker.classList.remove('hidden');
+          
+          if (result.found && result.count > 0) {
+            phaseCheckerContent.innerHTML = `<strong>Found ${result.count} phase(s) starting or ending today:</strong>`;
+            
+            // Show phase list
+            phaseList.innerHTML = result.details.split('\n').map(line => 
+              `<div class="phase-item">${line}</div>`
+            ).join('');
+            
+            phaseList.classList.remove('hidden');
+            
+            // Store phases data for potential testing
+            phasesData = result;
+          } else {
+            phaseCheckerContent.innerHTML = "No phases are starting or ending today.";
+            phaseList.classList.add('hidden');
+            phasesData = null;
+          }
+        })
+        .withFailureHandler(function(error) {
+          document.getElementById('checkPhasesBtn').disabled = false;
+          showSpinner('check', false);
+          showError("Failed to check phases: " + error);
+        })
+        .checkPhasesToday();
+    }
+    
+    function sendTestNotification() {
+      // Get current settings (from form, not saved)
+      const emailsText = document.getElementById('notificationEmails').value;
+      const webhooksText = document.getElementById('slackWebhooks').value;
+      
+      // Split and clean inputs
+      const emails = emailsText.split('\n')
+        .map(email => email.trim())
+        .filter(email => email.length > 0);
+      
+      const webhooks = webhooksText.split('\n')
+        .map(url => url.trim())
+        .filter(url => url.length > 0);
+      
+      // Check if we have any valid recipients
+      if (emails.length === 0 && webhooks.length === 0) {
+        showError("Please add at least one email or Slack webhook to test");
+        return;
+      }
+      
+      // Validate all emails and webhooks
+      if (emails.length > 0) {
+        const invalidEmails = emails.filter(email => !validateEmail(email));
+        if (invalidEmails.length > 0) {
+          showError("Invalid email formats: " + invalidEmails.join(", "));
+          return;
+        }
+      }
+      
+      if (webhooks.length > 0) {
+        const invalidUrls = webhooks.filter(url => !validateUrl(url));
+        if (invalidUrls.length > 0) {
+          showError("Invalid webhook URL formats: " + invalidUrls.join(", "));
+          return;
+        }
+      }
+      
+      // Prepare test config
+      const testConfig = {
+        emails: emails,
+        webhooks: webhooks
+      };
+      
+      // Show spinner and disable buttons
+      showSpinner('test', true);
+      document.getElementById('testBtn').disabled = true;
+      document.getElementById('saveBtn').disabled = true;
+      
+      showMessage('info', 'Sending test notification...');
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          showSpinner('test', false);
+          document.getElementById('testBtn').disabled = false;
+          document.getElementById('saveBtn').disabled = false;
+          
+          if (result.status === 'success') {
+            showMessage('success', `Test notification sent successfully to ${result.emailsSent} email(s) and ${result.slackSent} Slack channel(s)`);
+          } else {
+            showError(result.message || "Failed to send test notification");
+          }
+        })
+        .withFailureHandler(function(error) {
+          showSpinner('test', false);
+          document.getElementById('testBtn').disabled = false;
+          document.getElementById('saveBtn').disabled = false;
+          
+          showError("Error sending test: " + error);
+        })
+        .sendBulkTestNotification(testConfig);
+    }
+    
+    function validateEmail(email) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+    
+    function validateUrl(url) {
+      return /^https?:\/\/.+/i.test(url);
+    }
+    
+    function showMessage(type, message) {
+      hideMessages();
+      
+      let element;
+      if (type === 'success') {
+        element = document.getElementById('success-message');
+      } else if (type === 'error') {
+        element = document.getElementById('error-message');
+      } else {
+        element = document.getElementById('warning-message');
+      }
+      
+      element.textContent = message;
+      element.style.display = 'block';
+      
+      // Auto-hide success and info messages after 5 seconds
+      if (type === 'success' || type === 'info') {
+        setTimeout(function() {
+          element.style.display = 'none';
+        }, 5000);
+      }
+    }
+    
+    function showSuccess(message) {
+      showMessage('success', message);
+    }
+    
+    function showError(message) {
+      showMessage('error', message);
+    }
+    
+    function showWarning(message) {
+      showMessage('warning', message);
+    }
+    
+    function hideMessages() {
+      document.getElementById('success-message').style.display = 'none';
+      document.getElementById('error-message').style.display = 'none';
+      document.getElementById('warning-message').style.display = 'none';
+    }
+    
+    function showSpinner(id, show) {
+      const spinner = document.getElementById(`${id}-spinner`);
+      if (spinner) {
+        spinner.style.display = show ? 'inline-block' : 'none';
+      }
+    }
+    
+    function switchTab(tabName) {
+      // Hide all tab contents
+      document.querySelectorAll('.tab-content').forEach(function(el) {
+        el.classList.remove('active');
+      });
+      
+      // Deactivate all tabs
+      document.querySelectorAll('.tab').forEach(function(el) {
+        el.classList.remove('active');
+      });
+      
+      // Show the selected tab content
+      document.getElementById(`content-${tabName}`).classList.add('active');
+      
+      // Activate the selected tab
+      document.getElementById(`tab-${tabName}`).classList.add('active');
+      
+      // Hide any messages when switching tabs
+      hideMessages();
+    }
+  </script>
+</body>
+</html>

@@ -6,6 +6,7 @@
  * 
  * @requires log, handleError from B_Logging.gs
  * @requires showManageSidebar, showViewSidebar, showCreateTrackingSheetDialog from H_UI.gs
+ * @requires showNotificationSettings from N_Notifications.gs
  */
 
 /**
@@ -15,15 +16,35 @@
  */
 function onOpen() {
   try {
-    SpreadsheetApp.getUi()
-      .createMenu('🚀 Release Tracker')
-      .addItem('🛠 Manage Jobs', 'showManageSidebar')
-      .addItem('👀 View Jobs', 'showViewSidebar')
+    const ui = SpreadsheetApp.getUi();
+    
+    // Create the main Release Tracker menu
+    ui.createMenu('🚀 Release Tracker')
+      .addSubMenu(ui.createMenu('📜 Control Jobs')
+        .addItem('🛠 Manage Jobs', 'showManageSidebar')
+        .addItem('👀 View Jobs', 'showViewSidebar'))
+      .addItem('📝 Create Jobs Tracking Sheet', 'showCreateTrackingSheetDialog')
       .addSeparator()
-      .addItem('📝 Create Tracking Sheet', 'showCreateTrackingSheetDialog')
+      .addItem('🔔 Phase Notifications', 'showNotificationSettings')
       .addToUi();
+    
     log('Menu initialized successfully', LOG_LEVELS.INFO);
   } catch (error) {
     handleError('onOpen', error, false);
+  }
+}
+
+/**
+ * Manually checks for phases that are active today and runs their notifications
+ * This is mainly for testing purposes.
+ */
+function manuallyCheckPhases() {
+  try {
+    // This function remains accessible for manual testing but is no longer in the menu
+    const result = sendPhaseNotifications();
+    return result;
+  } catch (error) {
+    handleError('manuallyCheckPhases', error, true);
+    return { error: error.message || String(error) };
   }
 }

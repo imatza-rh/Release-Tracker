@@ -139,12 +139,6 @@
       margin-bottom: 10px;
     }
 
-    .check-input {
-      margin-right: 10px;
-      width: 20px;
-      height: 20px;
-    }
-
     .text-input {
       flex-grow: 1;
       padding: 8px 12px;
@@ -189,7 +183,7 @@
     /* Color Picker (Google Sheets Style) */
     #color-picker {
       display: none;
-      position: absolute;
+      position: fixed;
       background: white;
       border: 1px solid #ccc;
       box-shadow: 0 2px 10px rgba(0,0,0,0.2);
@@ -405,6 +399,91 @@
       margin-bottom: 12px;
       font-style: italic;
     }
+    
+    /* Field selection checkboxes */
+    .field-selections {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+      padding: 15px;
+      background-color: #f9f9f9;
+      border-radius: 5px;
+      border: 1px solid #e0e0e0;
+    }
+
+    .field-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .field-checkbox input[type="checkbox"] {
+      width: auto;
+      margin: 0;
+    }
+
+    .field-checkbox label {
+      display: inline;
+      margin: 0;
+      font-weight: normal;
+      font-size: 14px;
+    }
+    
+    /* Info box in external links tab */
+    .info-box {
+      margin-top: 20px;
+      padding: 12px 15px;
+      background-color: #e8f4fd;
+      border-left: 4px solid #1976d2;
+      border-radius: 4px;
+    }
+
+    .info-title {
+      font-weight: bold;
+      margin-bottom: 8px;
+      color: #1976d2;
+    }
+
+    .info-box ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    .info-box li {
+      margin-bottom: 4px;
+    }
+    
+    /* Custom fields section */
+    .custom-fields-section {
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #f0f7ff;
+      border-radius: 5px;
+      border: 1px solid #d0e2ff;
+    }
+    
+    .custom-field-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+      gap: 10px;
+    }
+    
+    .custom-field-input {
+      flex-grow: 1;
+    }
+    
+    .custom-field-button {
+      flex-shrink: 0;
+      height: 37px;
+      width: 37px;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
   </style>
 </head>
 <body>
@@ -467,34 +546,102 @@ Review code changes"></textarea>
     <div id="tab-external-links" class="tab-content">
       <p>Configure external system URLs to enable hyperlinks in your tracking sheet.</p>
       
-      <label for="jenkinsUrl">Jenkins Base URL:</label>
+      <label for="jenkinsUrl">Jenkins URL:</label>
       <input type="text" id="jenkinsUrl" placeholder="https://jenkins.example.com">
-      <div class="helper-text">Do not include trailing slash. We'll add "/job/" between this URL and your job name.</div>
+      <div class="helper-text">
+        Enter your Jenkins URL (e.g., https://jenkins.example.com). We'll automatically add "/job/" 
+        if needed and handle all path formatting.
+      </div>
       
-      <label for="jiraUrl">Jira Base URL:</label>
-      <input type="text" id="jiraUrl" placeholder="https://jira.example.com/browse">
-      <div class="helper-text">Do not include trailing slash. Your ticket ID will be appended to this URL.</div>
+      <label for="jiraUrl">Jira URL:</label>
+      <input type="text" id="jiraUrl" placeholder="https://jira.example.com">
+      <div class="helper-text">
+        Enter your Jira URL (e.g., https://jira.example.com). We'll automatically add "/browse/" 
+        if needed and handle all path formatting.
+      </div>
+      
+      <div class="info-box">
+        <div class="info-title">📌 URL Tips</div>
+        <ul>
+          <li>Both HTTP and HTTPS protocols are supported</li>
+          <li>You can include or exclude trailing slashes - we'll handle it</li>
+          <li>For Jenkins: if your URL already includes "/job", we'll detect it</li>
+          <li>For Jira: if your URL already includes "/browse", we'll detect it</li>
+        </ul>
+      </div>
     </div>
     
     <!-- Field Options Tab -->
     <div id="tab-fields" class="tab-content">
-      <p>Customize the drop-down fields for your tracking sheet.</p>
+      <p>Customize the fields and dropdown options for your tracking sheet.</p>
       
+      <!-- Field Selection Section -->
       <div class="field-section">
+        <div class="status-header">Standard Fields</div>
+        <div class="field-description">Select which standard fields to include in your tracking sheet.</div>
+        <div id="field-selections" class="field-selections">
+          <div class="field-checkbox">
+            <input type="checkbox" id="field-jobname" checked disabled>
+            <label for="field-jobname">Job Name (required)</label>
+          </div>
+          <div class="field-checkbox">
+            <input type="checkbox" id="field-status" checked onchange="updateFieldVisibility()">
+            <label for="field-status">Status</label>
+          </div>
+          <div class="field-checkbox">
+            <input type="checkbox" id="field-type" checked onchange="updateFieldVisibility()">
+            <label for="field-type">Type</label>
+          </div>
+          <div class="field-checkbox">
+            <input type="checkbox" id="field-priority" checked onchange="updateFieldVisibility()">
+            <label for="field-priority">Priority</label>
+          </div>
+          <div class="field-checkbox">
+            <input type="checkbox" id="field-notes" checked>
+            <label for="field-notes">Notes</label>
+          </div>
+          <div class="field-checkbox">
+            <input type="checkbox" id="field-joblink" checked>
+            <label for="field-joblink">Job Link</label>
+          </div>
+          <div class="field-checkbox">
+            <input type="checkbox" id="field-jiraticket" checked>
+            <label for="field-jiraticket">Jira Ticket</label>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Custom Fields Section -->
+      <div class="field-section">
+        <div class="status-header">Custom Fields</div>
+        <div class="field-description">Add your own custom fields to the tracking sheet.</div>
+        <div id="custom-fields-container" class="custom-fields-section">
+          <!-- Custom fields will be added here dynamically -->
+          <div class="custom-field-row">
+            <input type="text" class="custom-field-input" placeholder="Enter custom field name">
+            <button type="button" class="custom-field-button btn-primary" onclick="addCustomFieldRow()">+</button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Status Options -->
+      <div class="field-section" id="status-section">
         <div class="status-header">Status Options</div>
         <div class="field-description">Define status options to track job progress.</div>
         <div id="status-items"></div>
         <button onclick="addFieldOption('status')" class="add-btn">+ Add Status</button>
       </div>
       
-      <div class="field-section">
+      <!-- Type Options -->
+      <div class="field-section" id="type-section">
         <div class="type-header">Job Type Options</div>
         <div class="field-description">Define different types of jobs you want to track.</div>
         <div id="type-items"></div>
         <button onclick="addFieldOption('type')" class="add-btn">+ Add Type</button>
       </div>
       
-      <div class="field-section">
+      <!-- Priority Options -->
+      <div class="field-section" id="priority-section">
         <div class="priority-header">Priority Options</div>
         <div class="field-description">Define priority levels for your jobs.</div>
         <div id="priority-items"></div>
@@ -609,6 +756,9 @@ Review code changes"></textarea>
     let activeColorButton = null;
     let defaultJobsSheetExists = false;
     
+    // Track the color picker position and scroll
+    let previousScrollY = 0;
+    
     document.addEventListener("DOMContentLoaded", function() {
       // Show the default tab
       showTab('basics');
@@ -632,9 +782,13 @@ Review code changes"></textarea>
         google.script.host.close();
       });
       
+      // Update field sections visibility
+      updateFieldVisibility();
+      
       // Set up color cell click handlers
       document.querySelectorAll('.color-cell').forEach(cell => {
-        cell.addEventListener('click', function() {
+        cell.addEventListener('click', function(e) {
+          e.stopPropagation();
           if (activeColorButton) {
             // Update active button color
             activeColorButton.style.backgroundColor = this.dataset.color;
@@ -657,6 +811,18 @@ Review code changes"></textarea>
           activeColorButton = null;
         }
       });
+      
+      // Handle scroll events for color picker repositioning
+      window.addEventListener('scroll', function() {
+        const colorPicker = document.getElementById('color-picker');
+        if (colorPicker.style.display === 'block' && activeColorButton) {
+          // Adjust color picker position when scrolling
+          const scrollDiff = window.scrollY - previousScrollY;
+          const currentTop = parseInt(colorPicker.style.top) || 0;
+          colorPicker.style.top = (currentTop - scrollDiff) + 'px';
+          previousScrollY = window.scrollY;
+        }
+      }, true);
     });
     
     function setupFieldOptions() {
@@ -664,6 +830,79 @@ Review code changes"></textarea>
       createFieldItems('status');
       createFieldItems('type');
       createFieldItems('priority');
+    }
+    
+    // Controls visibility of field option sections based on checkboxes
+    function updateFieldVisibility() {
+      const statusEnabled = document.getElementById('field-status').checked;
+      const typeEnabled = document.getElementById('field-type').checked;
+      const priorityEnabled = document.getElementById('field-priority').checked;
+      
+      // Show/hide field sections based on checkbox state
+      document.getElementById('status-section').style.display = statusEnabled ? 'block' : 'none';
+      document.getElementById('type-section').style.display = typeEnabled ? 'block' : 'none';
+      document.getElementById('priority-section').style.display = priorityEnabled ? 'block' : 'none';
+    }
+    
+    // Add a new custom field input row
+    function addCustomFieldRow() {
+      const container = document.getElementById('custom-fields-container');
+      const allRows = container.querySelectorAll('.custom-field-row');
+      
+      // Get the last row and check if it has content
+      const lastRow = allRows[allRows.length - 1];
+      const lastInput = lastRow.querySelector('input');
+      
+      if (lastInput && !lastInput.value.trim()) {
+        // If last row is empty, just focus it instead of adding a new one
+        lastInput.focus();
+        return;
+      }
+      
+      // Create a new row
+      const newRow = document.createElement('div');
+      newRow.className = 'custom-field-row';
+      
+      // Create input
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'custom-field-input';
+      input.placeholder = 'Enter custom field name';
+      
+      // Create remove button
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'custom-field-button btn-danger';
+      button.innerHTML = '−';
+      button.onclick = function() {
+        container.removeChild(newRow);
+      };
+      
+      // Add elements to row
+      newRow.appendChild(input);
+      newRow.appendChild(button);
+      
+      // Add row before the add row
+      container.appendChild(newRow);
+      
+      // Focus the new input
+      input.focus();
+    }
+    
+    // Get all custom fields
+    function getCustomFields() {
+      const container = document.getElementById('custom-fields-container');
+      const inputs = container.querySelectorAll('input');
+      const customFields = [];
+      
+      inputs.forEach(input => {
+        const fieldName = input.value.trim();
+        if (fieldName) {
+          customFields.push(fieldName);
+        }
+      });
+      
+      return customFields;
     }
     
     function createFieldItems(type) {
@@ -682,13 +921,6 @@ Review code changes"></textarea>
       // Create field item
       const item = document.createElement('div');
       item.className = 'field-item';
-      
-      // Create checkbox
-      const checkbox = document.createElement('input');
-      checkbox.type = 'checkbox';
-      checkbox.className = 'check-input';
-      checkbox.checked = true;
-      checkbox.disabled = isRequired;
       
       // Create text input
       const input = document.createElement('input');
@@ -711,12 +943,17 @@ Review code changes"></textarea>
       removeBtn.className = 'remove-btn';
       removeBtn.innerHTML = '−';
       removeBtn.style.display = isRequired ? 'none' : 'block';
-      removeBtn.addEventListener('click', function() {
-        container.removeChild(item);
+      
+      // Fix: Ensure the remove button works properly
+      removeBtn.addEventListener('click', function(e) {
+        e.preventDefault(); // Prevent form submission
+        e.stopPropagation(); // Prevent event bubbling
+        if (container && item) {
+          container.removeChild(item);
+        }
       });
       
       // Add elements to item
-      item.appendChild(checkbox);
       item.appendChild(input);
       item.appendChild(colorBox);
       item.appendChild(removeBtn);
@@ -747,29 +984,50 @@ Review code changes"></textarea>
     function showColorPicker(event, colorBox) {
       event.stopPropagation();
       
+      // Store current scroll position
+      previousScrollY = window.scrollY;
+      
       // Set active color box
       activeColorButton = colorBox;
       
       // Get color picker
       const colorPicker = document.getElementById('color-picker');
       
-      // Position color picker
+      // Position color picker - Improved positioning logic
       const rect = colorBox.getBoundingClientRect();
       const pickerHeight = 320; // Approximate picker height
+      const pickerWidth = 240; // Approximate picker width
       
-      // Determine if picker should appear above or below the color box
+      // Get viewport dimensions
       const viewportHeight = window.innerHeight;
-      const spaceBelowBox = viewportHeight - rect.bottom;
+      const viewportWidth = window.innerWidth;
       
-      // If space below is insufficient, place above
-      if (spaceBelowBox < pickerHeight && rect.top > pickerHeight) {
-        colorPicker.style.top = (rect.top - pickerHeight - 5) + 'px';
+      // Calculate the best position for the picker
+      let topPosition, leftPosition;
+      
+      // Vertical position - try to keep it visible
+      if (rect.bottom + pickerHeight > viewportHeight && rect.top > pickerHeight/2) {
+        // Place above if there's more space above
+        topPosition = window.scrollY + rect.top - pickerHeight - 5;
       } else {
-        colorPicker.style.top = (rect.bottom + 5) + 'px';
+        // Otherwise place below
+        topPosition = window.scrollY + rect.bottom + 5;
       }
       
-      // Center horizontally relative to the color box
-      colorPicker.style.left = (rect.left) + 'px';
+      // Horizontal position - center on the color box by default
+      leftPosition = rect.left + rect.width/2 - pickerWidth/2;
+      
+      // Adjust horizontal position to keep within viewport
+      if (leftPosition < 5) {
+        leftPosition = 5;
+      } else if (leftPosition + pickerWidth > viewportWidth - 5) {
+        leftPosition = viewportWidth - pickerWidth - 5;
+      }
+      
+      // Apply positions - use fixed positioning for better scrolling behavior
+      colorPicker.style.position = 'absolute';
+      colorPicker.style.top = `${topPosition}px`;
+      colorPicker.style.left = `${leftPosition}px`;
       
       // Update selected color
       const selectedColor = colorBox.dataset.color;
@@ -782,6 +1040,13 @@ Review code changes"></textarea>
       
       // Show color picker
       colorPicker.style.display = 'block';
+      
+      // Check if the picker is visible in the viewport
+      const pickerRect = colorPicker.getBoundingClientRect();
+      if (pickerRect.top < 0 || pickerRect.bottom > viewportHeight) {
+        // If not visible, scroll to make it visible
+        colorPicker.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
     }
     
     function checkDefaultJobsSheet() {
@@ -801,20 +1066,32 @@ Review code changes"></textarea>
     function createDefaultJobsSheet() {
       showLoading(true);
       
+      // Add timeout protection to prevent UI from getting stuck
+      const timeoutId = setTimeout(function() {
+        showLoading(false);
+        showErrorDialog('Operation timed out. The server took too long to respond. Please try again.');
+      }, 15000); // 15-second timeout
+      
       google.script.run
         .withSuccessHandler(function(result) {
+          clearTimeout(timeoutId); // Clear the timeout
           showLoading(false);
-          if (result.status === 'success') {
+          
+          if (result && result.status === 'success') {
             showSuccessDialog('DefaultJobs sheet created successfully!');
             defaultJobsSheetExists = true;
             updateDefaultJobsNotice();
           } else {
-            showErrorDialog(result.message || 'Failed to create DefaultJobs sheet.');
+            const errorMsg = (result && result.message) ? result.message : 'Failed to create DefaultJobs sheet with unknown error.';
+            showErrorDialog(errorMsg);
+            console.error('Error creating DefaultJobs sheet:', result);
           }
         })
         .withFailureHandler(function(error) {
+          clearTimeout(timeoutId); // Clear the timeout
           showLoading(false);
           showErrorDialog('Failed to create DefaultJobs sheet: ' + error);
+          console.error('Error creating DefaultJobs sheet:', error);
         })
         .createDefaultJobsTemplate();
     }
@@ -928,6 +1205,43 @@ Review code changes"></textarea>
         priorityColors: getFieldColors('priority')
       };
       
+      // Collect selected fields
+      const selectedFields = ['Job Name']; // Job Name is always required
+      if (document.getElementById('field-status').checked) selectedFields.push('Status');
+      if (document.getElementById('field-type').checked) selectedFields.push('Type');
+      if (document.getElementById('field-priority').checked) selectedFields.push('Priority');
+      if (document.getElementById('field-notes').checked) selectedFields.push('Notes');
+      if (document.getElementById('field-joblink').checked) selectedFields.push('Job Link');
+      if (document.getElementById('field-jiraticket').checked) selectedFields.push('Jira Ticket');
+      
+      // Add custom fields if any
+      const customFields = getCustomFields();
+      if (customFields.length > 0) {
+        selectedFields.push(...customFields);
+      }
+      
+      // Add selected fields to fieldOptions
+      fieldOptions.selectedFields = selectedFields;
+      
+      // Validate required field options
+      if (document.getElementById('field-status').checked && fieldOptions.statuses.length === 0) {
+        showErrorDialog('You must have at least one Status option');
+        showTab('fields');
+        return;
+      }
+      
+      if (document.getElementById('field-type').checked && fieldOptions.types.length === 0) {
+        showErrorDialog('You must have at least one Job Type option');
+        showTab('fields');
+        return;
+      }
+      
+      if (document.getElementById('field-priority').checked && fieldOptions.priorities.length === 0) {
+        showErrorDialog('You must have at least one Priority option');
+        showTab('fields');
+        return;
+      }
+      
       // Collect integration settings
       let jenkinsUrl = document.getElementById("jenkinsUrl").value.trim();
       let jiraUrl = document.getElementById("jiraUrl").value.trim();
@@ -949,23 +1263,78 @@ Review code changes"></textarea>
       // Show loading overlay
       showLoading(true);
       
-      // Save integration settings first
-      google.script.run
-        .withSuccessHandler(() => {
-          // Then create the tracking sheet with field options
-          google.script.run
-            .withSuccessHandler(onCreateSuccess)
-            .withFailureHandler(onCreateFailure)
-            .createTrackingSheetWithOptions(sheetName, source, fieldOptions, manualJobs, {
-              formatAsTable: formatAsTable,
-              freezeHeaders: freezeHeaders
-            });
-        })
-        .withFailureHandler(error => {
-          showLoading(false);
-          showErrorDialog('Failed to save external link settings: ' + error);
-        })
-        .saveIntegrationSettings(integrationSettings);
+      // Add timeout protection
+      const timeoutId = setTimeout(function() {
+        showLoading(false);
+        showErrorDialog('Operation timed out. The server took too long to respond. Please try again.');
+      }, 30000); // 30-second timeout
+      
+      // First check if DefaultJobs sheet exists if that's the selected source
+      if (source === 'DefaultJobs') {
+        // Verify DefaultJobs sheet exists first
+        google.script.run
+          .withSuccessHandler(function(exists) {
+            if (!exists) {
+              clearTimeout(timeoutId);
+              showLoading(false);
+              showErrorDialog('DefaultJobs sheet does not exist. Please create it first.');
+              return;
+            }
+            
+            // Continue with normal flow if sheet exists
+            saveSettingsAndCreate();
+          })
+          .withFailureHandler(function(error) {
+            clearTimeout(timeoutId);
+            showLoading(false);
+            showErrorDialog('Error checking DefaultJobs sheet: ' + error);
+          })
+          .checkDefaultJobsSheetExists();
+      } else {
+        // For other sources, proceed directly
+        saveSettingsAndCreate();
+      }
+      
+      // Helper function to continue the flow
+      function saveSettingsAndCreate() {
+        // Save integration settings first
+        google.script.run
+          .withSuccessHandler(() => {
+            // Then create the tracking sheet with field options
+            google.script.run
+              .withSuccessHandler(function(result) {
+                clearTimeout(timeoutId); // Clear the timeout
+                showLoading(false);
+                
+                if (result && result.status === 'success') {
+                  showSuccessDialog(result.message || 'Tracking sheet created successfully!', function() {
+                    google.script.host.close();
+                  });
+                } else {
+                  const errorMsg = (result && result.message) ? result.message : 'Failed to create tracking sheet with unknown error.';
+                  showErrorDialog(errorMsg);
+                  console.error('Error creating tracking sheet:', result);
+                }
+              })
+              .withFailureHandler(function(error) {
+                clearTimeout(timeoutId); // Clear the timeout
+                showLoading(false);
+                showErrorDialog('Failed to create tracking sheet: ' + error);
+                console.error('Error creating tracking sheet:', error);
+              })
+              .createTrackingSheetWithOptions(sheetName, source, fieldOptions, manualJobs, {
+                formatAsTable: formatAsTable,
+                freezeHeaders: freezeHeaders
+              });
+          })
+          .withFailureHandler(function(error) {
+            clearTimeout(timeoutId); // Clear the timeout
+            showLoading(false);
+            showErrorDialog('Failed to save external link settings: ' + error);
+            console.error('Error saving integration settings:', error);
+          })
+          .saveIntegrationSettings(integrationSettings);
+      }
     }
     
     function getFieldValues(type) {
@@ -975,10 +1344,9 @@ Review code changes"></textarea>
       
       for (let i = 0; i < items.length; i++) {
         const item = items[i];
-        const checkbox = item.querySelector('.check-input');
         const textInput = item.querySelector('.text-input');
         
-        if (checkbox.checked && textInput.value.trim()) {
+        if (textInput.value.trim()) {
           values.push(textInput.value.trim());
         }
       }
@@ -993,10 +1361,10 @@ Review code changes"></textarea>
       
       for (let i = 0; i < items.length; i++) {
         const item = items[i];
-        const checkbox = item.querySelector('.check-input');
+        const textInput = item.querySelector('.text-input');
         const colorBox = item.querySelector('.color-box');
         
-        if (checkbox.checked) {
+        if (textInput.value.trim()) {
           colors.push(colorBox.dataset.color);
         }
       }

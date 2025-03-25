@@ -26,4 +26,3 @@ function sanitizeInput(value, type = 'string') {
   
   return value;
 }
-

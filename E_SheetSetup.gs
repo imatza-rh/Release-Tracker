@@ -11,13 +11,14 @@
  */
 
 /**
- * Gets or creates a sheet with the given name
+ * Gets or creates a sheet with the given name and specified fields
  * 
  * @param {string} sheetName - Name of sheet to get or create
+ * @param {Array} [customFields] - Optional array of custom fields to use for header
  * @returns {Sheet} The sheet object
  * @throws {Error} If sheet cannot be created
  */
-function getOrCreateSheet(sheetName) {
+function getOrCreateSheet(sheetName, customFields) {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     let sheet = ss.getSheetByName(sheetName);
@@ -27,7 +28,24 @@ function getOrCreateSheet(sheetName) {
       sheet = ss.insertSheet(sheetName);
       
       // Use user-configurable fields as header
-      const fields = getConfig().fields || ['Job Name', 'Type', 'Status', 'Priority', 'Notes', 'Job Link', 'Jira Ticket'];
+      let fields;
+      if (Array.isArray(customFields) && customFields.length > 0) {
+        // Use provided custom fields if available
+        fields = customFields;
+        log(`Using custom fields for sheet: ${customFields.join(', ')}`, LOG_LEVELS.INFO);
+      } else {
+        // Otherwise use default fields from config
+        fields = getConfig().fields || ['Job Name', 'Type', 'Status', 'Priority', 'Notes', 'Job Link', 'Jira Ticket'];
+      }
+      
+      // Ensure 'Job Name' is always included as the first field
+      if (!fields.includes('Job Name')) {
+        fields.unshift('Job Name');
+      } else if (fields.indexOf('Job Name') !== 0) {
+        // If Job Name exists but not first, rearrange it
+        fields = ['Job Name'].concat(fields.filter(f => f !== 'Job Name'));
+      }
+      
       sheet.appendRow(fields);
       
       // Format header row

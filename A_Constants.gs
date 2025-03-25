@@ -45,4 +45,3 @@ let _configCache = null;
  * @type {number}
  */
 let currentLogLevel = LOG_LEVELS.INFO;
-

@@ -72,4 +72,3 @@ function setLogLevel(level) {
     message: `Invalid log level: ${level}` 
   };
 }
-

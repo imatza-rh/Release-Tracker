@@ -67,20 +67,48 @@ function createJenkinsJobLink(jobName) {
     if (!jobName) return '';
     
     const settings = getIntegrationSettings();
-    let baseUrl = settings.jenkinsUrl;
+    let baseUrl = settings.jenkinsUrl || '';
     
     if (!baseUrl) return jobName;
     
-    // Normalize URL by removing trailing slash
-    if (baseUrl.endsWith('/')) {
+    // Clean and normalize the base URL first
+    baseUrl = baseUrl.trim();
+    if (!baseUrl.startsWith('http://') && !baseUrl.startsWith('https://')) {
+      baseUrl = 'https://' + baseUrl;
+    }
+    
+    // Clean trailing slashes
+    while (baseUrl.endsWith('/')) {
       baseUrl = baseUrl.slice(0, -1);
     }
     
-    // Add /job/ between base URL and job name
-    const jobUrl = `${baseUrl}/job/${encodeURIComponent(jobName)}`;
+    // Determine the correct path to add
+    let finalUrl = baseUrl;
+    const lowerUrl = baseUrl.toLowerCase();
     
-    // Create a hyperlink formula: =HYPERLINK("url", "display text")
-    return `=HYPERLINK("${jobUrl}", "${jobName}")`;
+    // Check if URL already contains "/job" pattern
+    if (lowerUrl.includes('/job/') || lowerUrl.endsWith('/job')) {
+      // If URL ends with /job, add another slash
+      if (lowerUrl.endsWith('/job')) {
+        finalUrl += '/';
+      }
+    } else {
+      // Otherwise add /job/ path
+      finalUrl += '/job/';
+    }
+    
+    // Add encoded job name
+    finalUrl += encodeURIComponent(jobName);
+    
+    // DEBUG log the final URL to ensure it's correct
+    log(`Jenkins URL generated: ${finalUrl}`, LOG_LEVELS.DEBUG);
+    
+    // Create a hyperlink formula with proper quote escaping for the URL
+    // Use double quotes for the formula and escaped double quotes for attributes
+    const escapedUrl = finalUrl.replace(/"/g, '""');
+    const escapedJobName = jobName.replace(/"/g, '""');
+    
+    return `=HYPERLINK("${escapedUrl}","${escapedJobName}")`;
   } catch (error) {
     log('Error creating Jenkins link', LOG_LEVELS.ERROR, error);
     return jobName;
@@ -98,20 +126,48 @@ function createJiraTicketLink(ticketId) {
     if (!ticketId) return '';
     
     const settings = getIntegrationSettings();
-    let baseUrl = settings.jiraUrl;
+    let baseUrl = settings.jiraUrl || '';
     
     if (!baseUrl) return ticketId;
     
-    // Normalize URL by removing trailing slash
-    if (baseUrl.endsWith('/')) {
+    // Clean and normalize the base URL first
+    baseUrl = baseUrl.trim();
+    if (!baseUrl.startsWith('http://') && !baseUrl.startsWith('https://')) {
+      baseUrl = 'https://' + baseUrl;
+    }
+    
+    // Clean trailing slashes
+    while (baseUrl.endsWith('/')) {
       baseUrl = baseUrl.slice(0, -1);
     }
     
-    // Create Jira URL
-    const ticketUrl = `${baseUrl}/${encodeURIComponent(ticketId)}`;
+    // Determine the correct path to add
+    let finalUrl = baseUrl;
+    const lowerUrl = baseUrl.toLowerCase();
     
-    // Create a hyperlink formula: =HYPERLINK("url", "display text")
-    return `=HYPERLINK("${ticketUrl}", "${ticketId}")`;
+    // Check if URL already contains "/browse" pattern
+    if (lowerUrl.includes('/browse/') || lowerUrl.endsWith('/browse')) {
+      // If URL ends with /browse, add another slash
+      if (lowerUrl.endsWith('/browse')) {
+        finalUrl += '/';
+      }
+    } else {
+      // Otherwise add /browse/ path
+      finalUrl += '/browse/';
+    }
+    
+    // Add encoded ticket ID
+    finalUrl += encodeURIComponent(ticketId);
+    
+    // DEBUG log the final URL to ensure it's correct
+    log(`Jira URL generated: ${finalUrl}`, LOG_LEVELS.DEBUG);
+    
+    // Create a hyperlink formula with proper quote escaping for the URL
+    // Use double quotes for the formula and escaped double quotes for attributes
+    const escapedUrl = finalUrl.replace(/"/g, '""');
+    const escapedTicketId = ticketId.replace(/"/g, '""');
+    
+    return `=HYPERLINK("${escapedUrl}","${escapedTicketId}")`;
   } catch (error) {
     log('Error creating Jira link', LOG_LEVELS.ERROR, error);
     return ticketId;
@@ -144,10 +200,10 @@ function createDefaultJobsTemplate() {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     let sheet = ss.getSheetByName(DEFAULT_JOBS_SHEET_NAME);
     
-    // If sheet already exists, return
+    // If sheet already exists, return success
     if (sheet) {
       return {
-        status: 'info',
+        status: 'success',
         message: 'DefaultJobs sheet already exists'
       };
     }
@@ -174,16 +230,36 @@ function createDefaultJobsTemplate() {
     
     sheet.getRange(2, 1, exampleJobs.length, headers.length).setValues(exampleJobs);
     
+    // Format as table (alternating row colors)
+    const dataRange = sheet.getRange(2, 1, exampleJobs.length, headers.length);
+    for (let i = 2; i <= exampleJobs.length + 1; i++) {
+      const rowColor = i % 2 === 0 ? "#f9f9f9" : "#ffffff";
+      sheet.getRange(i, 1, 1, headers.length).setBackground(rowColor);
+    }
+    
+    // Add borders
+    dataRange.setBorder(true, true, true, true, true, true, "#e0e0e0", SpreadsheetApp.BorderStyle.SOLID);
+    
     // Auto-resize columns
     for (let i = 1; i <= headers.length; i++) {
       sheet.autoResizeColumn(i);
     }
+    
+    // Log success
+    log('Created DefaultJobs template sheet successfully', LOG_LEVELS.INFO);
     
     return {
       status: 'success',
       message: 'DefaultJobs template created successfully'
     };
   } catch (error) {
-    return handleError('createDefaultJobsTemplate', error, true);
+    // Improved error logging
+    log('Error creating DefaultJobs template', LOG_LEVELS.ERROR, error);
+    
+    // Return detailed error information
+    return {
+      status: 'error',
+      message: 'Failed to create DefaultJobs sheet: ' + (error.message || String(error))
+    };
   }
 }

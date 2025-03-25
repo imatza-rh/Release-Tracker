@@ -17,9 +17,10 @@
  * @param {string} source - Source for jobs ('empty', 'DefaultJobs', or 'manual')
  * @param {Object} fieldOptions - Custom field options (statuses, types, priorities)
  * @param {string[]} [manualJobs=[]] - Array of job names when source is 'manual'
+ * @param {Object} [formatOptions={}] - Formatting options for the sheet
  * @returns {Object} Result object indicating success or failure
  */
-function createTrackingSheetWithOptions(sheetName, source, fieldOptions, manualJobs = []) {
+function createTrackingSheetWithOptions(sheetName, source, fieldOptions, manualJobs = [], formatOptions = {}) {
   try {
     if (!sheetName) {
       return {
@@ -47,7 +48,7 @@ function createTrackingSheetWithOptions(sheetName, source, fieldOptions, manualJ
         currentConfig.priorities = fieldOptions.priorities;
       }
       
-      // Update colors if provided (we'll store these but not use them directly)
+      // Update colors if provided
       if (fieldOptions.statusColors && fieldOptions.statusColors.length === fieldOptions.statuses.length) {
         currentConfig.statusColors = fieldOptions.statusColors;
       }
@@ -58,6 +59,11 @@ function createTrackingSheetWithOptions(sheetName, source, fieldOptions, manualJ
       
       if (fieldOptions.priorityColors && fieldOptions.priorityColors.length === fieldOptions.priorities.length) {
         currentConfig.priorityColors = fieldOptions.priorityColors;
+      }
+      
+      // Update selected fields if provided
+      if (fieldOptions.selectedFields && Array.isArray(fieldOptions.selectedFields)) {
+        currentConfig.fields = fieldOptions.selectedFields;
       }
       
       // Update metadata
@@ -99,65 +105,218 @@ function createTrackingSheetWithOptions(sheetName, source, fieldOptions, manualJ
     
     // Create or get the sheet with proper headers and formatting
     log('Getting or creating sheet', LOG_LEVELS.INFO);
-    const sheet = getOrCreateSheet(sheetName);
+    const sheet = getOrCreateSheet(sheetName, fieldOptions.selectedFields);
     
-    // Add Jira and Job Link columns if they don't exist
-    const header = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-    let headerUpdated = false;
-    
-    // Add Job Link column if it doesn't exist
-    if (!header.includes('Job Link')) {
-      sheet.insertColumnAfter(sheet.getLastColumn());
-      sheet.getRange(1, sheet.getLastColumn()).setValue('Job Link');
-      headerUpdated = true;
-    }
-    
-    // Add Jira Ticket column if it doesn't exist
-    if (!header.includes('Jira Ticket')) {
-      sheet.insertColumnAfter(sheet.getLastColumn());
-      sheet.getRange(1, sheet.getLastColumn()).setValue('Jira Ticket');
-      headerUpdated = true;
-    }
-    
-    // Re-apply formatting to header row if we updated it
-    if (headerUpdated) {
-      sheet.getRange(1, 1, 1, sheet.getLastColumn())
-        .setFontWeight('bold')
-        .setBackground('#f3f3f3');
-      
-      log('Added additional columns to sheet', LOG_LEVELS.INFO);
-    }
-      
     // Apply validation based on updated config
     setupDataValidation(sheet);
     log('Data validation applied', LOG_LEVELS.INFO);
     
-    // If manual jobs were provided, add them to the sheet
-    if (source === 'manual' && Array.isArray(manualJobs) && manualJobs.length > 0) {
-      return addManualJobs(sheetName, manualJobs);
-    }
+    // Set default format options if not provided
+    const formatOpts = {
+      formatAsTable: formatOptions.formatAsTable !== false,
+      freezeHeaders: formatOptions.freezeHeaders !== false
+    };
     
-    // If source is 'empty', we're done
-    if (source === 'empty') {
-      return {
+    // If manual jobs were provided, add them to the sheet
+    let result;
+    if (source === 'manual' && Array.isArray(manualJobs) && manualJobs.length > 0) {
+      result = addManualJobs(sheetName, manualJobs);
+    } else if (source === 'empty') {
+      result = {
         status: 'success',
         message: `Sheet "${sheetName}" created successfully with empty job list`
       };
-    }
-    
-    // For DefaultJobs source, check if it exists first
-    if (source === 'DefaultJobs') {
+    } else if (source === 'DefaultJobs') {
+      // For DefaultJobs source, check if it exists first
       const defaultSheet = ss.getSheetByName(DEFAULT_JOBS_SHEET_NAME);
       if (!defaultSheet) {
         log('DefaultJobs sheet does not exist, creating it', LOG_LEVELS.INFO);
         createDefaultJobsTemplate();
       }
+      
+      // Add default jobs from DefaultJobs sheet
+      result = addJobsFromDefaultSheet(sheetName);
     }
     
-    // Add default jobs from DefaultJobs sheet
-    return addJobsFromDefaultSheet(sheetName);
+    // Apply conditional formatting for colors
+    applyConditionalFormatting(sheet, fieldOptions);
+    
+    // Apply table formatting
+    applyTableFormatting(sheet, formatOpts);
+    
+    return result || {
+      status: 'success',
+      message: `Sheet "${sheetName}" created successfully`
+    };
   } catch (error) {
     return handleError('createTrackingSheetWithOptions', error, true);
+  }
+}
+
+/**
+ * Applies conditional formatting rules for status, type, and priority colors
+ * 
+ * @param {Sheet} sheet - The sheet to apply formatting to
+ * @param {Object} fieldOptions - Field options including colors
+ */
+function applyConditionalFormatting(sheet, fieldOptions) {
+  try {
+    if (!sheet) return;
+    
+    // Get the sheet's header row
+    const header = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    
+    // Clear existing conditional format rules to avoid duplicates
+    sheet.clearConditionalFormatRules();
+    let rules = [];
+    
+    // Apply status colors
+    const statusColIndex = header.indexOf('Status');
+    if (statusColIndex >= 0 && 
+        fieldOptions.statuses && 
+        fieldOptions.statusColors && 
+        fieldOptions.statuses.length === fieldOptions.statusColors.length) {
+      
+      // Create conditional formatting rules for each status
+      fieldOptions.statuses.forEach((status, index) => {
+        const color = fieldOptions.statusColors[index];
+        if (color) {
+          const range = sheet.getRange(2, statusColIndex + 1, sheet.getMaxRows() - 1, 1);
+          const rule = SpreadsheetApp.newConditionalFormatRule()
+            .whenTextEqualTo(status)
+            .setBackground(color)
+            .setRanges([range])
+            .build();
+          
+          rules.push(rule);
+        }
+      });
+      
+      log('Applied conditional formatting for Status column', LOG_LEVELS.INFO);
+    }
+    
+    // Apply type colors
+    const typeColIndex = header.indexOf('Type');
+    if (typeColIndex >= 0 && 
+        fieldOptions.types && 
+        fieldOptions.typeColors && 
+        fieldOptions.types.length === fieldOptions.typeColors.length) {
+      
+      // Create conditional formatting rules for each type
+      fieldOptions.types.forEach((type, index) => {
+        const color = fieldOptions.typeColors[index];
+        if (color) {
+          const range = sheet.getRange(2, typeColIndex + 1, sheet.getMaxRows() - 1, 1);
+          const rule = SpreadsheetApp.newConditionalFormatRule()
+            .whenTextEqualTo(type)
+            .setBackground(color)
+            .setRanges([range])
+            .build();
+          
+          rules.push(rule);
+        }
+      });
+      
+      log('Applied conditional formatting for Type column', LOG_LEVELS.INFO);
+    }
+    
+    // Apply priority colors
+    const priorityColIndex = header.indexOf('Priority');
+    if (priorityColIndex >= 0 && 
+        fieldOptions.priorities && 
+        fieldOptions.priorityColors && 
+        fieldOptions.priorities.length === fieldOptions.priorityColors.length) {
+      
+      // Create conditional formatting rules for each priority
+      fieldOptions.priorities.forEach((priority, index) => {
+        const color = fieldOptions.priorityColors[index];
+        if (color) {
+          const range = sheet.getRange(2, priorityColIndex + 1, sheet.getMaxRows() - 1, 1);
+          const rule = SpreadsheetApp.newConditionalFormatRule()
+            .whenTextEqualTo(priority)
+            .setBackground(color)
+            .setRanges([range])
+            .build();
+          
+          rules.push(rule);
+        }
+      });
+      
+      log('Applied conditional formatting for Priority column', LOG_LEVELS.INFO);
+    }
+    
+    // Set all rules at once
+    sheet.setConditionalFormatRules(rules);
+    
+  } catch (error) {
+    handleError('applyConditionalFormatting', error, false);
+  }
+}
+
+/**
+ * Applies table formatting to the sheet
+ * 
+ * @param {Sheet} sheet - The sheet to format
+ * @param {Object} options - Formatting options
+ */
+function applyTableFormatting(sheet, options) {
+  try {
+    if (!sheet) return;
+    
+    // Get the data range
+    const lastRow = Math.max(sheet.getLastRow(), 2); // Ensure at least header + 1 row
+    const lastCol = sheet.getLastColumn();
+    
+    if (lastRow <= 1 || lastCol === 0) return; // No data to format
+    
+    // Apply table formatting
+    if (options.formatAsTable) {
+      // Format header row first
+      const headerRange = sheet.getRange(1, 1, 1, lastCol);
+      headerRange.setBackground("#f3f3f3");
+      headerRange.setFontWeight("bold");
+      headerRange.setBorder(true, true, true, true, true, true, "#cccccc", SpreadsheetApp.BorderStyle.SOLID);
+      
+      // Apply zebra striping (alternating row colors) manually for each row
+      for (let i = 2; i <= lastRow; i++) {
+        // Use modulo to determine even/odd rows - add +1 if needed to adjust pattern
+        const isEvenRow = (i % 2 === 0);
+        const rowColor = isEvenRow ? "#f9f9f9" : "#ffffff"; // Light gray for even rows
+        
+        // Apply background color to this row
+        const rowRange = sheet.getRange(i, 1, 1, lastCol);
+        rowRange.setBackground(rowColor);
+        
+        // Add consistent borders to every cell in the row
+        rowRange.setBorder(
+          true,   // top
+          true,   // left
+          i === lastRow, // bottom - only add bottom border to last row
+          true,   // right
+          false,  // vertical
+          false,  // horizontal
+          "#e0e0e0", 
+          SpreadsheetApp.BorderStyle.SOLID
+        );
+      }
+      
+      log("Applied table formatting with alternating rows", LOG_LEVELS.INFO);
+    }
+    
+    // Freeze header row if requested
+    if (options.freezeHeaders) {
+      sheet.setFrozenRows(1);
+      log("Froze header row", LOG_LEVELS.INFO);
+    }
+    
+    // Auto-resize columns for better readability
+    for (let i = 1; i <= lastCol; i++) {
+      sheet.autoResizeColumn(i);
+    }
+    
+    log("Auto-resized columns", LOG_LEVELS.INFO);
+  } catch (error) {
+    handleError('applyTableFormatting', error, false);
   }
 }
 
@@ -217,16 +376,16 @@ function addManualJobs(sheetName, jobNames) {
         newRow[nameIndex] = jobName;
       }
       
-      // Add default values
-      if (typeIndex !== -1) {
+      // Add default values for optional fields if they exist in the header
+      if (typeIndex !== -1 && config.types && config.types.length > 0) {
         newRow[typeIndex] = config.types[0] || 'Build';
       }
       
-      if (statusIndex !== -1) {
+      if (statusIndex !== -1 && config.statuses && config.statuses.length > 0) {
         newRow[statusIndex] = config.statuses[0] || 'Pending';
       }
       
-      if (priorityIndex !== -1) {
+      if (priorityIndex !== -1 && config.priorities && config.priorities.length > 0) {
         newRow[priorityIndex] = config.priorities[1] || 'Medium'; // Default to Medium priority
       }
       

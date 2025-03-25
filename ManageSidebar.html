@@ -18,7 +18,7 @@
     
     body {
       font-family: 'Roboto', 'Arial', sans-serif;
-      padding: 12px;
+      padding: 10px;
       font-size: 14px;
       color: var(--text-color);
       margin: 0;
@@ -28,10 +28,10 @@
     
     h3 {
       margin-top: 0;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
       color: var(--header-color);
       font-size: 18px;
-      padding-bottom: 10px;
+      padding-bottom: 8px;
       border-bottom: 2px solid var(--primary-color);
       display: flex;
       align-items: center;
@@ -39,17 +39,17 @@
     }
     
     h3 .icon {
-      font-size: 22px;
+      font-size: 20px;
     }
     
     h4 {
       margin-top: 0;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
       color: var(--header-color);
       font-size: 16px;
       background-color: var(--section-bg);
-      padding: 10px 14px;
-      border-radius: 8px 8px 0 0;
+      padding: 8px 12px;
+      border-radius: 6px 6px 0 0;
       border-left: 4px solid var(--primary-color);
       display: flex;
       align-items: center;
@@ -57,7 +57,7 @@
     }
     
     h4 .icon {
-      font-size: 18px;
+      font-size: 16px;
     }
     
     .required::after {
@@ -69,9 +69,9 @@
     select, input, textarea {
       width: 100%;
       box-sizing: border-box;
-      margin-bottom: 16px;
+      margin-bottom: 12px;
       font-size: 14px;
-      padding: 10px 12px;
+      padding: 8px 10px;
       border: 1px solid var(--border-color);
       border-radius: 6px;
       transition: all 0.2s ease;
@@ -90,7 +90,7 @@
     
     textarea {
       resize: vertical;
-      min-height: 90px;
+      min-height: 70px;
     }
     
     /* Section styling - improved for visual appeal */
@@ -100,13 +100,13 @@
       border-radius: 8px;
       background: #fff;
       padding: 0;
-      margin-top: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      margin-top: 15px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
       overflow: hidden;
     }
     
     .section-content {
-      padding: 16px;
+      padding: 12px;
     }
     
     .section.visible {
@@ -119,30 +119,25 @@
       to { opacity: 1; transform: translateY(0); }
     }
     
-    /* Debug outline for troubleshooting */
-    .debug-outline {
-      border: 2px dashed red !important;
-    }
-    
     /* Loading spinner */
     #spinner-container {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      min-height: 200px;
+      min-height: 180px;
       text-align: center;
     }
     
     .spinner {
       display: inline-block;
-      width: 36px;
-      height: 36px;
+      width: 32px;
+      height: 32px;
       border: 3px solid rgba(25, 118, 210, 0.3);
       border-radius: 50%;
       border-top-color: var(--primary-color);
       animation: spin 1s linear infinite;
-      margin-bottom: 16px;
+      margin-bottom: 12px;
     }
     
     @keyframes spin {
@@ -164,8 +159,8 @@
       transform: translateX(-50%);
       background: rgba(33, 33, 33, 0.9);
       color: #fff;
-      padding: 10px 20px;
-      border-radius: 8px;
+      padding: 8px 16px;
+      border-radius: 6px;
       font-size: 13px;
       z-index: 9999;
       max-width: 90%;
@@ -181,11 +176,11 @@
       color: white;
       border: none;
       border-radius: 6px;
-      padding: 10px 18px;
+      padding: 8px 14px;
       cursor: pointer;
       font-size: 14px;
       width: 100%;
-      margin-top: 10px;
+      margin-top: 8px;
       transition: all 0.2s ease;
       position: relative;
       font-family: 'Roboto', 'Arial', sans-serif;
@@ -200,7 +195,7 @@
     button:hover {
       background: var(--hover-color);
       transform: translateY(-1px);
-      box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+      box-shadow: 0 3px 6px rgba(0,0,0,0.1);
     }
     
     button:active {
@@ -216,7 +211,7 @@
     }
     
     .button-icon {
-      font-size: 18px;
+      font-size: 16px;
     }
     
     .button-processing {
@@ -243,7 +238,7 @@
       font-size: 12px;
       color: #757575;
       margin-top: -8px;
-      margin-bottom: 16px;
+      margin-bottom: 12px;
     }
     
     .success-text {
@@ -258,11 +253,11 @@
     .sheet-info {
       display: flex;
       align-items: center;
-      margin-bottom: 20px;
+      margin-bottom: 14px;
       font-size: 13px;
       color: #666;
       background-color: var(--section-bg);
-      padding: 10px 14px;
+      padding: 8px 12px;
       border-radius: 6px;
       box-shadow: 0 1px 2px rgba(0,0,0,0.05);
     }
@@ -278,58 +273,42 @@
       box-shadow: 0 1px 2px rgba(0,0,0,0.1);
     }
     
-    /* Action selection with radio buttons */
-    .action-selector {
-      display: flex;
-      background: var(--section-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      overflow: hidden;
-      margin-bottom: 20px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    }
-    
-    .action-option {
-      flex: 1;
-      text-align: center;
+    /* Action selection with dropdown instead of radio buttons */
+    .action-selector-compact {
+      margin-bottom: 14px;
+      width: 100%;
       position: relative;
     }
     
-    .action-option input[type="radio"] {
-      position: absolute;
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-    
-    .action-option label {
-      display: block;
-      padding: 12px 8px;
-      font-weight: 500;
+    #action-dropdown {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      background-color: white;
       cursor: pointer;
-      transition: all 0.2s ease;
       font-size: 14px;
-      color: var(--text-color);
+      font-weight: 500;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%23444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>');
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      background-size: 16px;
+      padding-right: 30px;
+      transition: all 0.2s ease;
     }
     
-    .action-option:not(:last-child) label {
-      border-right: 1px solid var(--border-color);
-    }
-    
-    .action-option input[type="radio"]:checked + label {
-      background: var(--primary-color);
-      color: white;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
-    
-    .action-option:hover input[type="radio"]:not(:checked) + label {
-      background: rgba(25, 118, 210, 0.05);
+    #action-dropdown:focus {
+      border-color: var(--primary-color);
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
     }
     
     label {
       display: block;
-      margin-top: 10px;
-      margin-bottom: 8px;
+      margin-top: 8px;
+      margin-bottom: 6px;
       font-weight: 500;
       font-size: 14px;
       color: var(--header-color);
@@ -338,14 +317,32 @@
     /* Debug panel */
     #debugPanel {
       display: none;
-      margin-top: 20px;
-      padding: 10px;
+      margin-top: 16px;
+      padding: 8px;
       border: 1px solid #ccc;
       background: #f5f5f5;
       font-family: monospace;
       font-size: 12px;
       white-space: pre-wrap;
       border-radius: 4px;
+    }
+    
+    /* Danger zone styling */
+    .danger-zone {
+      background: #ffebee;
+      padding: 8px 12px;
+      border-radius: 6px;
+      margin: 6px 0 10px 0;
+      border-left: 4px solid var(--danger-color);
+    }
+    
+    /* Remove button style */
+    .btn-remove {
+      background-color: var(--danger-color);
+    }
+    
+    .btn-remove:hover {
+      background-color: #d32f2f;
     }
   </style>
 </head>
@@ -366,20 +363,13 @@
       <span class="sheet-badge" id="activeSheetBadge">Jobs</span>
     </div>
 
-    <!-- Action Selection - Improved with radio buttons -->
-    <div class="action-selector">
-      <div class="action-option">
-        <input type="radio" id="action-add" name="action" value="add" checked>
-        <label for="action-add">➕ Add</label>
-      </div>
-      <div class="action-option">
-        <input type="radio" id="action-update" name="action" value="update">
-        <label for="action-update">✏️ Update</label>
-      </div>
-      <div class="action-option">
-        <input type="radio" id="action-remove" name="action" value="remove">
-        <label for="action-remove">🗑️ Remove</label>
-      </div>
+    <!-- Action Selection - Dropdown instead of radio buttons -->
+    <div class="action-selector-compact">
+      <select id="action-dropdown" onchange="showSection(this.value)">
+        <option value="add">➕ Add New Job</option>
+        <option value="update">✏️ Update Job</option>
+        <option value="remove">🗑️ Remove Job</option>
+      </select>
     </div>
 
     <!-- ADD Section -->
@@ -442,11 +432,11 @@
         <select id="removeSelect"></select>
         <div id="removeHelper" class="helper-text"></div>
 
-        <div class="helper-text error-text" style="background: #ffebee; padding: 10px; border-radius: 6px; margin: 10px 0;">
+        <div class="danger-zone">
           <strong>⚠️ Warning:</strong> This action cannot be undone!
         </div>
         
-        <button id="removeBtn" disabled style="background: var(--danger-color);">
+        <button id="removeBtn" disabled class="btn-remove">
           <span class="button-icon">🗑️</span> Remove Job
         </button>
       </div>
@@ -520,13 +510,8 @@
     function cacheElements() {
       try {
         // Cache main containers
-        ['spinner-container', 'mainContent', 'toast', 'debugPanel', 'activeSheetBadge'].forEach(id => {
+        ['spinner-container', 'mainContent', 'toast', 'debugPanel', 'activeSheetBadge', 'action-dropdown'].forEach(id => {
           els[id] = document.getElementById(id);
-        });
-        
-        // Cache action radio inputs
-        document.querySelectorAll('input[name="action"]').forEach(radio => {
-          els[radio.id] = radio;
         });
         
         // Cache add form elements
@@ -559,13 +544,6 @@
     
     function setupEventListeners() {
       try {
-        // Action selection change
-        document.querySelectorAll('input[name="action"]').forEach(radio => {
-          radio.addEventListener('change', function() {
-            showSection(this.value);
-          });
-        });
-        
         // Add job form
         if (els.addBtn) {
           els.addBtn.addEventListener('click', handleAdd);
@@ -662,11 +640,10 @@
         showSection('add');
         
         // If we were previously on update or remove, re-validate forms
-        if (document.querySelector('input[name="action"]:checked').value === 'update') {
+        const currentAction = els['action-dropdown'] ? els['action-dropdown'].value : 'add';
+        if (currentAction === 'update') {
           validateUpdateForm();
-        }
-        
-        if (document.querySelector('input[name="action"]:checked').value === 'remove') {
+        } else if (currentAction === 'remove') {
           validateRemoveForm();
         }
       } catch (err) {
@@ -684,10 +661,9 @@
         if (els.updateSection) els.updateSection.classList.remove('visible');
         if (els.removeSection) els.removeSection.classList.remove('visible');
         
-        // Set the correct radio button
-        const radio = document.getElementById(`action-${action}`);
-        if (radio) {
-          radio.checked = true;
+        // Set the correct dropdown option
+        if (els['action-dropdown']) {
+          els['action-dropdown'].value = action;
         }
         
         // Show the selected section

@@ -14,7 +14,7 @@
  * Creates a new tracking sheet with custom field options
  * 
  * @param {string} sheetName - Name of the sheet to create
- * @param {string} source - Source for jobs ('empty', 'DefaultJobs', or 'manual')
+ * @param {string} source - Source for jobs ('blank', 'DefaultJobs', or 'manual')
  * @param {Object} fieldOptions - Custom field options (statuses, types, priorities)
  * @param {string[]} [manualJobs=[]] - Array of job names when source is 'manual'
  * @param {Object} [formatOptions={}] - Formatting options for the sheet
@@ -117,7 +117,7 @@ function createTrackingSheetWithOptions(sheetName, source, fieldOptions, manualJ
     let result;
     if (source === 'manual' && Array.isArray(manualJobs) && manualJobs.length > 0) {
       result = addManualJobs(sheetName, manualJobs);
-    } else if (source === 'empty') {
+    } else if (source === 'blank') {
       result = {
         status: 'success',
         message: `Sheet "${sheetName}" created successfully with empty job list`
@@ -179,12 +179,7 @@ function applyEnhancedTableFormatting(sheet, options) {
       const allRange = sheet.getRange(1, 1, lastRow, lastCol);
       allRange.setFontFamily("Arial");
       
-      // Format data rows
-      const dataRange = sheet.getRange(2, 1, lastRow - 1, lastCol);
-      dataRange.setFontSize(11);
-      dataRange.setVerticalAlignment("middle");
-      
-      // Apply zebra striping (alternating row colors) with subtle colors
+      // Format data rows - Process EACH row individually for consistency
       for (let i = 2; i <= lastRow; i++) {
         // Use modulo to determine even/odd rows
         const isEvenRow = (i % 2 === 0);
@@ -391,10 +386,10 @@ function addManualJobs(sheetName, jobNames) {
         .setValues(rowsToAdd);
     }
     
-    // Apply enhanced table formatting
+    // Apply enhanced table formatting AFTER adding jobs
     applyEnhancedTableFormatting(sheet, {
       formatAsTable: true,
-      freezeHeaders: true
+      freezeHeaders: false  // Changed from true to false per requirement
     });
     
     return {

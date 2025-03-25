@@ -211,9 +211,9 @@
     
     /* Column widths with improved proportions */
     #jobTable th:nth-child(1), #jobTable td:nth-child(1) { width: 60%; } /* Job Name */
-    #jobTable th:nth-child(2), #jobTable td:nth-child(2) { width: 18%; text-align: center; } /* Status */
+    #jobTable th:nth-child(2), #jobTable td:nth-child(2) { width: 14%; text-align: center; } /* Status */
     #jobTable th:nth-child(3), #jobTable td:nth-child(3) { width: 14%; text-align: center; } /* Notes */
-    #jobTable th:nth-child(4), #jobTable td:nth-child(4) { width: 8%; text-align: center; } /* Find */
+    #jobTable th:nth-child(4), #jobTable td:nth-child(4) { width: 12%; text-align: center; } /* Find */
     
     tr:nth-child(even) td {
       background: var(--light-bg);
@@ -228,48 +228,41 @@
       text-decoration: line-through;
     }
     
-    /* New status badges */
-    .status-badge {
+    /* Status circles for better visual cues */
+    .status-circle {
       display: inline-block;
-      padding: 4px 10px;
-      border-radius: 12px;
-      font-size: 11px;
-      font-weight: 500;
-      text-align: center;
-      white-space: nowrap;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-      transition: transform 0.2s;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      border: 1px solid rgba(0, 0, 0, 0.1);
     }
     
-    tr:hover .status-badge {
-      transform: scale(1.05);
+    tr:hover .status-circle {
+      transform: scale(1.2);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     }
     
-    /* Status badge colors */
-    .status-pending {
-      background-color: #e3f2fd;
-      color: #0d47a1;
+    /* Status circle colors */
+    .status-circle.status-pending {
+      background-color: #0288d1;
     }
     
-    .status-in-progress {
-      background-color: #fff8e1;
-      color: #f57f17;
+    .status-circle.status-in-progress {
+      background-color: #fb8c00;
     }
     
-    .status-done, .status-completed {
-      background-color: #e8f5e9;
-      color: #1b5e20;
+    .status-circle.status-done, .status-circle.status-completed {
+      background-color: #43a047;
     }
     
-    .status-blocked {
-      background-color: #ffebee;
-      color: #b71c1c;
+    .status-circle.status-blocked {
+      background-color: #e53935;
     }
     
     /* Fallback for any other status */
-    .status-default {
-      background-color: #eeeeee;
-      color: #424242;
+    .status-circle.status-default {
+      background-color: #757575;
     }
     
     /* Sheet info display */
@@ -1051,7 +1044,7 @@
               data-status="${statusVal}">
             <td class="tooltip-cell" data-content="${escapeHtml(jobName)}">${escapeHtml(jobName)}</td>
             <td class="tooltip-cell" style="text-align:center;" data-content="${escapeHtml(status)}">
-              <span class="status-badge ${statusClass}">${escapeHtml(status)}</span>
+              <div class="status-circle ${statusClass}" title="${escapeHtml(status)}"></div>
             </td>
             <td class="tooltip-cell" style="text-align:center;" data-content="${notesTitle}">${notesIcon}</td>
             <td class="tooltip-cell" style="text-align:center;">
@@ -1212,23 +1205,22 @@
           
           // Get current status from the row
           const statusCell = row.querySelector('td:nth-child(2)');
-          const statusBadge = statusCell ? statusCell.querySelector('.status-badge') : null;
+          const statusCircle = statusCell ? statusCell.querySelector('.status-circle') : null;
           
           // Get new status from job data
           const newStatus = String(job["Status"] || "");
           const statusVal = newStatus.toLowerCase();
           
-          if (statusBadge) {
-            // Update status badge text and class
-            statusBadge.textContent = newStatus;
-            
+          if (statusCircle) {
+            // Update status circle class and title
             // Remove all existing status classes
-            statusBadge.classList.remove('status-pending', 'status-in-progress', 'status-done', 'status-blocked', 'status-default');
+            statusCircle.classList.remove('status-pending', 'status-in-progress', 'status-done', 'status-blocked', 'status-default');
             
             // Add the correct status class
-            statusBadge.classList.add(getStatusClass(newStatus));
+            statusCircle.classList.add(getStatusClass(newStatus));
             
             // Update status tooltip
+            statusCircle.title = newStatus;
             statusCell.setAttribute('data-content', escapeHtml(newStatus));
             
             // Update row class if needed
@@ -1271,18 +1263,18 @@
           nameCell.setAttribute('data-content', escapeHtml(jobName));
           row.appendChild(nameCell);
           
-          // Status column with styled badge
+          // Status column with circular indicator
           const statusCell = document.createElement('td');
           statusCell.className = 'tooltip-cell';
           statusCell.setAttribute('data-content', escapeHtml(status));
           statusCell.style.textAlign = 'center';
           
-          // Create status badge
-          const statusBadge = document.createElement('span');
-          statusBadge.className = `status-badge ${getStatusClass(status)}`;
-          statusBadge.textContent = status;
+          // Create status circle
+          const statusCircle = document.createElement('div');
+          statusCircle.className = `status-circle ${getStatusClass(status)}`;
+          statusCircle.title = status;
           
-          statusCell.appendChild(statusBadge);
+          statusCell.appendChild(statusCircle);
           row.appendChild(statusCell);
           
           // Notes indicator column

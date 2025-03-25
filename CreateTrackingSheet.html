@@ -338,51 +338,7 @@
       text-shadow: 0 0 2px rgba(0,0,0,0.8);
     }
 
-    /* Table Format Options */
-    .format-options {
-      margin-top: 20px;
-      padding: 15px;
-      border: 1px solid #eee;
-      background-color: var(--light-bg);
-      border-radius: 8px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    }
-
-    .format-title {
-      font-weight: bold;
-      margin-bottom: 12px;
-      color: var(--header-color);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    
-    .format-title .icon {
-      font-size: 16px;
-    }
-
-    .format-checkbox {
-      margin-right: 8px;
-    }
-    
-    .format-option {
-      display: flex;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-    
-    .format-option label {
-      margin: 0 0 0 8px;
-      font-weight: normal;
-    }
-    
-    .format-option input[type="checkbox"] {
-      width: 16px;
-      height: 16px;
-      margin: 0;
-    }
-
-    /* Action and notice areas */
+    /* Action area */
     .action-area {
       background-color: var(--light-bg);
       padding: 15px;
@@ -773,7 +729,7 @@
       
       <label for="defaultJobsSource">Job Source:</label>
       <select id="defaultJobsSource" onchange="toggleJobSource()">
-        <option value="empty">Empty sheet (headers only)</option>
+        <option value="blank">Create empty sheet (headers only)</option>
         <option value="DefaultJobs">Use DefaultJobs sheet</option>
         <option value="manual">Enter jobs below</option>
       </select>
@@ -796,16 +752,10 @@ Run tests
 Review code changes"></textarea>
       </div>
       
-      <div class="format-options">
-        <div class="format-title"><span class="icon">🎨</span> Table Formatting Options:</div>
-        <div class="format-option">
-          <input type="checkbox" id="formatAsTable" class="format-checkbox" checked>
-          <label for="formatAsTable">Format as table (alternating row colors)</label>
-        </div>
-        <div class="format-option">
-          <input type="checkbox" id="freezeHeaders" class="format-checkbox" checked>
-          <label for="freezeHeaders">Freeze header row</label>
-        </div>
+      <!-- Hidden formatting options - defaults set -->
+      <div style="display: none;">
+        <input type="hidden" id="formatAsTable" value="true">
+        <input type="hidden" id="freezeHeaders" value="false">
       </div>
     </div>
     
@@ -1467,6 +1417,8 @@ Review code changes"></textarea>
       // Show the appropriate div based on selection
       if (source === "DefaultJobs") {
         document.getElementById("defaultJobsInfo").style.display = "block";
+        // Check DefaultJobs existence when this option is selected
+        checkDefaultJobsSheet();
       } else if (source === "manual") {
         document.getElementById("manualJobsInput").style.display = "block";
       }
@@ -1527,9 +1479,9 @@ Review code changes"></textarea>
         }
       }
       
-      // Table formatting options
-      const formatAsTable = document.getElementById("formatAsTable").checked;
-      const freezeHeaders = document.getElementById("freezeHeaders").checked;
+      // Get formatting options (these are now hidden with defaults)
+      const formatAsTable = document.getElementById("formatAsTable").value === "true";
+      const freezeHeaders = document.getElementById("freezeHeaders").value === "true";
       
       // Determine field strategy
       const useCustomFieldsOnly = document.getElementById("strategy-custom").checked;

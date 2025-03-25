@@ -154,7 +154,7 @@
     }
     /* Column widths with improved proportions */
     #jobTable th:nth-child(1), #jobTable td:nth-child(1) { width: 60%; } /* Job Name */
-    #jobTable th:nth-child(2), #jobTable td:nth-child(2) { width: 18%; } /* Status */
+    #jobTable th:nth-child(2), #jobTable td:nth-child(2) { width: 18%; text-align: center; } /* Status */
     #jobTable th:nth-child(3), #jobTable td:nth-child(3) { width: 14%; text-align: center; } /* Notes */
     #jobTable th:nth-child(4), #jobTable td:nth-child(4) { width: 8%; text-align: center; } /* Find */
     
@@ -168,35 +168,39 @@
       color: #999;
       text-decoration: line-through;
     }
-    .status-pending {
-      position: relative;
-      padding-left: 12px !important;
-    }
-    .status-pending::before {
-      content: "";
-      position: absolute;
-      left: 3px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 8px;
-      height: 8px;
-      background-color: var(--warning-color);
+    
+    /* New status dot styling */
+    .status-dot {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
       border-radius: 50%;
+      vertical-align: middle;
+      border: 1px solid rgba(0,0,0,0.1);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+      transition: transform 0.2s;
     }
-    .status-done {
-      position: relative;
-      padding-left: 12px !important;
+    
+    tr:hover .status-dot {
+      transform: scale(1.2);
     }
-    .status-done::before {
-      content: "";
-      position: absolute;
-      left: 3px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 8px;
-      height: 8px;
-      background-color: var(--success-color);
-      border-radius: 50%;
+    
+    /* Sheet info display */
+    .sheet-info {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 12px;
+      color: #666;
+    }
+    
+    .sheet-badge {
+      background-color: #e3f2fd;
+      color: #0d47a1;
+      padding: 2px 8px;
+      border-radius: 12px;
+      margin-left: 8px;
+      font-weight: bold;
     }
     
     /* Unified emoji styling for consistency */
@@ -411,6 +415,12 @@
     <button id="refreshBtn" title="Refresh"><span class="refresh-icon">↻</span> Refresh</button>
   </h3>
   
+  <!-- Active sheet info -->
+  <div class="sheet-info">
+    <span>Active Sheet:</span>
+    <span class="sheet-badge" id="activeSheetBadge">Jobs</span>
+  </div>
+  
   <div id="spinner">⏳ Loading jobs...</div>
 
   <div id="controls" style="display:none;" class="filter-section">
@@ -450,6 +460,9 @@
     // Use strict mode for better performance and error catching
     'use strict';
     
+    // Get the active sheet name passed from the server
+    const activeSheetName = <?= JSON.stringify(activeSheetName) ?>;
+    
     // Cache DOM elements to avoid repeated query selection
     const els = {};
     let config = {};
@@ -485,15 +498,30 @@
       // Setup unload handler
       setupUnloadHandler();
       
+      // Store the active sheet name
+      window.activeSheetName = activeSheetName || 'Jobs';
+      console.log("Using active sheet:", window.activeSheetName);
+      
+      // Update the active sheet badge
+      updateActiveSheetBadge();
+      
       // Start pre-loading configuration in the background
       preloadConfig();
     });
+    
+    function updateActiveSheetBadge() {
+      // Update the sheet badge with the active sheet name
+      const badge = document.getElementById('activeSheetBadge');
+      if (badge) {
+        badge.textContent = window.activeSheetName;
+      }
+    }
     
     function cacheElements() {
       // Cache DOM elements
       ['spinner', 'controls', 'tableContainer', 'tableOverlay', 'statusFilter', 
        'searchInput', 'refreshBtn', 'jobTableHeader', 'jobTableBody', 'toast', 
-       'globalTooltip'].forEach(id => {
+       'globalTooltip', 'activeSheetBadge'].forEach(id => {
          els[id] = document.getElementById(id);
        });
     }
@@ -654,7 +682,7 @@
         canceled: false
       };
       
-      // Set timeout for slow responses
+      // Set timeout for slow responses - INCREASED FROM 2000ms TO 5000ms
       timeoutId = setTimeout(() => {
         if (!window.currentJobRequest.canceled) {
           if (isFirstLoad) {
@@ -663,7 +691,7 @@
             showToast("Refresh is taking longer than expected...", true);
           }
         }
-      }, 2000);
+      }, 5000); // Increased from 2000ms to 5000ms to prevent premature messages
       
       google.script.run
         .withSuccessHandler(function(response) {
@@ -703,7 +731,7 @@
           resetLoadingUI();
           finishRefresh();
         })
-        .getJobs();
+        .getJobs(1, 0, window.activeSheetName);
     }
     
     // Helper to finish the refresh state
@@ -753,7 +781,37 @@
             }
           }
         })
-        .getJobs();
+        .getJobs(1, 0, window.activeSheetName);
+    }
+    
+    // Helper function to get status color from configuration
+    function getStatusColor(status) {
+      // Default colors based on common status values
+      const defaultColors = {
+        'done': '#4caf50',      // Green
+        'completed': '#4caf50', // Green
+        'in-progress': '#ff9800', // Orange
+        'in progress': '#ff9800', // Orange
+        'inprogress': '#ff9800', // Orange
+        'pending': '#1976d2',   // Blue
+        'default': '#cccccc'    // Gray (default)
+      };
+      
+      // If we have status colors defined in config
+      if (config && config.statuses && Array.isArray(config.statuses) && 
+          config.statusColors && Array.isArray(config.statusColors)) {
+        // Find the index of the status in the statuses array (case insensitive)
+        const index = config.statuses.findIndex(s => 
+          s.toLowerCase() === status.toLowerCase());
+        
+        // If found, return the corresponding color
+        if (index >= 0 && index < config.statusColors.length) {
+          return config.statusColors[index];
+        }
+      }
+      
+      // Fallback to default colors if not found in config
+      return defaultColors[status.toLowerCase()] || defaultColors['default'];
     }
     
     function processJobsData(jobs) {
@@ -803,7 +861,6 @@
           const jobName = String(job["Job Name"] || "");
           const status = String(job["Status"] || "");
           const statusVal = status.toLowerCase();
-          const statusClass = (statusVal === "done" || statusVal === "completed") ? "status-done" : "status-pending";
           const hasNotes = job["Notes"] && String(job["Notes"]).trim() !== "";
           const notesIcon = hasNotes ? "<span class='note-icon'>📝</span>" : "";
           const notesTitle = hasNotes ? escapeHtml(String(job["Notes"])) : "No notes";
@@ -813,7 +870,9 @@
               data-name="${jobName.toLowerCase()}" 
               data-status="${statusVal}">
             <td class="tooltip-cell" data-content="${escapeHtml(jobName)}">${escapeHtml(jobName)}</td>
-            <td class="${statusClass} tooltip-cell" data-content="${escapeHtml(status)}">${escapeHtml(status)}</td>
+            <td class="tooltip-cell" data-content="${escapeHtml(status)}">
+              <span class="status-dot" style="background-color: ${getStatusColor(statusVal)}"></span>
+            </td>
             <td class="tooltip-cell" style="text-align:center;" data-content="${notesTitle}">${notesIcon}</td>
             <td class="tooltip-cell" data-content="Find this job in spreadsheet">
               <button class="action-btn locate-btn" onclick="locate('${escapeQuotes(jobName)}')"><span class='emoji-icon'>🔍</span></button>
@@ -961,18 +1020,19 @@
           // Get cached row element and update status if needed
           row = cachedRows.get(jobKey).cloneNode(true);
           
-          // Check if status needs updating
-          const currentStatus = row.querySelector('td:nth-child(2)').textContent;
-          const newStatus = String(job["Status"] || "");
+          // Get current status from the row
+          const statusCell = row.querySelector('td:nth-child(2)');
+          const statusDot = statusCell ? statusCell.querySelector('.status-dot') : null;
           
-          if (currentStatus !== newStatus) {
-            // Update status if changed
-            const statusVal = newStatus.toLowerCase();
-            const statusClass = statusVal === "done" || statusVal === "completed" ? "status-done" : "status-pending";
-            const statusCell = row.querySelector('td:nth-child(2)');
+          // Get new status from job data
+          const newStatus = String(job["Status"] || "");
+          const statusVal = newStatus.toLowerCase();
+          
+          if (statusDot) {
+            // Update status dot color
+            statusDot.style.backgroundColor = getStatusColor(statusVal);
             
-            statusCell.className = `${statusClass} tooltip-cell`;
-            statusCell.textContent = newStatus;
+            // Update status tooltip
             statusCell.setAttribute('data-content', escapeHtml(newStatus));
             
             // Update row class if needed
@@ -989,14 +1049,17 @@
           const notesIcon = hasNotes ? "<span class='note-icon'>📝</span>" : "";
           const notesTitle = hasNotes ? escapeHtml(String(job["Notes"])) : "No notes";
           
-          notesCell.innerHTML = notesIcon;
-          notesCell.setAttribute('data-content', notesTitle);
+          if (notesCell) {
+            notesCell.innerHTML = notesIcon;
+            notesCell.setAttribute('data-content', notesTitle);
+          }
         } else {
           // Create new row if not cached
           row = document.createElement('tr');
           row.classList.add('job-row');
 
-          const statusVal = String(job["Status"] || "").toLowerCase();
+          const status = String(job["Status"] || "");
+          const statusVal = status.toLowerCase();
           if (statusVal === "done" || statusVal === "completed") {
             row.classList.add('done');
           }
@@ -1014,13 +1077,18 @@
           nameCell.setAttribute('data-content', escapeHtml(jobName));
           row.appendChild(nameCell);
           
-          // Status column
-          const status = String(job["Status"] || "");
-          const statusClass = statusVal === "done" || statusVal === "completed" ? "status-done" : "status-pending";
+          // Status column with colored dot instead of text
           const statusCell = document.createElement('td');
-          statusCell.className = `${statusClass} tooltip-cell`;
-          statusCell.textContent = status;
+          statusCell.className = 'tooltip-cell';
           statusCell.setAttribute('data-content', escapeHtml(status));
+          statusCell.style.textAlign = 'center';
+          
+          // Create status dot with color
+          const statusDot = document.createElement('span');
+          statusDot.className = 'status-dot';
+          statusDot.style.backgroundColor = getStatusColor(statusVal);
+          
+          statusCell.appendChild(statusDot);
           row.appendChild(statusCell);
           
           // Notes indicator column
@@ -1205,7 +1273,7 @@
           
           showToast("Error locating job: " + (err.message || err));
         })
-        .locateInSheet(jobName);
+        .locateInSheet(jobName, window.activeSheetName);
     }
     
     // Define handleTooltipEvent in global scope so it can be referenced for removal

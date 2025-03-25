@@ -220,6 +220,24 @@
       font-size: 12px;
       white-space: pre-wrap;
     }
+    
+    /* Sheet info display */
+    .sheet-info {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 12px;
+      color: #666;
+    }
+    
+    .sheet-badge {
+      background-color: #e3f2fd;
+      color: #0d47a1;
+      padding: 2px 8px;
+      border-radius: 12px;
+      margin-left: 8px;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
@@ -232,6 +250,12 @@
   <!-- Main content, hidden until data is loaded -->
   <div id="mainContent" class="hidden">
     <h3>Manage Jobs</h3>
+    
+    <!-- Active sheet info -->
+    <div class="sheet-info">
+      <span>Active Sheet:</span>
+      <span class="sheet-badge" id="activeSheetBadge">Jobs</span>
+    </div>
 
     <!-- Action Selection -->
     <label for="actionSelect">Action:</label>
@@ -307,6 +331,10 @@
     // Use strict mode for better performance and error catching
     'use strict';
     
+    // CRITICAL FIX: Get the active sheet name passed from the server - FIXED VERSION
+    // This is using the proper template passing without JSON.stringify
+    const activeSheetName = "<?= activeSheetName ?>";
+    
     // Cache DOM elements to avoid repeated query selection
     const els = {};
     let jobNames = [];
@@ -314,28 +342,53 @@
     let debugMode = false; // Set to true to enable debug mode
     
     document.addEventListener('DOMContentLoaded', function() {
-      // Cache DOM elements
-      cacheElements();
-      
-      // Set up event listeners
-      setupEventListeners();
-      
-      // Show spinner, hide main content
-      showSpinner();
-      
-      // Load data from server
-      loadInitialData();
-      
-      // Enable debug mode if needed
-      if (debugMode) {
-        enableDebugMode();
+      try {
+        // Cache DOM elements
+        cacheElements();
+        
+        // Set up event listeners
+        setupEventListeners();
+        
+        // Show spinner, hide main content
+        showSpinner();
+        
+        // Store the active sheet name
+        window.activeSheetName = activeSheetName || 'Jobs';
+        
+        // Update the active sheet display
+        updateActiveSheetDisplay();
+        
+        // Log the active sheet name
+        if (debugMode) {
+          logDebug("Using active sheet: " + window.activeSheetName);
+        }
+        
+        // Load data from server with the active sheet name
+        loadInitialData(window.activeSheetName);
+        
+        // Enable debug mode if needed
+        if (debugMode) {
+          enableDebugMode();
+        }
+      } catch (err) {
+        console.error('Error in DOMContentLoaded:', err);
+        hideSpinner();
+        showMainContent();
+        showToast("❌ An error occurred during initialization. Please try again.");
       }
     });
+    
+    function updateActiveSheetDisplay() {
+      const badge = document.getElementById('activeSheetBadge');
+      if (badge) {
+        badge.textContent = window.activeSheetName;
+      }
+    }
     
     function cacheElements() {
       try {
         // Cache main containers
-        ['spinner-container', 'mainContent', 'toast', 'debugPanel'].forEach(id => {
+        ['spinner-container', 'mainContent', 'toast', 'debugPanel', 'activeSheetBadge'].forEach(id => {
           els[id] = document.getElementById(id);
         });
         
@@ -423,7 +476,7 @@
       }
     }
     
-    function loadInitialData() {
+    function loadInitialData(sheetName) {
       try {
         google.script.run
           .withSuccessHandler(setupUI)
@@ -433,7 +486,7 @@
             showMainContent();
             logDebug("Failed to load initial data: " + (err.message || err));
           })
-          .getInitData();
+          .getInitData(sheetName);
       } catch (err) {
         console.error('Error in loadInitialData:', err);
         hideSpinner();
@@ -716,7 +769,7 @@
             onError(err);
             validateAddForm();
           })
-          .addJob(jobObj);
+          .addJob(jobObj, window.activeSheetName);
       } catch (err) {
         isProcessing = false;
         hideButtonProcessing(els.addBtn);
@@ -788,7 +841,7 @@
             onError(err);
             validateUpdateForm();
           })
-          .updateJob(jobName, updates);
+          .updateJob(jobName, updates, window.activeSheetName);
       } catch (err) {
         isProcessing = false;
         hideButtonProcessing(els.updateBtn);
@@ -843,7 +896,7 @@
             onError(err);
             validateRemoveForm();
           })
-          .deleteJobByName(jobName);
+          .deleteJobByName(jobName, window.activeSheetName);
       } catch (err) {
         isProcessing = false;
         hideButtonProcessing(els.removeBtn);
@@ -857,7 +910,7 @@
         google.script.run
           .withSuccessHandler(setupUI)
           .withFailureHandler(onError)
-          .getInitData();
+          .getInitData(window.activeSheetName);
       } catch (err) {
         console.error('Error in refreshJobList:', err);
         showToast("❌ Failed to refresh job list. Please try again.");

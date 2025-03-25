@@ -15,15 +15,22 @@
  * 
  * @param {string} sheetName - Name of sheet to get or create
  * @param {Array} [customFields] - Optional array of custom fields to use for header
- * @returns {Sheet} The sheet object
- * @throws {Error} If sheet cannot be created
+ * @param {boolean} [createIfMissing=true] - Whether to create the sheet if it doesn't exist
+ * @returns {Sheet|null} The sheet object or null if sheet doesn't exist and createIfMissing is false
  */
-function getOrCreateSheet(sheetName, customFields) {
+function getOrCreateSheet(sheetName, customFields, createIfMissing = true) {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     let sheet = ss.getSheetByName(sheetName);
     
-    if (!sheet) {
+    // Return null if sheet doesn't exist and we're not supposed to create it
+    if (!sheet && !createIfMissing) {
+      log(`Sheet ${sheetName} not found and not creating it`, LOG_LEVELS.INFO);
+      return null;
+    }
+    
+    // Create sheet if it doesn't exist and createIfMissing is true
+    if (!sheet && createIfMissing) {
       log(`Creating new sheet: ${sheetName}`, LOG_LEVELS.INFO);
       sheet = ss.insertSheet(sheetName);
       
@@ -58,7 +65,10 @@ function getOrCreateSheet(sheetName, customFields) {
     return sheet;
   } catch (error) {
     handleError('getOrCreateSheet', error, false);
-    throw error; // Re-throw to handle where this is called
+    if (createIfMissing) {
+      throw error; // Re-throw only if we were trying to create the sheet
+    }
+    return null;
   }
 }
 
@@ -226,7 +236,15 @@ function setupConditionalFormatting(sheet, config) {
  */
 function findJobRow(jobName, sheetName = JOBS_SHEET_NAME) {
   try {
-    const sheet = getOrCreateSheet(sheetName);
+    // Get the sheet without creating it if it doesn't exist
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName(sheetName);
+    
+    if (!sheet) {
+      log(`Sheet not found in findJobRow: ${sheetName}`, LOG_LEVELS.WARN);
+      return { found: false, error: `Sheet not found: ${sheetName}` };
+    }
+    
     const data = sheet.getDataRange().getValues();
     
     if (data.length < 2) {

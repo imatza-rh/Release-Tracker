@@ -21,7 +21,26 @@
  */
 function addJob(jobObj, targetSheetName = JOBS_SHEET_NAME) {
   try {
-    const sheet = getOrCreateSheet(targetSheetName);
+    // Make sure the sheet name is properly sanitized
+    targetSheetName = String(targetSheetName || JOBS_SHEET_NAME).trim();
+    log(`Adding job to sheet: "${targetSheetName}"`, LOG_LEVELS.INFO);
+    
+    // Get the sheet - allow creation if needed
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    let sheet = ss.getSheetByName(targetSheetName);
+    
+    if (!sheet) {
+      log(`Sheet "${targetSheetName}" not found in addJob, creating it`, LOG_LEVELS.WARN);
+      // Create the sheet with default fields if it doesn't exist
+      sheet = getOrCreateSheet(targetSheetName, null, true);
+      
+      if (!sheet) {
+        return {
+          status: 'error',
+          message: `Failed to create or access sheet "${targetSheetName}"`
+        };
+      }
+    }
     
     // Sanitize input
     if (jobObj["Job Name"]) {
@@ -73,17 +92,26 @@ function addJob(jobObj, targetSheetName = JOBS_SHEET_NAME) {
  */
 function getJobs(page = 1, pageSize = 0, sheetName = JOBS_SHEET_NAME) {
   try {
-    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
+    // Make sure we always have a valid string for the sheet name, not undefined, null, or other types
+    sheetName = String(sheetName || JOBS_SHEET_NAME).trim();
+    
+    log(`Getting jobs from sheet: "${sheetName}"`, LOG_LEVELS.INFO);
+    
+    // Check if the sheet exists 
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName(sheetName);
     
     if (!sheet) {
-      log(`Sheet ${sheetName} not found`, LOG_LEVELS.WARN);
+      log(`Sheet "${sheetName}" not found in getJobs`, LOG_LEVELS.WARN);
       return { 
         status: 'error', 
-        message: `Sheet ${sheetName} not found`,
+        message: `Sheet "${sheetName}" not found`,
         jobs: [] 
       };
     }
     
+    // Get all values from the sheet - we want everything from column A to the last column
+    // and from row 1 to the last row with data
     const values = sheet.getDataRange().getValues();
     
     if (values.length < 2) {
@@ -152,10 +180,18 @@ function getJobs(page = 1, pageSize = 0, sheetName = JOBS_SHEET_NAME) {
  */
 function updateJob(jobName, updates, sheetName = JOBS_SHEET_NAME) {
   try {
+    // Make sure we have a valid sheet name
+    sheetName = String(sheetName || JOBS_SHEET_NAME).trim();
+    log(`Updating job "${jobName}" in sheet: "${sheetName}"`, LOG_LEVELS.INFO);
+    
+    // Use findJobRow which has been fixed to properly check for sheet existence
     const result = findJobRow(jobName, sheetName);
     
     if (!result.found) {
-      throw new Error(result.error);
+      return {
+        status: 'error',
+        message: result.error || `Could not find job "${jobName}" in sheet "${sheetName}"`
+      };
     }
     
     const { rowNumber, sheet, header } = result;
@@ -216,10 +252,17 @@ function updateJob(jobName, updates, sheetName = JOBS_SHEET_NAME) {
  */
 function deleteJobByName(jobName, sheetName = JOBS_SHEET_NAME) {
   try {
+    // Make sure we have a valid sheet name
+    sheetName = String(sheetName || JOBS_SHEET_NAME).trim();
+    log(`Deleting job "${jobName}" from sheet: "${sheetName}"`, LOG_LEVELS.INFO);
+    
     const result = findJobRow(jobName, sheetName);
     
     if (!result.found) {
-      throw new Error(result.error);
+      return {
+        status: 'error',
+        message: result.error || `Could not find job "${jobName}" in sheet "${sheetName}"`
+      };
     }
     
     const { rowNumber, sheet } = result;
@@ -267,25 +310,48 @@ function markJobDone(jobName, sheetName = JOBS_SHEET_NAME) {
  */
 function locateInSheet(jobName, sheetName = JOBS_SHEET_NAME) {
   try {
+    // Validate parameters
     if (!jobName) {
-      throw new Error("No job name specified");
+      return {
+        status: 'error',
+        message: "No job name specified"
+      };
     }
     
+    // Make sure we have a valid sheet name
+    sheetName = String(sheetName || JOBS_SHEET_NAME).trim();
+    log(`Locating job "${jobName}" in sheet: "${sheetName}"`, LOG_LEVELS.INFO);
+    
+    // Check if the sheet exists first
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName(sheetName);
+    
+    if (!sheet) {
+      log(`Sheet "${sheetName}" not found in locateInSheet`, LOG_LEVELS.WARN);
+      return {
+        status: 'error',
+        message: `Sheet "${sheetName}" not found`
+      };
+    }
+    
+    // Find the job row
     const result = findJobRow(jobName, sheetName);
     
     if (!result.found) {
-      throw new Error(result.error);
+      return {
+        status: 'error',
+        message: result.error || `Could not find job "${jobName}" in sheet "${sheetName}"`
+      };
     }
     
-    const { rowNumber, sheet, header } = result;
+    const { rowNumber, sheet: jobSheet, header } = result;
     
     // Highlight the row
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
-    ss.setActiveSheet(sheet);
+    ss.setActiveSheet(jobSheet);
     
     // We can highlight from column 1 to the last column of the header
     const lastCol = header.length;
-    sheet.setActiveRange(sheet.getRange(rowNumber, 1, 1, lastCol));
+    jobSheet.setActiveRange(jobSheet.getRange(rowNumber, 1, 1, lastCol));
     
     log('Job located successfully', LOG_LEVELS.INFO, { jobName, rowNumber });
     return { 
@@ -306,6 +372,10 @@ function locateInSheet(jobName, sheetName = JOBS_SHEET_NAME) {
  */
 function getInitData(sheetName = JOBS_SHEET_NAME) {
   try {
+    // Make sure we have a valid sheet name
+    sheetName = String(sheetName || JOBS_SHEET_NAME).trim();
+    log(`Getting initialization data for sheet: "${sheetName}"`, LOG_LEVELS.INFO);
+    
     const config = getConfig();
     
     // Get jobs only if the sheet exists
@@ -353,6 +423,7 @@ function listJobSheets() {
       })
       .map(sheet => sheet.getName());
     
+    log(`Found job sheets: ${jobSheets.join(', ')}`, LOG_LEVELS.INFO);
     return jobSheets;
   } catch (error) {
     log('Error listing job sheets', LOG_LEVELS.ERROR, error);

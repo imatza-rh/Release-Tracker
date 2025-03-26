@@ -158,6 +158,7 @@
       transform: translateY(0);
     }
     
+    /* Fixed table layout with proper sizing */
     #jobTable {
       width: 100%;
       border-collapse: separate;
@@ -170,19 +171,25 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
     
+    /* Improved header styling to prevent cut-off */
     #jobTable th {
       background: var(--header-color);
       color: #fff;
-      padding: 12px 4px;
+      padding: 10px 6px; /* Increased padding */
       text-align: center;
       position: sticky;
       top: 0;
       z-index: 10;
       font-size: 12px;
       font-weight: 600;
-      white-space: nowrap;
+      /* Allow text wrapping in headers */
+      white-space: normal;
       overflow: visible;
+      line-height: 1.2;
+      height: auto;
+      min-height: 36px; /* Ensure minimum height for header */
       border-right: 1px solid rgba(255,255,255,0.1);
+      vertical-align: middle; /* Center align text vertically */
     }
     
     #jobTable th:first-child {
@@ -221,15 +228,15 @@
       z-index: 1;
     }
     
-    /* Column widths with improved proportions */
-    #jobTable th:nth-child(1), #jobTable td:nth-child(1) { width: 60%; } /* Job Name */
+    /* Updated column widths with improved proportions */
+    #jobTable th:nth-child(1), #jobTable td:nth-child(1) { width: 55%; } /* Job Name */
     #jobTable th:nth-child(2), #jobTable td:nth-child(2) { width: 15%; text-align: center; } /* Status */
-    #jobTable th:nth-child(3), #jobTable td:nth-child(3) { width: 10%; text-align: center; } /* Notes */
+    #jobTable th:nth-child(3), #jobTable td:nth-child(3) { width: 15%; text-align: center; } /* Notes */
     #jobTable th:nth-child(4), #jobTable td:nth-child(4) { width: 15%; text-align: center; } /* Find */
     
     /* Style for header cells specifically */
     #jobTable th {
-      padding: 12px 4px;
+      padding: 8px 4px; /* Adjusted padding */
       text-align: center;
     }
     
@@ -240,7 +247,7 @@
     
     /* Ensure headers have space between them */
     #jobTable th:not(:last-child) {
-      margin-right: 6px;
+      margin-right: 0; /* Removed gap to give more space to content */
     }
     
     tr:nth-child(even) td {
@@ -622,6 +629,14 @@
       background: #a8a8a8;
     }
     
+    /* No-results specific styling to ensure proper cleanup */
+    .no-results-container {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    
     @media (max-width: 350px) {
       .filter-row {
         flex-direction: column;
@@ -1000,7 +1015,7 @@
       
       // Remove loading row if it exists
       const loadingRow = document.getElementById('loadingRow');
-      if (loadingRow) loadingRow.remove();
+      if (loadingRow) loadingRow.parentNode.removeChild(loadingRow);
       
       finishRefresh();
     }
@@ -1025,7 +1040,7 @@
     
     // Helper function to get status class based on status
     function getStatusClass(status) {
-      const statusLower = status.toLowerCase();
+      const statusLower = String(status).toLowerCase();
       
       if (statusLower === 'pending') {
         return 'status-pending';
@@ -1058,6 +1073,8 @@
         renderJobs(jobs);
       }
       
+      // Always reset and refilter to ensure a clean state
+      resetNoResultsState();
       filterJobs();
     }
     
@@ -1226,7 +1243,7 @@
             
             // Remove the load more row
             if (loadMoreRow) {
-              loadMoreRow.remove();
+              loadMoreRow.parentNode.removeChild(loadMoreRow);
             }
             
             // Add the new batch
@@ -1390,12 +1407,13 @@
       });
     }
 
+    // Thoroughly improved filterJobs function
     function filterJobs() {
       const statusVal = els.statusFilter ? els.statusFilter.value.toLowerCase() : "";
       const searchVal = els.searchInput ? els.searchInput.value.toLowerCase().trim() : "";
       
-      // IMPORTANT: Always remove all empty state rows and divs before filtering
-      removeEmptyStateRows();
+      // Reset any previous no-results state first
+      resetNoResultsState();
       
       // Small dataset optimization - for fewer than 20 rows, don't use animation frames
       if (currentJobs.length < 20) {
@@ -1452,41 +1470,67 @@
       });
     }
     
+    // Helper to reset the UI when no results are found
+    function resetNoResultsState() {
+      try {
+        // Remove any existing no-results state elements
+        removeEmptyStateRows();
+        
+        // Also remove any standalone no-results-state divs from the container
+        if (els.tableContainer) {
+          const noResultsDivs = els.tableContainer.querySelectorAll('.no-results-state, .no-results-container');
+          noResultsDivs.forEach(div => {
+            if (div.parentNode) {
+              div.parentNode.removeChild(div);
+            }
+          });
+        }
+      } catch (e) {
+        console.error('Error resetting no results state:', e);
+      }
+    }
+    
     // Helper to ensure we remove all empty state rows
     function removeEmptyStateRows() {
       if (!els.jobTableBody) return;
       
-      // Remove any empty filter rows
-      const emptyRows = els.jobTableBody.querySelectorAll('.empty-filter-row');
-      emptyRows.forEach(row => {
-        row.parentNode.removeChild(row);
-      });
-      
-      // Remove any rows with empty-state class
-      const allRows = els.jobTableBody.getElementsByTagName('tr');
-      for (let i = allRows.length - 1; i >= 0; i--) {
-        const row = allRows[i];
-        const cell = row.querySelector('td.empty-state, td.no-results-state');
-        if (cell) {
-          row.parentNode.removeChild(row);
+      try {
+        // Remove any empty filter rows by class name
+        const emptyRows = els.jobTableBody.querySelectorAll('.empty-filter-row');
+        emptyRows.forEach(row => {
+          if (row.parentNode) {
+            row.parentNode.removeChild(row);
+          }
+        });
+        
+        // Remove any rows with empty-state class by matching cells
+        const allRows = els.jobTableBody.getElementsByTagName('tr');
+        for (let i = allRows.length - 1; i >= 0; i--) {
+          const row = allRows[i];
+          const cell = row.querySelector('td.empty-state, td.no-results-state');
+          if (cell && row.parentNode) {
+            row.parentNode.removeChild(row);
+          }
         }
-      }
-      
-      // Also remove any standalone no-results-state divs from the container
-      if (els.tableContainer) {
-        const noResultsDivs = els.tableContainer.querySelectorAll('.no-results-state');
-        noResultsDivs.forEach(div => div.parentNode.removeChild(div));
+        
+        // Also remove any standalone no-results-state divs from the container
+        if (els.tableContainer) {
+          const noResultsDivs = els.tableContainer.querySelectorAll('.no-results-state, .no-results-container');
+          noResultsDivs.forEach(div => {
+            if (div.parentNode) {
+              div.parentNode.removeChild(div);
+            }
+          });
+        }
+      } catch (e) {
+        console.error('Error removing empty state rows:', e);
       }
     }
     
     function handleEmptyState(visibleCount) {
       if (visibleCount === 0 && currentJobs.length > 0) {
         // First ensure there aren't already empty state rows
-        removeEmptyStateRows();
-        
-        // Also remove any existing no-results-state divs from the container
-        const existingNoResults = els.tableContainer.querySelectorAll('.no-results-state');
-        existingNoResults.forEach(el => el.remove());
+        resetNoResultsState();
         
         // Get current search and filter values for better feedback
         const searchTerm = els.searchInput ? els.searchInput.value.trim() : "";
@@ -1507,10 +1551,15 @@
           searchMessage = "No matching jobs found";
         }
         
-        // Clear the table body to ensure we don't have any hidden rows
+        // Clear the table body completely to ensure we don't have any hidden rows
+        // This helps avoid issues with persisting elements
         els.jobTableBody.innerHTML = '';
         
-        // Create a single no results message
+        // Create a single no results message in a wrapper container
+        const noResultsContainer = document.createElement('div');
+        noResultsContainer.className = 'no-results-container';
+        noResultsContainer.id = 'no-results-container'; // Add an ID for easier targeting
+        
         const noResultsDiv = document.createElement('div');
         noResultsDiv.className = 'no-results-state';
         noResultsDiv.innerHTML = `
@@ -1522,45 +1571,71 @@
           </button>
         `;
         
-        // Append the div directly to the table container
-        els.tableContainer.appendChild(noResultsDiv);
+        noResultsContainer.appendChild(noResultsDiv);
+        
+        // Append the container to the table container
+        els.tableContainer.appendChild(noResultsContainer);
       }
     }
     
-    // Add this new helper function to reset filters
+    // Completely overhauled resetFilters function to ensure proper cleanup
     function resetFilters() {
-      // First clear all existing no-results states
-      removeEmptyStateRows();
-      
-      // Reset filter values
-      if (els.statusFilter) els.statusFilter.value = '';
-      if (els.searchInput) els.searchInput.value = '';
-      
-      // Force a full re-render of the jobs to ensure we show everything
-      if (currentJobs.length > 0) {
-        renderSimple(currentJobs);
-      } else {
-        // If we have no jobs at all, show the regular empty state
-        els.jobTableBody.innerHTML = `
-          <tr>
-            <td colspan="4" class="empty-state">
-              <div class="empty-state-icon">📋</div>
-              <div style="font-size: 16px; font-weight: 500; margin-bottom: 10px; color: #666;">No jobs found</div>
-              <div style="color: #888;">
-                Create a new job using the "Manage Jobs" option<br>or refresh to update the list
-              </div>
-              <button onclick="refreshJobs()" class="action-btn" style="margin-top: 15px; padding: 8px 16px;">
-                <span class="refresh-icon">↻</span> Refresh
-              </button>
-            </td>
-          </tr>`;
+      try {
+        // First completely reset the UI state
+        resetNoResultsState();
+        
+        // Reset filter values
+        if (els.statusFilter) els.statusFilter.value = '';
+        if (els.searchInput) els.searchInput.value = '';
+        
+        // First we need to remove any existing no-results divs
+        if (els.tableContainer) {
+          const noResultsContainers = els.tableContainer.querySelectorAll('.no-results-container');
+          noResultsContainers.forEach(container => {
+            if (container.parentNode) {
+              container.parentNode.removeChild(container);
+            }
+          });
+        }
+        
+        // Clear the table body completely for a fresh start
+        if (els.jobTableBody) {
+          els.jobTableBody.innerHTML = '';
+        }
+        
+        // Re-render all jobs from scratch
+        if (currentJobs.length > 0) {
+          if (currentJobs.length < 20) {
+            renderSimple(currentJobs);
+          } else {
+            renderJobs(currentJobs);
+          }
+        } else {
+          // If we have no jobs at all, show the regular empty state
+          els.jobTableBody.innerHTML = `
+            <tr>
+              <td colspan="4" class="empty-state">
+                <div class="empty-state-icon">📋</div>
+                <div style="font-size: 16px; font-weight: 500; margin-bottom: 10px; color: #666;">No jobs found</div>
+                <div style="color: #888;">
+                  Create a new job using the "Manage Jobs" option<br>or refresh to update the list
+                </div>
+                <button onclick="refreshJobs()" class="action-btn" style="margin-top: 15px; padding: 8px 16px;">
+                  <span class="refresh-icon">↻</span> Refresh
+                </button>
+              </td>
+            </tr>`;
+        }
+        
+        // Show success message
+        showToast("Filters cleared");
+      } catch (e) {
+        console.error('Error in resetFilters:', e);
+        showToast("Error clearing filters. Please try again.");
+        
+        // Attempt to force a refresh as a fallback
+        refreshJobs();
       }
-      
-      // Show all rows
-      const rows = els.jobTableBody.querySelectorAll('.job-row');
-      rows.forEach(row => {
-        row.style.display = '';
-      });
     }
 
     function locate(jobName) {
@@ -1764,6 +1839,7 @@
     }
 
     function escapeHtml(str) {
+      if (str === undefined || str === null) return '';
       return String(str).replace(/[&<>'"]/g, c => {
         const map = { '&':'&amp;', '<':'&lt;', '>':'&gt;', '\'':'&#39;', '"':'&quot;' };
         return map[c];
@@ -1771,6 +1847,7 @@
     }
     
     function escapeQuotes(str) {
+      if (str === undefined || str === null) return '';
       return String(str).replace(/'/g, "\\'");
     }
     
@@ -1797,6 +1874,11 @@
         debounceTimer = setTimeout(() => func.apply(context, args), delay);
       };
     }
+    
+    // Make resetFilters globally accessible
+    window.resetFilters = resetFilters;
+    window.refreshJobs = refreshJobs;
+    window.locate = locate;
   </script>
 </body>
 </html>

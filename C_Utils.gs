@@ -50,13 +50,16 @@ function normalizeBaseUrl(url, pathSuffix) {
   
   // Add path suffix if needed
   if (pathSuffix) {
-    const suffixWithoutSlash = pathSuffix.replace(/^\//, '').replace(/\/$/, '');
+    // Clean up the suffix
+    const suffix = pathSuffix.replace(/^\/|\/$/g, '');
     
-    if (!url.toLowerCase().includes('/' + suffixWithoutSlash.toLowerCase())) {
-      url += '/' + suffixWithoutSlash;
-    } else if (url.toLowerCase().endsWith('/' + suffixWithoutSlash.toLowerCase())) {
-      // Already has the suffix without trailing slash, so add it
+    // Check different cases
+    if (url.toLowerCase().endsWith('/' + suffix.toLowerCase())) {
+      // URL ends with "/suffix" but no trailing slash
       url += '/';
+    } else if (!url.toLowerCase().includes('/' + suffix.toLowerCase() + '/')) {
+      // URL doesn't contain "/suffix/" anywhere
+      url += '/' + suffix + '/';
     }
   }
   

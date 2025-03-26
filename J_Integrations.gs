@@ -4,7 +4,8 @@
  * This file contains functions for integrating with external systems
  * like Jenkins and Jira.
  * 
- * @requires log, handleError from B_Logging.gs
+ * @requires log, handleError, safeExecute from B_Logging.gs
+ * @requires normalizeBaseUrl, createHyperlink from C_Utils.gs
  */
 
 // Property key for storing integration settings
@@ -16,7 +17,7 @@ const INTEGRATION_SETTINGS_KEY = 'RELEASE_TRACKER_INTEGRATIONS';
  * @returns {Object} Integration settings
  */
 function getIntegrationSettings() {
-  try {
+  return safeExecute('getIntegrationSettings', () => {
     const props = PropertiesService.getScriptProperties();
     const stored = props.getProperty(INTEGRATION_SETTINGS_KEY);
     
@@ -29,10 +30,7 @@ function getIntegrationSettings() {
       jenkinsUrl: '',
       jiraUrl: ''
     };
-  } catch (error) {
-    handleError('getIntegrationSettings', error, false);
-    return { jenkinsUrl: '', jiraUrl: '' };
-  }
+  }, false);
 }
 
 /**
@@ -42,7 +40,7 @@ function getIntegrationSettings() {
  * @returns {Object} Result indicating success or failure
  */
 function saveIntegrationSettings(settings) {
-  try {
+  return safeExecute('saveIntegrationSettings', () => {
     const props = PropertiesService.getScriptProperties();
     props.setProperty(INTEGRATION_SETTINGS_KEY, JSON.stringify(settings));
     
@@ -51,27 +49,7 @@ function saveIntegrationSettings(settings) {
       status: 'success', 
       message: 'Integration settings saved successfully' 
     };
-  } catch (error) {
-    return handleError('saveIntegrationSettings', error, false);
-  }
-}
-
-/**
- * Creates a direct hyperlink in Google Sheets format
- * 
- * @param {string} url - The URL to link to
- * @param {string} text - The display text for the hyperlink
- * @returns {string} A Google Sheets HYPERLINK formula
- */
-function createDirectHyperlink(url, text) {
-  if (!url || !text) return text || '';
-  
-  // Escape double quotes (they need to be doubled in Sheets formulas)
-  const escapedUrl = url.replace(/"/g, '""');
-  const escapedText = text.replace(/"/g, '""');
-  
-  // Create the formula
-  return `=HYPERLINK("${escapedUrl}","${escapedText}")`;
+  }, false);
 }
 
 /**
@@ -81,7 +59,7 @@ function createDirectHyperlink(url, text) {
  * @returns {string} Hyperlink formula or original job name if no URL is configured
  */
 function createJenkinsJobLink(jobName) {
-  try {
+  return safeExecute('createJenkinsJobLink', () => {
     if (!jobName) return '';
     
     const settings = getIntegrationSettings();
@@ -89,33 +67,15 @@ function createJenkinsJobLink(jobName) {
     
     if (!baseUrl) return jobName;
     
-    // Clean and normalize the base URL 
-    baseUrl = baseUrl.trim();
-    if (!baseUrl.startsWith('http://') && !baseUrl.startsWith('https://')) {
-      baseUrl = 'https://' + baseUrl;
-    }
-    
-    // Clean trailing slashes
-    while (baseUrl.endsWith('/')) {
-      baseUrl = baseUrl.slice(0, -1);
-    }
-    
-    // Add /job/ path consistently
-    if (!baseUrl.toLowerCase().includes('/job/')) {
-      baseUrl += '/job/';
-    } else if (baseUrl.toLowerCase().endsWith('/job')) {
-      baseUrl += '/';
-    }
+    // Use the utility function to normalize the URL
+    baseUrl = normalizeBaseUrl(baseUrl, '/job/');
     
     // Create the final URL
     const finalUrl = baseUrl + encodeURIComponent(jobName);
     
     // Create a direct hyperlink formula
-    return createDirectHyperlink(finalUrl, jobName);
-  } catch (error) {
-    log('Error creating Jenkins link', LOG_LEVELS.ERROR, error);
-    return jobName;
-  }
+    return createHyperlink(finalUrl, jobName);
+  }, false) || jobName;
 }
 
 /**
@@ -125,7 +85,7 @@ function createJenkinsJobLink(jobName) {
  * @returns {string} Hyperlink formula or original ticket ID if no URL is configured
  */
 function createJiraTicketLink(ticketId) {
-  try {
+  return safeExecute('createJiraTicketLink', () => {
     if (!ticketId) return '';
     
     const settings = getIntegrationSettings();
@@ -133,33 +93,15 @@ function createJiraTicketLink(ticketId) {
     
     if (!baseUrl) return ticketId;
     
-    // Clean and normalize the base URL
-    baseUrl = baseUrl.trim();
-    if (!baseUrl.startsWith('http://') && !baseUrl.startsWith('https://')) {
-      baseUrl = 'https://' + baseUrl;
-    }
-    
-    // Clean trailing slashes
-    while (baseUrl.endsWith('/')) {
-      baseUrl = baseUrl.slice(0, -1);
-    }
-    
-    // Add /browse/ path consistently
-    if (!baseUrl.toLowerCase().includes('/browse/')) {
-      baseUrl += '/browse/';
-    } else if (baseUrl.toLowerCase().endsWith('/browse')) {
-      baseUrl += '/';
-    }
+    // Use the utility function to normalize the URL
+    baseUrl = normalizeBaseUrl(baseUrl, '/browse/');
     
     // Create the final URL
     const finalUrl = baseUrl + encodeURIComponent(ticketId);
     
     // Create a direct hyperlink formula
-    return createDirectHyperlink(finalUrl, ticketId);
-  } catch (error) {
-    log('Error creating Jira link', LOG_LEVELS.ERROR, error);
-    return ticketId;
-  }
+    return createHyperlink(finalUrl, ticketId);
+  }, false) || ticketId;
 }
 
 /**
@@ -168,14 +110,11 @@ function createJiraTicketLink(ticketId) {
  * @returns {boolean} True if the DefaultJobs sheet exists, false otherwise
  */
 function checkDefaultJobsSheetExists() {
-  try {
+  return safeExecute('checkDefaultJobsSheetExists', () => {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const sheet = ss.getSheetByName(DEFAULT_JOBS_SHEET_NAME);
     return sheet !== null;
-  } catch (error) {
-    log('Error checking DefaultJobs sheet', LOG_LEVELS.ERROR, error);
-    return false;
-  }
+  }, false) || false;
 }
 
 /**
@@ -184,7 +123,7 @@ function checkDefaultJobsSheetExists() {
  * @returns {Object} Result indicating success or failure
  */
 function createDefaultJobsTemplate() {
-  try {
+  return safeExecute('createDefaultJobsTemplate', () => {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     let sheet = ss.getSheetByName(DEFAULT_JOBS_SHEET_NAME);
     
@@ -240,14 +179,5 @@ function createDefaultJobsTemplate() {
       status: 'success',
       message: 'DefaultJobs template created successfully'
     };
-  } catch (error) {
-    // Improved error logging
-    log('Error creating DefaultJobs template', LOG_LEVELS.ERROR, error);
-    
-    // Return detailed error information
-    return {
-      status: 'error',
-      message: 'Failed to create DefaultJobs sheet: ' + (error.message || String(error))
-    };
-  }
+  }, false);
 }

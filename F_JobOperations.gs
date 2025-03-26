@@ -4,12 +4,88 @@
  * This file contains functions for managing jobs in the Release Tracker.
  * 
  * @requires JOBS_SHEET_NAME from A_Constants.gs
- * @requires log, handleError from B_Logging.gs
+ * @requires log, handleError, safeExecute from B_Logging.gs
  * @requires sanitizeInput from C_Utils.gs
  * @requires getConfig from D_Config.gs
  * @requires getOrCreateSheet, findJobRow from E_SheetSetup.gs
  * @requires createJenkinsJobLink, createJiraTicketLink from J_Integrations.gs
  */
+
+/**
+ * Get job schema - centralized definition of job structure
+ * 
+ * @returns {Object} Schema definition with default values
+ */
+function getJobSchema() {
+  const config = getConfig();
+  return {
+    "Job Name": "",
+    "Type": config.types && config.types.length > 0 ? config.types[0] : "Build",
+    "Status": config.statuses && config.statuses.length > 0 ? config.statuses[0] : "Pending",
+    "Priority": config.priorities && config.priorities.length > 0 ? config.priorities[1] : "Medium",
+    "Notes": "",
+    "Job Link": "",
+    "Jira Ticket": ""
+  };
+}
+
+/**
+ * Validate job object against schema and apply defaults
+ * 
+ * @param {Object} jobObj - Job object to validate
+ * @param {boolean} [applyDefaults=true] - Whether to apply default values
+ * @returns {Object} Validated job object with defaults applied
+ */
+function validateJobObject(jobObj, applyDefaults = true) {
+  return safeExecute('validateJobObject', () => {
+    const schema = getJobSchema();
+    const validJob = {};
+    
+    // Apply schema defaults and validation
+    for (const field in schema) {
+      if (field in jobObj && jobObj[field] !== undefined && jobObj[field] !== null) {
+        validJob[field] = sanitizeInput(jobObj[field]);
+      } else if (applyDefaults) {
+        validJob[field] = schema[field];
+      }
+    }
+    
+    // Ensure Job Name is sanitized
+    if ("Job Name" in validJob) {
+      validJob["Job Name"] = sanitizeInput(validJob["Job Name"]);
+    }
+    
+    return validJob;
+  }, false);
+}
+
+/**
+ * Format job object for display (handle formulas, etc.)
+ * 
+ * @param {Object} jobObj - Raw job object from sheet
+ * @returns {Object} Formatted job object for display
+ */
+function formatJobForDisplay(jobObj) {
+  return safeExecute('formatJobForDisplay', () => {
+    const formattedJob = {};
+    
+    for (const key in jobObj) {
+      let value = jobObj[key];
+      
+      // Handle hyperlink formulas
+      if (typeof value === 'string' && value.startsWith('=HYPERLINK')) {
+        const match = value.match(/=HYPERLINK\("[^"]*","([^"]*)"\)/);
+        if (match && match[1]) {
+          value = match[1]; // Extract display text
+        }
+      }
+      
+      formattedJob[key] = value;
+    }
+    
+    return formattedJob;
+  }, false);
+}
 
 /**
  * Insert one job row
@@ -20,7 +96,7 @@
  * @returns {Object} Result object indicating success or failure
  */
 function addJob(jobObj, targetSheetName = JOBS_SHEET_NAME) {
-  try {
+  return safeExecute('addJob', () => {
     // Make sure the sheet name is properly sanitized
     targetSheetName = String(targetSheetName || JOBS_SHEET_NAME).trim();
     log(`Adding job to sheet: "${targetSheetName}"`, LOG_LEVELS.INFO);
@@ -42,10 +118,8 @@ function addJob(jobObj, targetSheetName = JOBS_SHEET_NAME) {
       }
     }
     
-    // Sanitize input
-    if (jobObj["Job Name"]) {
-      jobObj["Job Name"] = sanitizeInput(jobObj["Job Name"]);
-    }
+    // Validate and sanitize the job object
+    jobObj = validateJobObject(jobObj);
     
     // Handle integration features - create hyperlinks for Job Link and Jira Ticket
     if (jobObj["Job Link"] && typeof jobObj["Job Link"] === 'string') {
@@ -76,9 +150,7 @@ function addJob(jobObj, targetSheetName = JOBS_SHEET_NAME) {
       message: `Job added: ${jobObj["Job Name"] || "(unnamed)"}`,
       jobName: jobObj["Job Name"] || "(unnamed)"
     };
-  } catch (error) {
-    return handleError('addJob', error, false);
-  }
+  }, false);
 }
 
 /**
@@ -91,7 +163,7 @@ function addJob(jobObj, targetSheetName = JOBS_SHEET_NAME) {
  * @returns {Object} Result object with jobs array
  */
 function getJobs(page = 1, pageSize = 0, sheetName = JOBS_SHEET_NAME) {
-  try {
+  return safeExecute('getJobs', () => {
     // Make sure we always have a valid string for the sheet name, not undefined, null, or other types
     sheetName = String(sheetName || JOBS_SHEET_NAME).trim();
     
@@ -127,20 +199,9 @@ function getJobs(page = 1, pageSize = 0, sheetName = JOBS_SHEET_NAME) {
     const allJobs = values.slice(1).map(row => {
       let jobObj = {};
       header.forEach((col, index) => {
-        // Skip formula cells for display purposes (hyperlinks)
-        if (row[index] && typeof row[index] === 'string' && row[index].startsWith('=HYPERLINK')) {
-          // Extract the display text from the hyperlink formula
-          const match = row[index].match(/=HYPERLINK\("[^"]*","([^"]*)"\)/);
-          if (match && match[1]) {
-            jobObj[col] = match[1]; // Use the display text
-          } else {
-            jobObj[col] = row[index]; // Fallback to the formula if we can't parse it
-          }
-        } else {
-          jobObj[col] = row[index];
-        }
+        jobObj[col] = row[index];
       });
-      return jobObj;
+      return formatJobForDisplay(jobObj);
     });
     
     // Apply pagination if requested
@@ -164,9 +225,7 @@ function getJobs(page = 1, pageSize = 0, sheetName = JOBS_SHEET_NAME) {
       status: 'success', 
       jobs: allJobs 
     };
-  } catch (error) {
-    return handleError('getJobs', error, false);
-  }
+  }, false);
 }
 
 /**
@@ -179,7 +238,7 @@ function getJobs(page = 1, pageSize = 0, sheetName = JOBS_SHEET_NAME) {
  * @returns {Object} Result object indicating success or failure
  */
 function updateJob(jobName, updates, sheetName = JOBS_SHEET_NAME) {
-  try {
+  return safeExecute('updateJob', () => {
     // Make sure we have a valid sheet name
     sheetName = String(sheetName || JOBS_SHEET_NAME).trim();
     log(`Updating job "${jobName}" in sheet: "${sheetName}"`, LOG_LEVELS.INFO);
@@ -195,6 +254,9 @@ function updateJob(jobName, updates, sheetName = JOBS_SHEET_NAME) {
     }
     
     const { rowNumber, sheet, header } = result;
+    
+    // Validate the updates
+    updates = validateJobObject(updates, false);
     
     // Process special fields that need formatting
     if ('Job Link' in updates && updates['Job Link']) {
@@ -237,9 +299,7 @@ function updateJob(jobName, updates, sheetName = JOBS_SHEET_NAME) {
       status: 'success', 
       message: `Job updated: ${jobName}` 
     };
-  } catch (error) {
-    return handleError('updateJob', error, false);
-  }
+  }, false);
 }
 
 /**
@@ -251,7 +311,7 @@ function updateJob(jobName, updates, sheetName = JOBS_SHEET_NAME) {
  * @returns {Object} Result object indicating success or failure
  */
 function deleteJobByName(jobName, sheetName = JOBS_SHEET_NAME) {
-  try {
+  return safeExecute('deleteJobByName', () => {
     // Make sure we have a valid sheet name
     sheetName = String(sheetName || JOBS_SHEET_NAME).trim();
     log(`Deleting job "${jobName}" from sheet: "${sheetName}"`, LOG_LEVELS.INFO);
@@ -273,9 +333,7 @@ function deleteJobByName(jobName, sheetName = JOBS_SHEET_NAME) {
       status: 'success', 
       message: `Deleted job: ${jobName}` 
     };
-  } catch (error) {
-    return handleError('deleteJobByName', error, false);
-  }
+  }, false);
 }
 
 /**
@@ -286,7 +344,7 @@ function deleteJobByName(jobName, sheetName = JOBS_SHEET_NAME) {
  * @returns {Object} Result object indicating success or failure
  */
 function markJobDone(jobName, sheetName = JOBS_SHEET_NAME) {
-  try {
+  return safeExecute('markJobDone', () => {
     const config = getConfig();
     let doneStatus = "Done";
     
@@ -295,9 +353,7 @@ function markJobDone(jobName, sheetName = JOBS_SHEET_NAME) {
     }
     
     return updateJob(jobName, { "Status": doneStatus }, sheetName);
-  } catch (error) {
-    return handleError('markJobDone', error, false);
-  }
+  }, false);
 }
 
 /**
@@ -309,7 +365,7 @@ function markJobDone(jobName, sheetName = JOBS_SHEET_NAME) {
  * @returns {Object} Result object indicating success or failure
  */
 function locateInSheet(jobName, sheetName = JOBS_SHEET_NAME) {
-  try {
+  return safeExecute('locateInSheet', () => {
     // Validate parameters
     if (!jobName) {
       return {
@@ -358,9 +414,7 @@ function locateInSheet(jobName, sheetName = JOBS_SHEET_NAME) {
       status: 'success', 
       message: `Located job "${jobName}" at row ${rowNumber} in "${sheetName}"` 
     };
-  } catch (error) {
-    return handleError('locateInSheet', error, false);
-  }
+  }, false);
 }
 
 /**
@@ -371,7 +425,7 @@ function locateInSheet(jobName, sheetName = JOBS_SHEET_NAME) {
  * @returns {Object} Data object with job configuration
  */
 function getInitData(sheetName = JOBS_SHEET_NAME) {
-  try {
+  return safeExecute('getInitData', () => {
     // Make sure we have a valid sheet name
     sheetName = String(sheetName || JOBS_SHEET_NAME).trim();
     log(`Getting initialization data for sheet: "${sheetName}"`, LOG_LEVELS.INFO);
@@ -397,9 +451,7 @@ function getInitData(sheetName = JOBS_SHEET_NAME) {
       priorities: config.priorities,
       jobNames:   jobList
     };
-  } catch (error) {
-    return handleError('getInitData', error, false);
-  }
+  }, false);
 }
 
 /**
@@ -408,7 +460,7 @@ function getInitData(sheetName = JOBS_SHEET_NAME) {
  * @returns {Array} List of sheet names
  */
 function listJobSheets() {
-  try {
+  return safeExecute('listJobSheets', () => {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const sheets = ss.getSheets();
     
@@ -425,8 +477,5 @@ function listJobSheets() {
     
     log(`Found job sheets: ${jobSheets.join(', ')}`, LOG_LEVELS.INFO);
     return jobSheets;
-  } catch (error) {
-    log('Error listing job sheets', LOG_LEVELS.ERROR, error);
-    return [JOBS_SHEET_NAME]; // Return default as fallback
-  }
+  }, false);
 }

@@ -1,0 +1,289 @@
+<style>
+    /* Common style variables */
+    :root {
+      --primary-color: #1976d2;
+      --hover-color: #1565c0;
+      --text-color: #444;
+      --light-bg: #f9f9f9;
+      --border-color: #e0e0e0;
+      --danger-color: #dc3545;
+      --success-color: #28a745;
+      --warning-color: #ffc107;
+      --info-color: #17a2b8;
+      --header-color: #37474f;
+      --section-bg: #fafafa;
+    }
+  
+    /* Base styles */
+    body {
+      font-family: 'Roboto', Arial, sans-serif;
+      margin: 0;
+      padding: 16px;
+      font-size: 14px;
+      color: var(--text-color);
+      background-color: #fff;
+      line-height: 1.5;
+    }
+  
+    h3 {
+      margin-top: 0;
+      margin-bottom: 16px;
+      color: var(--header-color);
+      font-size: 18px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--primary-color);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    h3 .icon {
+      font-size: 22px;
+    }
+    
+    h4 {
+      margin-top: 24px;
+      margin-bottom: 6px;
+      font-weight: 500;
+      font-size: 16px;
+      color: var(--header-color);
+    }
+  
+    /* Form controls */
+    label {
+      display: block;
+      margin-top: 8px;
+      margin-bottom: 6px;
+      font-weight: 500;
+      font-size: 14px;
+      color: var(--header-color);
+    }
+    
+    select, input, textarea {
+      width: 100%;
+      box-sizing: border-box;
+      margin-bottom: 12px;
+      font-size: 14px;
+      padding: 10px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      transition: all 0.2s ease;
+      font-family: 'Roboto', Arial, sans-serif;
+    }
+    
+    select:hover, input:hover, textarea:hover {
+      border-color: #bbbbbb;
+    }
+    
+    select:focus, input:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
+    }
+  
+    textarea {
+      resize: vertical;
+      min-height: 70px;
+    }
+  
+    /* Buttons */
+    button {
+      padding: 10px 16px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-weight: 500;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      font-family: 'Roboto', Arial, sans-serif;
+    }
+    
+    button .icon {
+      font-size: 18px;
+    }
+    
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+    }
+    
+    button:active {
+      transform: translateY(1px);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+    
+    button:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    
+    .btn-primary {
+      background-color: var(--primary-color);
+      color: white;
+    }
+    
+    .btn-primary:hover:not(:disabled) {
+      background-color: var(--hover-color);
+    }
+    
+    .btn-secondary {
+      background-color: #6c757d;
+      color: white;
+    }
+    
+    .btn-secondary:hover:not(:disabled) {
+      background-color: #5a6268;
+    }
+    
+    .btn-success {
+      background-color: var(--success-color);
+      color: white;
+    }
+    
+    .btn-success:hover:not(:disabled) {
+      background-color: #218838;
+    }
+    
+    .btn-danger {
+      background-color: var(--danger-color);
+      color: white;
+    }
+    
+    .btn-danger:hover:not(:disabled) {
+      background-color: #c82333;
+    }
+  
+    /* Loading spinner */
+    .spinner {
+      display: inline-block;
+      width: 24px;
+      height: 24px;
+      border: 3px solid rgba(25, 118, 210, 0.3);
+      border-radius: 50%;
+      border-top-color: var(--primary-color);
+      animation: spin 1s linear infinite;
+    }
+  
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    /* Loading overlay */
+    .loading-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(255,255,255,0.8);
+      z-index: 2000;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(2px);
+    }
+    
+    .loading-overlay.active {
+      display: flex;
+    }
+    
+    .loading-message {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--primary-color);
+      margin-top: 12px;
+    }
+  
+    /* Toast notifications */
+    .toast {
+      display: none;
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(33, 33, 33, 0.9);
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 13px;
+      z-index: 9999;
+      max-width: 90%;
+      text-align: center;
+      animation: fadeIn 0.3s ease-in-out;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      backdrop-filter: blur(2px);
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translate(-50%, 20px); }
+      to { opacity: 1; transform: translate(-50%, 0); }
+    }
+  
+    /* Helper text */
+    .helper-text {
+      font-size: 12px;
+      color: #757575;
+      margin-top: -8px;
+      margin-bottom: 12px;
+      font-style: italic;
+    }
+    
+    /* Status messages */
+    .success-message, .error-message, .warning-message {
+      margin-top: 10px;
+      padding: 10px 16px;
+      border-radius: 6px;
+      display: none;
+    }
+    
+    .success-message {
+      background-color: #e8f5e9;
+      border-left: 4px solid var(--success-color);
+      color: #2e7d32;
+    }
+    
+    .error-message {
+      background-color: #fdecea;
+      border-left: 4px solid var(--danger-color);
+      color: #d32f2f;
+    }
+    
+    .warning-message {
+      background-color: #fff8e1;
+      border-left: 4px solid var(--warning-color);
+      color: #f57c00;
+    }
+    
+    /* Sheet badge - common across multiple sidebars */
+    .sheet-info {
+      display: flex;
+      align-items: center;
+      margin-bottom: 14px;
+      font-size: 13px;
+      color: #666;
+      background-color: var(--section-bg);
+      padding: 8px 12px;
+      border-radius: 6px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    
+    .sheet-badge {
+      background-color: #e3f2fd;
+      color: #0d47a1;
+      padding: 3px 10px;
+      border-radius: 12px;
+      margin-left: 8px;
+      font-weight: bold;
+      font-size: 12px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+  </style>

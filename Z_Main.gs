@@ -4,9 +4,8 @@
  * This file contains the main entry point for the application.
  * It should be loaded last (hence the 'Z' prefix).
  * 
- * @requires log, handleError from B_Logging.gs
- * @requires showManageSidebar, showViewSidebar, showCreateTrackingSheetDialog from H_UI.gs
- * @requires showNotificationSettings from N_Notifications.gs
+ * @requires log, handleError, safeExecute from B_Logging.gs
+ * @requires createSidebar, createDialog from I_TemplateLoader.gs
  */
 
 /**
@@ -15,7 +14,7 @@
  * @interface Triggered automatically when spreadsheet is opened
  */
 function onOpen() {
-  try {
+  return safeExecute('onOpen', () => {
     const ui = SpreadsheetApp.getUi();
     
     // Create the main Release Tracker menu
@@ -29,9 +28,105 @@ function onOpen() {
       .addToUi();
     
     log('Menu initialized successfully', LOG_LEVELS.INFO);
-  } catch (error) {
-    handleError('onOpen', error, false);
-  }
+  }, false);
+}
+
+/**
+ * Opens the management sidebar
+ * 
+ * @interface Called from menu and other functions
+ */
+function showManageSidebar() {
+  return safeExecute('showManageSidebar', () => {
+    const activeSheetName = getActiveJobSheet();
+    log(`Opening ManageSidebar with sheet: ${activeSheetName}`, LOG_LEVELS.INFO);
+    
+    const html = createSidebar('ManageSidebar', 'Manage Jobs', { activeSheetName });
+    SpreadsheetApp.getUi().showSidebar(html);
+    
+    log('ManageSidebar opened for sheet: ' + activeSheetName, LOG_LEVELS.INFO);
+  }, true);
+}
+
+/**
+ * Opens the view sidebar
+ * 
+ * @interface Called from menu and other functions
+ */
+function showViewSidebar() {
+  return safeExecute('showViewSidebar', () => {
+    const activeSheetName = getActiveJobSheet();
+    log(`Opening ViewSidebar with sheet: ${activeSheetName}`, LOG_LEVELS.INFO);
+    
+    const html = createSidebar('ViewSidebar', 'View Jobs', { activeSheetName });
+    SpreadsheetApp.getUi().showSidebar(html);
+    
+    log('ViewSidebar opened for sheet: ' + activeSheetName, LOG_LEVELS.INFO);
+  }, true);
+}
+
+/**
+ * Opens the create tracking sheet dialog
+ * 
+ * @interface Called from menu and other functions
+ */
+function showCreateTrackingSheetDialog() {
+  return safeExecute('showCreateTrackingSheetDialog', () => {
+    const html = createDialog('CreateTrackingSheet', 'Create Tracking Sheet', {}, {
+      width: 500,
+      height: 520
+    });
+    
+    SpreadsheetApp.getUi().showModalDialog(html, 'Create Tracking Sheet');
+    log('Create Tracking Sheet dialog opened', LOG_LEVELS.INFO);
+  }, true);
+}
+
+/**
+ * Gets the name of the active sheet or default if not a valid job sheet
+ * 
+ * @returns {string} Name of active sheet or JOBS_SHEET_NAME if not valid
+ */
+function getActiveJobSheet() {
+  return safeExecute('getActiveJobSheet', () => {
+    // Get active sheet
+    const activeSheet = SpreadsheetApp.getActiveSheet();
+    if (!activeSheet) {
+      log(`No active sheet found, using default: ${JOBS_SHEET_NAME}`, LOG_LEVELS.INFO);
+      return JOBS_SHEET_NAME;
+    }
+    
+    const activeSheetName = activeSheet.getName();
+    
+    // Log for debugging
+    log(`Checking active sheet: ${activeSheetName}`, LOG_LEVELS.INFO);
+    
+    // Check if the active sheet is the DEFAULT_JOBS_SHEET_NAME
+    if (activeSheetName === DEFAULT_JOBS_SHEET_NAME) {
+      log(`Active sheet is DefaultJobs sheet, using ${JOBS_SHEET_NAME} instead`, LOG_LEVELS.INFO);
+      return JOBS_SHEET_NAME;
+    }
+    
+    // Check if the active sheet has the required job columns (at minimum Job Name and Status)
+    const headerRow = activeSheet.getRange(1, 1, 1, activeSheet.getLastColumn()).getValues()[0];
+    if (headerRow.includes("Job Name") && headerRow.includes("Status")) {
+      log(`Valid job sheet found: ${activeSheetName}`, LOG_LEVELS.INFO);
+      return activeSheetName;
+    }
+    
+    // If active sheet is not a job sheet, get available job sheets
+    const jobSheets = listJobSheets();
+    
+    log(`Available job sheets: ${jobSheets.join(', ')}`, LOG_LEVELS.INFO);
+    
+    if (jobSheets.length > 0) {
+      log(`Active sheet not a job sheet. Using first available: ${jobSheets[0]}`, LOG_LEVELS.INFO);
+      return jobSheets[0]; // Return first available job sheet
+    }
+    
+    log(`No valid job sheets found, using default: ${JOBS_SHEET_NAME}`, LOG_LEVELS.INFO);
+    return JOBS_SHEET_NAME; // Fall back to default
+  }, false) || JOBS_SHEET_NAME; // Return default on error
 }
 
 /**
@@ -39,14 +134,11 @@ function onOpen() {
  * This is mainly for testing purposes.
  */
 function manuallyCheckPhases() {
-  try {
+  return safeExecute('manuallyCheckPhases', () => {
     // This function remains accessible for manual testing but is no longer in the menu
     const result = sendPhaseNotifications();
     return result;
-  } catch (error) {
-    handleError('manuallyCheckPhases', error, true);
-    return { error: error.message || String(error) };
-  }
+  }, true);
 }
 
 /**
@@ -56,7 +148,7 @@ function manuallyCheckPhases() {
  * @returns {Object} Result object indicating success or failure
  */
 function activateSheet(sheetName) {
-  try {
+  return safeExecute('activateSheet', () => {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const sheet = ss.getSheetByName(sheetName);
     
@@ -73,11 +165,34 @@ function activateSheet(sheetName) {
       status: 'success',
       message: `Sheet "${sheetName}" activated`
     };
-  } catch (error) {
-    handleError('activateSheet', error, false);
+  }, false);
+}
+
+/**
+ * Initializes the application with default data if needed
+ * This is useful when the application is first installed
+ * 
+ * @returns {Object} Result of initialization
+ */
+function initializeApplication() {
+  return safeExecute('initializeApplication', () => {
+    log('Initializing application', LOG_LEVELS.INFO);
+    
+    // Load config to ensure defaults are created
+    const config = getConfig();
+    
+    // Create the default Jobs sheet if it doesn't exist
+    const jobsSheet = getOrCreateSheet(JOBS_SHEET_NAME, null, true);
+    
+    // Set up proper data validation on the Jobs sheet
+    setupDataValidation(jobsSheet);
+    
+    // Apply formatting
+    formatSheet(jobsSheet);
+    
     return {
-      status: 'error',
-      message: `Error activating sheet: ${error.message || error}`
+      status: 'success',
+      message: 'Application initialized successfully'
     };
-  }
+  }, true);
 }

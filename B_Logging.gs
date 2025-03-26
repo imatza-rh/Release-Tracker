@@ -54,6 +54,22 @@ function handleError(functionName, error, showUi = true) {
 }
 
 /**
+ * Executes a function safely with standardized error handling
+ * 
+ * @param {string} functionName - Name of the function for error reporting
+ * @param {Function} callback - Function to execute safely
+ * @param {boolean} [showUi=false] - Whether to show UI alert on error
+ * @returns {*} Result of callback or error object
+ */
+function safeExecute(functionName, callback, showUi = false) {
+  try {
+    return callback();
+  } catch (error) {
+    return handleError(functionName, error, showUi);
+  }
+}
+
+/**
  * Sets current logging level
  * 
  * @param {string} level - Level name from LOG_LEVELS

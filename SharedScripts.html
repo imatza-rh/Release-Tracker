@@ -1,0 +1,197 @@
+<script>
+    // Common utility functions for UI components
+    
+    // Global objects to store cached elements and state
+    const ui = {
+      elements: {},
+      state: {
+        isLoading: false,
+        debounceTimers: {},
+        toastTimer: null
+      }
+    };
+    
+    /**
+     * Cache DOM elements to avoid repeated query selector calls
+     * 
+     * @param {string[]} elementIds - Array of element IDs to cache
+     */
+    function cacheElements(elementIds) {
+      elementIds.forEach(id => {
+        ui.elements[id] = document.getElementById(id);
+        
+        // Log any missing elements during development
+        if (!ui.elements[id] && window.location.hostname.includes('localhost')) {
+          console.warn(`Element not found: ${id}`);
+        }
+      });
+    }
+    
+    /**
+     * Show a toast notification
+     * 
+     * @param {string} message - Message to display
+     * @param {boolean} [autoHide=true] - Whether to auto-hide the toast
+     * @param {number} [duration=3000] - Duration in ms before hiding
+     */
+    function showToast(message, autoHide = true, duration = 3000) {
+      const toast = ui.elements.toast || document.getElementById('toast');
+      if (!toast) return;
+      
+      toast.textContent = message;
+      toast.style.display = 'block';
+      
+      // Clear any existing timer
+      if (ui.state.toastTimer) {
+        clearTimeout(ui.state.toastTimer);
+        ui.state.toastTimer = null;
+      }
+      
+      if (autoHide) {
+        ui.state.toastTimer = setTimeout(() => {
+          toast.style.display = 'none';
+        }, duration);
+      }
+    }
+    
+    /**
+     * Toggle the loading overlay
+     * 
+     * @param {boolean} show - Whether to show or hide the overlay
+     * @param {string} [message] - Optional loading message
+     */
+    function toggleLoading(show, message) {
+      const overlay = ui.elements.loadingOverlay || document.getElementById('loading-overlay');
+      if (!overlay) return;
+      
+      ui.state.isLoading = show;
+      
+      if (show) {
+        // Update message if provided
+        if (message) {
+          const messageEl = overlay.querySelector('.loading-message');
+          if (messageEl) messageEl.textContent = message;
+        }
+        
+        overlay.classList.add('active');
+      } else {
+        overlay.classList.remove('active');
+      }
+    }
+    
+    /**
+     * Show a status message
+     * 
+     * @param {string} type - Message type: 'success', 'error', or 'warning'
+     * @param {string} message - Message to display
+     * @param {boolean} [autoHide=true] - Whether to auto-hide the message
+     */
+    function showMessage(type, message, autoHide = true) {
+      // Hide all messages first
+      ['success', 'error', 'warning'].forEach(t => {
+        const el = ui.elements[`${t}Message`] || document.getElementById(`${t}-message`);
+        if (el) el.style.display = 'none';
+      });
+      
+      // Show the requested message
+      const msgEl = ui.elements[`${type}Message`] || document.getElementById(`${type}-message`);
+      if (!msgEl) return;
+      
+      msgEl.textContent = message;
+      msgEl.style.display = 'block';
+      
+      if (autoHide && type !== 'error') {
+        setTimeout(() => {
+          msgEl.style.display = 'none';
+        }, 5000);
+      }
+    }
+    
+    /**
+     * Debounce a function call
+     * 
+     * @param {Function} func - Function to debounce
+     * @param {number} delay - Delay in milliseconds
+     * @param {string} [id='default'] - Identifier for this debounce operation
+     * @returns {Function} Debounced function
+     */
+    function debounce(func, delay, id = 'default') {
+      return function() {
+        const context = this;
+        const args = arguments;
+        
+        clearTimeout(ui.state.debounceTimers[id]);
+        
+        ui.state.debounceTimers[id] = setTimeout(() => {
+          delete ui.state.debounceTimers[id];
+          func.apply(context, args);
+        }, delay);
+      };
+    }
+    
+    /**
+     * Escape HTML special characters to prevent XSS
+     * 
+     * @param {string} str - String to escape
+     * @returns {string} Escaped string
+     */
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+    
+    /**
+     * Format a date for display
+     * 
+     * @param {string|Date} date - Date to format
+     * @param {boolean} [includeTime=true] - Whether to include time
+     * @returns {string} Formatted date string
+     */
+    function formatDate(date, includeTime = true) {
+      if (!date) return 'N/A';
+      
+      try {
+        const d = new Date(date);
+        if (isNaN(d.getTime())) return 'Invalid date';
+        
+        if (includeTime) {
+          return d.toLocaleString();
+        } else {
+          return d.toLocaleDateString();
+        }
+      } catch (e) {
+        return 'Error formatting date';
+      }
+    }
+    
+    /**
+     * Clean up when a sidebar or dialog is closed
+     */
+    function cleanupOnUnload() {
+      // Clear all timers
+      if (ui.state.toastTimer) {
+        clearTimeout(ui.state.toastTimer);
+      }
+      
+      Object.keys(ui.state.debounceTimers).forEach(id => {
+        clearTimeout(ui.state.debounceTimers[id]);
+      });
+      
+      // Clear cached element references
+      ui.elements = {};
+      
+      // Reset state
+      ui.state = {
+        isLoading: false,
+        debounceTimers: {},
+        toastTimer: null
+      };
+    }
+    
+    // Set up unload handler to clean up resources
+    window.addEventListener('unload', cleanupOnUnload);
+  </script>

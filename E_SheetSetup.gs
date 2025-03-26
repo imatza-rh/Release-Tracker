@@ -5,7 +5,7 @@
  * sheets for the Release Tracker application.
  * 
  * @requires JOBS_SHEET_NAME from A_Constants.gs
- * @requires log, handleError from B_Logging.gs
+ * @requires log, handleError, safeExecute from B_Logging.gs
  * @requires sanitizeInput from C_Utils.gs
  * @requires getConfig from D_Config.gs
  */
@@ -19,7 +19,7 @@
  * @returns {Sheet|null} The sheet object or null if sheet doesn't exist and createIfMissing is false
  */
 function getOrCreateSheet(sheetName, customFields, createIfMissing = true) {
-  try {
+  return safeExecute('getOrCreateSheet', () => {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     let sheet = ss.getSheetByName(sheetName);
     
@@ -55,30 +55,195 @@ function getOrCreateSheet(sheetName, customFields, createIfMissing = true) {
       
       sheet.appendRow(fields);
       
-      // Format header row with improved styling
-      const headerRange = sheet.getRange(1, 1, 1, fields.length);
-      headerRange.setBackground('#37474f');
-      headerRange.setFontColor('#ffffff');
-      headerRange.setFontWeight('bold');
-      headerRange.setVerticalAlignment('middle');
-      headerRange.setHorizontalAlignment('center');
-      headerRange.setFontSize(12);
-      
-      // Add proper padding to header cells
-      sheet.setRowHeight(1, 32);
+      // Apply formatting with default options
+      formatSheet(sheet, {
+        formatAsTable: true,
+        freezeHeaders: true,
+        rowHeight: 28,
+        headerRowHeight: 32
+      });
       
       // Setup validation
       setupDataValidation(sheet);
     }
     
     return sheet;
-  } catch (error) {
-    handleError('getOrCreateSheet', error, false);
-    if (createIfMissing) {
-      throw error; // Re-throw only if we were trying to create the sheet
+  }, false);
+}
+
+/**
+ * Applies comprehensive formatting to a sheet with configurable options
+ * 
+ * @param {Sheet} sheet - The sheet to format
+ * @param {Object} [options={}] - Formatting options
+ */
+function formatSheet(sheet, options = {}) {
+  return safeExecute('formatSheet', () => {
+    if (!sheet) return;
+    
+    // Default options
+    const opts = {
+      formatAsTable: true,
+      freezeHeaders: true,
+      headerBackground: "#37474f",
+      headerFontColor: "#ffffff",
+      evenRowColor: "#f9f9f9",
+      oddRowColor: "#ffffff",
+      borderColor: "#e0e0e0",
+      rowHeight: 28,
+      headerRowHeight: 32,
+      fontFamily: "Arial",
+      fontSize: 11,
+      centerColumns: ['Status', 'Type', 'Priority', 'Jira Ticket', 'Job Link']
+    };
+    
+    // Override defaults with provided options
+    Object.keys(options).forEach(key => {
+      if (options[key] !== undefined) {
+        opts[key] = options[key];
+      }
+    });
+    
+    // Get the data range
+    const lastRow = Math.max(sheet.getLastRow(), 2); // Ensure at least header + 1 row
+    const lastCol = sheet.getLastColumn();
+    
+    if (lastRow <= 1 || lastCol === 0) return; // No data to format
+    
+    // Apply formatting
+    if (opts.formatAsTable) {
+      // Format header row with a modern look
+      const headerRange = sheet.getRange(1, 1, 1, lastCol);
+      headerRange.setBackground(opts.headerBackground);
+      headerRange.setFontColor(opts.headerFontColor);
+      headerRange.setFontWeight("bold");
+      headerRange.setVerticalAlignment("middle");
+      headerRange.setHorizontalAlignment("center");
+      headerRange.setFontFamily(opts.fontFamily);
+      
+      // Set proper row height for header
+      sheet.setRowHeight(1, opts.headerRowHeight);
+      
+      // Apply consistent font to all cells
+      const allRange = sheet.getRange(1, 1, lastRow, lastCol);
+      allRange.setFontFamily(opts.fontFamily);
+      allRange.setFontSize(opts.fontSize);
+      
+      // Format data rows - Apply alternating colors and borders
+      formatDataRows(sheet, lastRow, lastCol, opts);
+      
+      // Apply centered alignment to specific columns
+      const headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
+      
+      // Apply centered alignment to columns
+      centerColumnsByName(sheet, headers, opts.centerColumns, lastRow);
+      
+      log("Applied enhanced table formatting", LOG_LEVELS.INFO);
     }
-    return null;
+    
+    // Freeze header row if requested
+    if (opts.freezeHeaders) {
+      sheet.setFrozenRows(1);
+      log("Froze header row", LOG_LEVELS.INFO);
+    }
+    
+    // Auto-resize columns for better readability
+    for (let i = 1; i <= lastCol; i++) {
+      sheet.autoResizeColumn(i);
+      
+      // Ensure minimum column width for readability (except for Job Name which needs to be wider)
+      if (sheet.getColumnWidth(i) < 100 && i !== 1) {
+        sheet.setColumnWidth(i, 100);
+      }
+    }
+    
+    // Make sure the Job Name column is wide enough
+    const jobNameIndex = headers ? headers.indexOf("Job Name") + 1 : 1;
+    if (jobNameIndex && sheet.getColumnWidth(jobNameIndex) < 200) {
+      sheet.setColumnWidth(jobNameIndex, 200);
+    }
+    
+    log("Optimized column widths for better readability", LOG_LEVELS.INFO);
+    
+    // Setup conditional formatting for colors
+    setupDataValidation(sheet);
+  }, false);
+}
+
+/**
+ * Format data rows with alternating colors and proper borders
+ * 
+ * @param {Sheet} sheet - The sheet to format
+ * @param {number} lastRow - Last row number with data
+ * @param {number} lastCol - Last column number with data
+ * @param {Object} opts - Formatting options
+ */
+function formatDataRows(sheet, lastRow, lastCol, opts) {
+  // Common maximum row limit to prevent excessive operations
+  const maxRows = Math.max(lastRow + 50, 500); // Format extra rows for future additions
+  
+  // Process EACH row individually for consistency
+  for (let i = 2; i <= maxRows; i++) {
+    // Use modulo to determine even/odd rows
+    const isEvenRow = (i % 2 === 0);
+    const rowColor = isEvenRow ? opts.evenRowColor : opts.oddRowColor;
+    
+    // Get the row range
+    const rowRange = sheet.getRange(i, 1, 1, lastCol);
+    
+    // Set row height for better spacing
+    sheet.setRowHeight(i, opts.rowHeight);
+    
+    // Apply background color
+    rowRange.setBackground(rowColor);
+    
+    // Add bottom border for cleaner look
+    rowRange.setBorder(
+      false,  // top
+      false,  // left
+      true,   // bottom
+      false,  // right
+      false,  // vertical
+      false,  // horizontal
+      opts.borderColor, 
+      SpreadsheetApp.BorderStyle.SOLID
+    );
   }
+  
+  // Add column borders for better readability
+  for (let i = 1; i <= lastCol; i++) {
+    const colRange = sheet.getRange(1, i, maxRows, 1);
+    colRange.setBorder(
+      false,  // top
+      false,  // left
+      false,  // bottom
+      true,   // right
+      false,  // vertical
+      false,  // horizontal
+      opts.borderColor, 
+      SpreadsheetApp.BorderStyle.SOLID
+    );
+  }
+}
+
+/**
+ * Centers specified columns by their names
+ * 
+ * @param {Sheet} sheet - The sheet to format
+ * @param {Array} headers - Array of header names
+ * @param {Array} columnsToCenter - Array of column names to center
+ * @param {number} lastRow - Last row number with data
+ */
+function centerColumnsByName(sheet, headers, columnsToCenter, lastRow) {
+  if (!Array.isArray(columnsToCenter) || !Array.isArray(headers)) return;
+  
+  columnsToCenter.forEach(columnName => {
+    const colIndex = headers.indexOf(columnName);
+    if (colIndex >= 0) {
+      const centerRange = sheet.getRange(2, colIndex + 1, lastRow - 1, 1);
+      centerRange.setHorizontalAlignment('center');
+    }
+  });
 }
 
 /**
@@ -88,7 +253,7 @@ function getOrCreateSheet(sheetName, customFields, createIfMissing = true) {
  * @param {Sheet} sheet - The sheet to set up validation on
  */
 function setupDataValidation(sheet) {
-  try {
+  return safeExecute('setupDataValidation', () => {
     const config = getConfig();
     const fields = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
     
@@ -136,99 +301,7 @@ function setupDataValidation(sheet) {
     setupConditionalFormatting(sheet, config);
     
     log('Data validation set up successfully', LOG_LEVELS.DEBUG);
-  } catch (error) {
-    handleError('setupDataValidation', error, false);
-  }
-}
-
-/**
- * Applies consistent table formatting to the sheet with improved row formatting
- * 
- * @param {Sheet} sheet - The sheet to format
- */
-function applyTableFormatting(sheet) {
-  try {
-    if (!sheet) return;
-    
-    const lastRow = Math.max(sheet.getLastRow(), 2);
-    const lastCol = sheet.getLastColumn();
-    
-    if (lastRow <= 1 || lastCol === 0) return;
-    
-    // Format data rows with better styling
-    const dataRange = sheet.getRange(2, 1, lastRow - 1, lastCol);
-    
-    // Apply font family and size to all data cells
-    dataRange.setFontFamily('Arial');
-    dataRange.setFontSize(11);
-    dataRange.setVerticalAlignment('middle');
-    
-    // Important fix: Apply consistent formatting to ALL rows, not just existing ones
-    // This ensures new rows added later will have the same formatting
-    const maxRows = Math.max(lastRow + 100, 500); // Format extra rows for future additions
-    
-    // Alternate row colors and set borders for all rows including buffer
-    for (let i = 2; i <= maxRows; i++) {
-      const isEvenRow = (i % 2 === 0);
-      const rowColor = isEvenRow ? '#f9f9f9' : '#ffffff';
-      const rowRange = sheet.getRange(i, 1, 1, lastCol);
-      
-      // Set proper row height for better spacing
-      sheet.setRowHeight(i, 28);
-      
-      // Set background color for alternating rows
-      rowRange.setBackground(rowColor);
-      
-      // Add border only to the bottom of each row for cleaner look
-      rowRange.setBorder(
-        false, // top
-        false, // left
-        true,  // bottom
-        false, // right
-        false, // vertical
-        false, // horizontal
-        '#e0e0e0', 
-        SpreadsheetApp.BorderStyle.SOLID
-      );
-    }
-    
-    // Add vertical borders to columns
-    for (let i = 1; i <= lastCol; i++) {
-      const colRange = sheet.getRange(1, i, maxRows, 1);
-      colRange.setBorder(
-        false, // top
-        false, // left
-        false, // bottom
-        true,  // right
-        false, // vertical
-        false, // horizontal
-        '#e0e0e0',
-        SpreadsheetApp.BorderStyle.SOLID
-      );
-    }
-    
-    // Center-align specific columns (Status, Type, Priority)
-    const headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
-    
-    // Find and center columns by their header names
-    const columnsToCenter = ['Status', 'Type', 'Priority', 'Jira Ticket', 'Job Link'];
-    columnsToCenter.forEach(columnName => {
-      const colIndex = headers.indexOf(columnName);
-      if (colIndex >= 0) {
-        const centerRange = sheet.getRange(2, colIndex + 1, maxRows - 1, 1);
-        centerRange.setHorizontalAlignment('center');
-      }
-    });
-    
-    // Auto-resize columns for better readability
-    for (let i = 1; i <= lastCol; i++) {
-      sheet.autoResizeColumn(i);
-    }
-    
-    log('Applied enhanced table formatting', LOG_LEVELS.INFO);
-  } catch (error) {
-    handleError('applyTableFormatting', error, false);
-  }
+  }, false);
 }
 
 /**
@@ -239,7 +312,7 @@ function applyTableFormatting(sheet) {
  * @param {Object} config - Configuration object with field values and colors
  */
 function setupConditionalFormatting(sheet, config) {
-  try {
+  return safeExecute('setupConditionalFormatting', () => {
     // First check if we have colors defined
     const hasStatusColors = config.statuses && config.statusColors && 
                            config.statuses.length === config.statusColors.length;
@@ -337,13 +410,7 @@ function setupConditionalFormatting(sheet, config) {
       sheet.setConditionalFormatRules(rules);
       log(`Applied ${rules.length} conditional formatting rules for colors`, LOG_LEVELS.INFO);
     }
-    
-    // Apply general table formatting
-    applyTableFormatting(sheet);
-    
-  } catch (error) {
-    handleError('setupConditionalFormatting', error, false);
-  }
+  }, false);
 }
 
 /**
@@ -354,7 +421,7 @@ function setupConditionalFormatting(sheet, config) {
  * @returns {string} Darker hex color code
  */
 function getDarkerShade(hexColor, factor = 0.6) {
-  try {
+  return safeExecute('getDarkerShade', () => {
     // Remove the # if it exists
     hexColor = hexColor.replace('#', '');
     
@@ -373,10 +440,7 @@ function getDarkerShade(hexColor, factor = 0.6) {
       darkerR.toString(16).padStart(2, '0') + 
       darkerG.toString(16).padStart(2, '0') + 
       darkerB.toString(16).padStart(2, '0');
-  } catch (e) {
-    // In case of any error, return a default dark color
-    return '#333333';
-  }
+  }, false) || '#333333'; // Default to a dark color if an error occurs
 }
 
 /**
@@ -387,7 +451,7 @@ function getDarkerShade(hexColor, factor = 0.6) {
  * @returns {Object} Result object with job data or error information
  */
 function findJobRow(jobName, sheetName = JOBS_SHEET_NAME) {
-  try {
+  return safeExecute('findJobRow', () => {
     // Get the sheet without creating it if it doesn't exist
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const sheet = ss.getSheetByName(sheetName);
@@ -427,8 +491,5 @@ function findJobRow(jobName, sheetName = JOBS_SHEET_NAME) {
     }
     
     return { found: false, error: `Job not found: ${jobName}` };
-  } catch (error) {
-    handleError('findJobRow', error, false);
-    return { found: false, error: error.message || error };
-  }
+  }, false) || { found: false, error: 'Error in findJobRow function' };
 }
